@@ -1,0 +1,540 @@
+04.10.2001 - 06.10.2001
+Code cleanup in dbase.cpp: completly rewrite code for using CFreeDB class,
+changed semaphores to file locks (*nix only), now it can be compiled in Win32
+(however, without flock())
+
+06.10.2001 - 07.10.2001
+Added nested tags support, some cleanup in boardtags.cpp code.
+Fixed logoff disappearing in lite version 1.0.
+
+11.10.2001 - 13.10.2001
+Fixed some bugs: in boardtags.cpp bug with right parsing invalid smile code (in strcat_ParseSmiles()),
+in dbase.cpp memory leaks with body of the message (now body addressed as char**) and bug with  fwrite() at the end of file.
+Also added some interface strings in design.h.
+
+14.10.2001
+Added Webbbs to WWWConf convertor to project.
+
+20.10.2001
+Added change message support.
+
+27.10.2001
+Fixed some bugs in Webbbs convertor, and add links and images support.
+Also fixed bug with very long words in reindex.cpp.
+
+28.10.2001
+Some perfomance optimization in indexer.cpp (removed word check and dynamic memory allocation).
+Added cached indexes.
+
+16.11.2001
+Session ID now will be stored throught cookie.
+
+20.11.2001
+Added Fsize support throught Win32 functions under WIN32.
+
+15.12.2001
+Fixed bug in message editing...
+
+19.02.2002
+Change way for logging in error.cpp, now it support formats and variable count
+of variables. Also added support for loggin exact point where printhtmlerror()
+was called.
+
+12.03.2002
+Added topic support.
+
+27.04.2002
+Changed the way of generation session id. Now it use other way of random generation based statistic algorithm.
+
+28.04.2002
+Fixed bug in indexer.cpp, have a stable version now.
+
+01.05.2002
+Added anti-spam for read counter.
+
+17.06.2002  СДЕЛАТЬ следить за темой (тредом) !!! запоминать темы за которыми нужно следить в профайле пользователя !!!
+максимум до 10-20 тем.
+
+24.10.2002
+Fixed bug with nested tags (buffer overflow and stack corruption if more than 8 nested tags was in the message).
+
+25.10.2002
+
+03.11.2002
+Removed username/password from the post message form for the registred users.
+
+06.11.2002
+Global changes in user profile storing (profiles.cpp now use hashindex instead of common indexer), some code cleanup.
+Added hashindex.cpp/hashindex.h.
+
+07.11.2002
+Fixed support of Win32 platform: added R/W file locking. Some code cleanup.
+
+08.11.2002
+Fixed problem with preview.
+Message storing format was changed - now all messages saved after preparse with native WWWConf tags (w/o convertion to HTML).
+ParseBoardTags also have preparse and enter convertion ability now.
+
+10.11.2002
+First topic (by number) int the thread will not be showed (we assume that it's default topic).
+
+11.11.2002
+Added support for email ackn.
+
+12.11.2002
+Automatic logon after registration.
+
+18.11.2002
+Fixed bug in hashindex.cpp (right storing strings with same hash index).
+
+29.11.2002
+Fixed bug with compilation with TOPICS_SYSTEM_SUPPORT == 0.
+
+01.12.2002
+A lot of small fixes, including webbbs convertor (work with indigo).
+
+03.12.2002
+Added new security value for the user - SecHeader. Changed profile format (transparently, because of decrementing PASSWORD length by 1).
+Fixed problem with preview and quoted text.
+Added incremental indexing.
+New version b17.
+Russian nicknames will now be allowed
+Added Makefile for bbsconv
+
+04.12.2002
+Microfix for the long profile name viewing.
+Added stopindex to indexer.
+Added autologin checkbox to the message form when posting as unregistred user.
+
+05.12.2002
+Added user name info while posting as logged in user.
+Merge with aleczander - topbanner and bottombanner can be compiled as defines now, added USE_TEXT_BOTTOMBANNER and USE_TEXT_TOPBANNER defines.
+Start working with CSS re-design.
+
+7.12.2002
+Added additional view - only headers of thread.
+
+9.12.2002
+Added IPaddress to Message structure (transparently, because of decrementing HOSTNAME string length by 4).
+Fixed bug in incremental reindexer (reindex.cpp).
+Check and fix for "message w/o body" symbol at the end of the message header.
+Started work with USER_PROFILES_SUPPORT define (not completed yet).
+Returned email ackn. check box while posting as unreg. user.
+
+10.12.2002
+Some perfomance relative changes in bbsconv.
+
+12.12.2002
+Changed the way of signature interpretation in empty messages. Signature will be ignored from now.
+Added reference to posted message in "post complete" message.
+Fixed little bug in hostname resolve if strlen of hostname == 0.
+Fixed little bug - title in browser incorrectly displayed after configure.
+
+17.12.2002
+Fixed problem with "+" through cookie w/o expiration time.
+Added "To Message" when viewing large threads.
+New version b18.
+
+18.12.2002
+Fixed small bug with +.
+Do not allow name, header or body of the message containing spaces only.
+Fixed possible buffer overflow with long host names.
+Fixed some memory leaks.
+Fixed topic dissapearing during message preview.
+
+19.12.2002
+Fixed problem with repeating No-message tag in the message (will be deleted from now).
+Added message about index viewing style (Merges with aleczander).
+Some fixes connected with css support (Merges with aleczander).
+Added define for turn off locale setting (Merges with aleczander).
+
+20.12.2002
+Some fixes in logins.cpp (large session count problem).
+ResetNew implemented as redirect now.
+Added POST_ALLOW_UNDER_SAME_NICK define to allow modify behaviour of the board.
+Fixed bug with AuthorName and Subject length.
+
+21.12.2002
+Fixed bug with nick names with spec. symbols.
+Configure now will redirect to index page.
+Fixed little bug in configuration form.
+
+22.12.2002
+Enabled email ackn (seems that it works).
+
+24.12.2002, alec
+Added second bar with static links.
+Partially fixed bug 'returning to index from rolled thread'.
+
+26.12.2002, alec
+Added email printing to profman -v.
+
+29.12.2002
+Fixed memory damage in cookies.
+Changed the way working with message flags during message post - now parent flags MESSAGE_IS_INVISIBLE, MESSAGE_COLLAPSED_THREAD and MESSAGE_IS_CLOSED will be applyed to child message too. It also completely fixed bug 'returning to index from rolled thread'.
+Added lost password form.
+
+30.12.2002, alec
+Translatation of email messages, acknowledgw and password retrival
+Fixed in-thread navigation (MESSAGEHEAD_to_message link was broken in rolled threads).
+Now we allow to post to the last 15k messages only.
+Added logging for admin tasks: close, roll, hide, delete.
+
+03.01.2003, www
+Fixed ***very important*** bug connected with absence fflush() call before unlock file. It could lead to database corruption.
+
+05.01.2003, www
+Changed interpretation of ban rules... added allow and deny rules
+
+07.01.2003, www
+Fixed bug with several collapsed threads going one after another.
+New messages will be marked in collapsed threads too.
+New version b19.
+
+11.01.2003, alec
+Added new topic, links...
+
+12.01.2003, www
+Added last user IP in user information structure in profile (visible only to admin).
+Changed the way of interpretation of last login date of user. It's last access date now and updated after every access of the user.
+Fixed bugs with showing several invisible and collapsed threads going one after another.
+Added IP of poster in message view for administrator.
+
+13.01.2003, www
+Added updating date and last IP address during posting as registred user.
+Fixed bug with invisible threads corrupting message index for common users.
+
+14.01.2003, alec
+Partially translated faq-help.html, fixed rules.html, authors.html.
+Added link to rules.html to links bar.
+
+16.01.2003, www
+Fixed bug (added 13.01.2003) with several collapsed thread going one after another.
+
+19.01.2003, www
+Added pages to the search result.
+
+20.01.2003, www
+Fixed problem connected with navigation problem to index when posting to the rolled thread.
+
+21.01.2003, www
+Fixed problem showing collapsed thread when topic filter active.
+Added modification to the profile system, added user status.
+Added user modification form to the profile view (for admin).
+
+22.01.2003, alec
+Moved from DL+DD to DIV+BR, div2.diff + board.css patching
+Removed first style of viewing, MESSAGEHEAD_configure_showhronforward (div3.diff)
+
+22.01.2003, www
+Added printing new message count in collapsed thread.
+Disabled smile translation in PRE.
+
+23.01.2003, www
+Fixed little problem with new message count in collapsed thread.
+Added url autoparsing (expiremental). Very dirty code now.
+alec: DL+DD<->DIV+BR  autodetect for Links and Lynx useragents added (auto_dd.diff),
+      inserted board.css to messages.h
+alec: rewrited Makefile
+
+24.01.2003, www
+Fixed bug in url autoparsing.
+
+25.01.2003, www
+alec: New version of *nix makefile (support dependencies now).
+Added checking url flags during url autoparsing.
+In [url] tag parser added autoadding http:// if it not specified in url.
+
+26.01.2003, www
+Added quick topic modification.
+
+27.01.2003, alec
+changed ALLOW_MARK_NEW_MESSAGES  could be 1 or 2 now
+cosmetic changes, devold/cosmetic1.diff
+
+30.01.2003, alec
+* fixed bug: admin could not preview messages because of error in topic edit 
+  form (devold/admin_preview.diff)
+* fixed css, now works for mozilla (devold/css_fix.diff)
+
+31.01.2003, alec
+* added javascript for check/uncheck all topics
+* Mozilla/2.02 added to DL autodetect
+* HTML cleanup, all TH -> TD (what's TH ? :))
+* one patch: devold/java_checkall.diff 
+* fixed my bug in RT_REDIRECT, now /board/index.cgi?read=XX is redirecting
+  to /index.cgi?read=XX
+
+02.02.2003, www
+Fixed memory allocation bug in GenerateHashwordList() in hashindex.cpp.
+alec/www: Added sort modes in user list (currently: by name, by access date, by post count, by ip).
+Changed the way working with signatures, it will be added automatically to message w/o printing to form.
+patches: (userlist.diff, userlist2.diff)
+
+03.02.2003, www
+Minor fixes.
+Added user right modification by admin.
+New version b20.
+
+04.02.2003, alec
+* added Topics_List_map for listing Topics in desired order in forms(topics_map.diff)
+www: Fixed little bug with tag parsing like [hr].
+
+14.02.2003
+Added personal message support.
+
+18.02.2003, alec
+* simplified DB_Base::printhtmlmessage_in_index 
+* minor html changes in personal messages 
+* added target=_blank to search results
+
+21.02.2003
+Fixed new message dissapearing in resetnew command.
+
+23.02.2003
+Added history to personal messages.
+Link in messages will now be underlined.
+
+24.02.2003
+Fixed appearing url in message containing only pictures.
+
+25.02.2003
+Some bugs  fixed in personal messages (viewing).
+
+26.02.2003
+Fixed some little bugs in personal messages.
+
+01.03.2003
+Added private message manager to the project (prvman).
+
+02.03.2003
+Added announce support.
+In personal message added new error message "too long message".
+Added refresh count (incrementing every refresh) to the user profiles.
+
+03.03.2003
+Added sorting by refresh count to "all users".
+Added banner picture and 2-d link bar disable to configuration form.
+
+05.03.2003
+user right caching no longer supported.
+Added new smiles (from -=MC=-).
+
+06.03.2003
+Added announce hiding/showing trought cookies.
+
+07.03.2003
+Some interfaces and translation fixes.
+Removed prvman from project, all functionality moved to profman.
+Fixed little bug in header of brower (cutting tags was incorrect).
+
+08.03.2003
+A lot of interface fixes in profiles.
+Fixed bug with applying new password during profile edit.
+Added  ERROR_ON_SCREEN define to allow printing exact line/file of error to user browser.
+Serious code cleanup in main.cpp.
+
+09.03.2003
+Added announce update.
+
+12.03.2003
+Fixed compilation problem under Win32, some small interface fixes in profman, indexbuilder.
+
+14.03.2003
+Fixed important bugs in hashindex.cpp.
+
+16.03.2003
+Fixed HTML filtering in signature.
+Some changes in profile creation/modification in main.cpp.
+
+17.03.2003
+Fixed problem with profile creation with null password (core dump acquired sometimes).
+
+18.03.2003
+Fixed bug with url preparsing when tags was disabled.
+
+20.03.2003
+Fixed bug in hashindex.cpp (delete).
+Added last indexed message information to the search page.
+New version 2.0 pre beta1.
+
+23.03.2003
+Fixed some bugs with session management in logins.cpp, increased default session read buffer size.
+Added USER_SESSION_LIVE_TIME to basetypes.h.
+
+30.03.2003
+Changed design of conference (different thread dividers).
+Added main thread counter.
+
+04.04.2003
+Added own name colouring in message index.
+
+05.04.2003
+Some source code cleanup, more detailed comments (basetypes.h).
+
+26.04.2003
+Code cleanup, added decrementation of main thread counter during delete.
+Fixed new messages cookie refresh to "index only" refresh.
+
+27.04.2003
+Fixed workaround across announces (disabling it by cookie).
+
+28.04.2003
+Removed call to printing if topic mask is NULL.
+
+29.04.2003, alec (back from nowhere :))
+* replaced threads colors alternating from table to div && css
+  added DESIGN_open_dl_grey, css class "g", alternating grey color is DESIGN_THREADS_DIVIDER_grey
+* added cookie config option: if "+" acts as a link to the next new message
+* css classes names shortening: emplus->e
+ 
+05.05.2003, www
+Fixed bug with post time check if password is invalid.
+
+07.05.2003, www
+Added javascript to prevent duplicate post.
+Fixed some bugs in HTML.
+Fixed bug with maximum subject size in message.
+
+08.05.2003, www
+Added some parsing features (like ftp://) to boardtags.cpp.
+Returned email ackn checkbox to not logged in users.
+
+19.05.2003, alec, 20030519-autoparse-uinfo.diff
+* added https autoparsing, changed parsing code a bit
+* changes to CodeHttpString, uinfo link is now http-coded
+www: Added own function for time/data translation to human readable format.
+
+23.05.2003, alec, 20030523-whitespace-title.diff 
+* added FilterWhitespaces and filtering of ui->username when registering and
+  mes.MessageHeader when posting a new message
+  TODO: add filter to username if unregister posting
+* added filling database files with first 4 bytes in case if files are empty,
+  to avoid msg_id=0 in new boards
+* added printing of current topic to title (if any)
+ 
+28.05.2003, www
+Added greetings to login message.
+Added chexbox for disabling host name displaying in index.
+Added selected nick names coloring.
+
+29.05.2003, www
+Fixed some bugs with previous modification.
+Added private messages email ackn.
+Added checkbox to disable using private messages.
+
+31.05.2003, www
+Added preview for private messages and announces.
+Some code simplifying and modification in private messages printing.
+Added new feature "always send email ackn. for every post" to user profile.
+Fixed bug with invalid http encoding some urls.
+CodeHttpString() and FilterHTMLTags() in speller.cpp now can allocate storage from internal buffer, but default behaviour didn't change.
+Removed ICQ info in user profile if ICQ didn't specified.
+New version to 2.0 pre beta2.
+
+07.06.2003, www
+Added alternative displaying name (different from username) and right for use it.
+
+12.06.2003, www
+Fixed 2 vulnerabilities for Microsoft IE in tag parsing (allowed to use HTML).
+Changed color of empty message sign to BLACK.
+Changed encoding/title order in the HTML header, added encoding macro to messages.h.
+
+13.06.2003, www
+Changed the way of quick topic navigation, now cookies are used.
+
+14.06.2003, www
+Added checkbox for disabling alternative nick displaying.
+
+16.06.2003, www
+Some bugs with parsing names and html tags was fixed.
+
+20.06.2003, www
+Added disable signature checkbox to user settings.
+
+21.06.2003, www
+Session cookie is now attached to IP address.
+
+27.06.2003, www
+Added new sort mode to userlist (by right).
+Some design changes in post message form.
+
+01.07.2003, merge with hlt
+Fixed post problem under IIS (use CONTENT_LENGTH env. variable).
+Minor memory fixes.
+Fixed problem under Win32 with Fsize() bug check if file was already opened.
+www: Optionalize HTTP_REFERER check.
+
+02.07.2003, www
+Fixed bug with displaying several rolled threads coming one after another.
+Added signature printing to profman.
+
+30.09.2003, www
+Some interface fixes in search.
+Added checkbox about updating announce id to update announce form.
+Merge with demon:
+	* Allow admin post to closed threads
+	* Some source code fixes
+	* Favourites thread support
+
+01.10.2003, www
+Added checkbox to login form about session ip check.
+Enlarged session sequence to 8 bytes.
+
+07.10.2003, www
+Added activity log for last 10 min (hits/hosts).
+Added last posted message printing in collapsed threads.
+Changed version to 2.0 pre beta3.
+
+09.10.2003, www
+A lot of design changes (removed bottom link bar, etc.)
+Added checkbox to disable reply form in message view page.
+
+14.10.2003, www
+Little fix in profiles.cpp (sort user fix) - USERRIGHT_SUPERUSER will only be placed to right if other right exists in all profiles list. Allows viewing all moderators in one group.
+Some code cleanup, added define for disabling activity log support.
+
+11.05.2004, www
+New distributive creation was started.
+Profman and reindex was merged to wcmanager tool.
+
+18.07.2004, www
+Added change message feature.
+
+18.08.2004, demon
+Fixed bug with default settings while opening configure=action
+Added saving view configuration to profile
+Added simple banned list editor
+Added mail subject  encoding (base64), going to rfc in mail
+Added new board tags ( SUP, SUB and STRIKE)
+Removed p.gif between threads, added border style for threads div's
+Style changes ( body, table, padding, margin and others)
+Changed version to 2.0 pre beta4.
+
+22.08.2004, www
+Some code simplifications for main.cpp.
+
+?, www
+Timezone support added.
+
+25.10.2004, demon
+Timezone setting added to profile.
+Removing SCookies[] massive, cookies parsing reforming.
+Changing new session behavior - all messages are in read state. 
+
+27.10.2004, demon
+Fixed security check (flag to allow creating new message and thread)
+Design bug - unclosed tag.
+
+21.01.2005, hlt
+Fixed persmsg to users with html chars in their names - now names are stored in db as raw, not escaped html
+Fixed issue with ?persmsgform not filtering html tags (html javascript script injection exploit)
+
+?, demon
+fixed security holes in uinfo - fields are not checked for html
+
+17.06.2006, demon
+number of displayed threads in index is limited
+
+27.06.2006, demon
+fixed removing all sessions after user deletion (sessions point to new registered user)

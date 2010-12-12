@@ -1,0 +1,1 @@
+bool isEnoughSpace(void);
