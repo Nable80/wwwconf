@@ -23,27 +23,27 @@ static int curcolor = 1;
 
 
 // current message displaying parameters
-int currentlsel;
-int currenttc;
-int currenttt;
-int currenttv;
-int currentss;
-int currentdsm;
+DWORD currentlsel;
+DWORD currenttc;
+DWORD currenttt;
+DWORD currenttv;
+DWORD currentss;
+DWORD currentdsm;
 DWORD currenttopics;
-int currentlm;
-int currentfm;
-int currentlt;
-int currentft;
-int currentlann;
-int topicsoverride;
+DWORD currentlm;
+DWORD currentfm;
+DWORD currentlt;
+DWORD currentft;
+DWORD currentlann;
+DWORD topicsoverride;
 int currenttz;
 
-int cookie_lsel;
-int cookie_tc;
-int cookie_tt;
-int cookie_tv;
-int cookie_ss;
-int cookie_dsm;
+DWORD cookie_lsel;
+DWORD cookie_tc;
+DWORD cookie_tt;
+DWORD cookie_tv;
+DWORD cookie_ss;
+DWORD cookie_dsm;
 DWORD cookie_topics;
 int cookie_tz;
 
@@ -94,7 +94,7 @@ int ReadDBMessage(DWORD midx, SMessage *mes)
 	return 1;
 }
 
-int ReadDBMessageBody(char *buf, DWORD index, int size)
+int ReadDBMessageBody(char *buf, DWORD index, DWORD size)
 {
 	FILE *f;
 	if((f = fopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)return 0;
@@ -193,7 +193,7 @@ int ConvertTime(time_t tt, char *s)
 
 char* ConvertFullTime(time_t tt)
 {
-	char *days[7] = {
+	const char *days[7] = {
 		MESSAGEMAIN_DATETIME_DAY_SUN,
 		MESSAGEMAIN_DATETIME_DAY_MON,
 		MESSAGEMAIN_DATETIME_DAY_TEU,
@@ -202,7 +202,7 @@ char* ConvertFullTime(time_t tt)
 		MESSAGEMAIN_DATETIME_DAY_FRI,
 		MESSAGEMAIN_DATETIME_DAY_SAT
 	};
-	char *months[12] = {
+	const char *months[12] = {
 		MESSAGEMAIN_DATETIME_JAN,
 		MESSAGEMAIN_DATETIME_FEB,
 		MESSAGEMAIN_DATETIME_MAR,
@@ -832,15 +832,16 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 	DWORD ff;
 	DWORD flg;
 	
-	printf("<span id=m%d>", mes->ViIndex);
+	printf("<span id=m%lu>", mes->ViIndex);
 
 #if ALLOW_MARK_NEW_MESSAGES == 2
 	if((currentdsm & CONFIGURE_plu) != 0) {
-		if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref,++newhref+1);
-	}
-	else {
+	        if(currentlm < mes->ViIndex || newmessmark) {
+		  printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref, newhref+1);
+		  ++newhref;
+		}
+	} else
 		if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
-	}
 #endif
 #if ALLOW_MARK_NEW_MESSAGES == 1
 	if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
@@ -1342,7 +1343,7 @@ End_of_Prn:
 		printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT);
 
 		printf("<script language=\"JavaScript\" type=\"text/javascript\">"
-			"current_last=%ld; counter_nm=%ld; counter_nt=%ld; counter_all=%ld; current_nm=%ld;</script>",
+			"current_last=%lu; counter_nm=%ld; counter_nt=%ld; counter_all=%ld; current_nm=%ld;</script>",
 			maxm_counter,nm_counter,nt_counter,totalcount, currentlm);
 	
 
@@ -2116,11 +2117,7 @@ LB_MsgFound:
 
 	if(!oldroot) fisize-=sizeof(SMessageTable);
 	
-#ifdef WIN32	
-	if(!oldroot) if(wctruncate(fi, fisize) != 0) {
-#else
 	if(!oldroot) if(truncate(F_INDEX, fisize) != 0) {
-#endif
 		unlock_file(fi);
 		printhtmlerror();
 	}
@@ -3369,45 +3366,6 @@ int DB_Base::DecrementMainThreadCount()
 	return 1;
 }
 
-#ifdef WIN32
-
-DWORD Fsize(char *s)
-{
-	HANDLE hFile = CreateFile(s, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, 
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	DWORD sizeHigh, sizeLow;
-	if(hFile == INVALID_HANDLE_VALUE) 
-	{
-		if(GetLastError() == ERROR_SHARING_VIOLATION)
-		{
-			WIN32_FIND_DATA wfd;
-			HANDLE hSearch = FindFirstFile(s, &wfd);
-			if(hSearch != INVALID_HANDLE_VALUE)
-			{				
-				FindClose(hSearch);
-				sizeLow = wfd.nFileSizeLow;
-				sizeHigh = wfd.nFileSizeHigh;
-				goto ret_size;
-			}
-		}
-		else {
-			char ss[10000];
-			sprintf(ss, LOG_GETFILESIZEFAILED, s);
-			printhtmlerrormes(ss);
-		}
-	}
-	sizeLow = GetFileSize(hFile, &sizeHigh);
-	CloseHandle(hFile);
-ret_size:
-	if(sizeHigh) {
-		char ss[10000];
-		sprintf(ss, LOG_FILESIZETOOHIGH, s);
-		printhtmlerrormes(ss);
-	}
-	return sizeLow;
-}
-
-#else //WIN32
 
 DWORD Fsize(char *s)
 {
@@ -3428,4 +3386,3 @@ DWORD Fsize(char *s)
 	return r;
 }
 
-#endif //WIN32

@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include <sys/param.h>
-#include <sys/mount.h>
+#include <sys/statfs.h>
 #include "statfs.h" 
 
 typedef signed long long i64;

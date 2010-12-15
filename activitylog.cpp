@@ -122,11 +122,7 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
 			free(buf);
 			wcfflush(f1);
 			// truncate end of file
-#ifdef WIN32	
-			wctruncate(f1, 4);
-#else
 			truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4);
-#endif
 			wcfseek(f1, 0, SEEK_END);
 			rr = 1;
 			fCheckedWrite(&rr, 4, f1);
@@ -217,11 +213,7 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
 		ss.Time = crtime;
 
 		wcfflush(f);
-#ifdef WIN32	
-		wctruncate(f, 8);
-#else
 		truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4);
-#endif
 		wcfseek(f, 4, SEEK_SET);
 		rr = 0;
 		fCheckedWrite(&rr, 4, f);

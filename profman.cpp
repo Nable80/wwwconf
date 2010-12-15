@@ -44,18 +44,10 @@ int mmkdir(const char *s)
 		if(strlen(ss) > 1) {
 			strncpy(os, s, ss - s);
 			os[ss - s] = 0;
-#ifdef WIN32
-			mkdir(os);
-#else
 			mkdir(os, DIR_CREATION_MASK);
-#endif
 		}
 		if((r =
-#ifdef WIN32
-			mkdir(s)
-#else
 			mkdir(s, DIR_CREATION_MASK)
-#endif
 		) != 0)
 			return r;
 	}

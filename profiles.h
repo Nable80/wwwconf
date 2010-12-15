@@ -71,11 +71,7 @@ struct SPersonalMessage {
 };
 
 
-#ifdef WIN32
-#pragma pack(push, 1)
-#else
 #pragma pack(1)
-#endif
 
 struct SViewSettings
 {
@@ -151,11 +147,7 @@ struct SProfile_UserInfo {
 	// index in profile bodies file of structure with common user information
 	DWORD FullInfo_ID;
 };
-#ifdef WIN32
-#pragma pack(pop)
-#else
 #pragma pack(4)
-#endif
 
 class CProfiles {
 protected:

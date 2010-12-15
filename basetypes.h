@@ -39,11 +39,7 @@
 /***********************************************/
 
 /*************************** language and locale ***************************/
-#ifdef WIN32
-#define LANGUAGE_LOCALE "Russian"			// Windows
-#else
 #define LANGUAGE_LOCALE "ru_RU.CP1251"		// Unix
-#endif
 
 // should we set up locale during initialization
 #define USE_LOCALE 0
@@ -224,98 +220,6 @@
 ////////////////////	Platform dependent parameters
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
-/*********WIN32*********/
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#include <winsock.h>
-
-#pragma comment(lib, "ws2_32.lib")
-
-typedef struct _WCFILE {
-	HANDLE	MutexHandle;	// mutex for file locking
-	FILE *f;				// file hanlde
-} WCFILE;
-
-inline WCFILE* wcfopen(char *fname, char *mode)
-{
-	WCFILE *f = (WCFILE*)malloc(sizeof(WCFILE));
-	char *mn = (char*)malloc(strlen(fname) + 20);
-	if(!f || !mn)
-		goto FAILED;
-	
-	f->f = fopen(fname, mode);
-	if(f->f == NULL)
-		goto FAILED;
-	
-	strcpy(mn, "Global\\");	// we use global namespace
-	strcat(mn, fname);
-	f->MutexHandle = ::CreateMutex(NULL, FALSE, mn);
-	if(!f->MutexHandle) {
-		fclose(f->f);
-		goto FAILED;
-	}
-	free(mn);
-	return f;
-	
-FAILED:
-	if(f) free(f);
-	if(mn) free(mn);
-	return NULL;
-}
-
-inline void wcfclose(WCFILE *f)
-{
-	fclose(f->f);
-	::ReleaseMutex(f->MutexHandle);
-	::CloseHandle(f->MutexHandle);
-	free(f);
-}
-
-inline void flock(WCFILE *a, int b)
-{
-	if(b == 1) {
-		::WaitForSingleObject(a->MutexHandle, INFINITE);
-	}
-	else {
-		::ReleaseMutex(a->MutexHandle);
-	}
-}
-
-#define wcfseek(a,b,c) fseek(a->f,b,c)
-#define wcfeof(a) feof(a->f)
-#define wcfread(a,b,c,d) fread(a,b,c,d->f)
-#define wcfwrite(a,b,c,d) fwrite(a,b,c,d->f)
-#define wcftell(a) ftell(a->f)
-#define wcfflush(a) fflush(a->f)
-
-inline int truncate(FILE *f, unsigned long b)
-{
-	return chsize(fileno(f), b);
-}
-
-inline int wctruncate(WCFILE *f, unsigned long b)
-{
-	return chsize(fileno(f->f), b);
-}
-
-#define lock_file(a)	{fflush(a->f);flock(a, 1);}
-#define unlock_file(a)	{fflush(a->f);flock(a, 0);}
-
-#if _DEBUG_ == 1
-
-#include <assert.h>
-
-/* memory leaks detection */
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-
-#endif // _DEBUG_
-
-/**********Unix*********/
-#else
 #include <fcntl.h>
 #include <unistd.h>
 #include <netdb.h>
@@ -349,7 +253,6 @@ typedef unsigned long DWORD;
 //string case-insensitive compare
 #define strcmpi strcasecmp
 
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

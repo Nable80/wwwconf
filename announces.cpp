@@ -112,11 +112,7 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
 	siz = wcftell(f);
 	if(!fCheckedWrite(&an, sizeof(SGlobalAnnounce), f)) {
 		// rolling back
-#ifdef WIN32	
-		wctruncate(f, siz);
-#else
 		truncate(F_GLOBAL_ANN, siz);
-#endif
 		id--;
 		if(wcfseek(f, 0, SEEK_END) == 0) {
 			fCheckedWrite(&id, sizeof(id), f);
@@ -235,11 +231,7 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
 		// !!!!!!!!!!!!
 		wcfflush(f);
 		// truncate end of file
-#ifdef WIN32	
-		wctruncate(f, fsize);
-#else
 		truncate(F_GLOBAL_ANN, fsize);
-#endif
 		unlock_file(f);
 		wcfclose(f);
 	}

@@ -1,0 +1,3 @@
+delwin32.awk is an awk scipt for deleting win32-defined code from a file.
+foreach.sh <name-of-an-awk-script> is a bash script that applies the stated
+awk script for each .cpp or .sh file.

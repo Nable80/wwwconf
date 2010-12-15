@@ -9,7 +9,7 @@
 #include "basetypes.h"
 #include "colornick.h"
 
-CAltNamesParser::CAltNamesParser(char *fname, bool &init)
+CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
 {
 	init = 0;
 	classinit = 0;
@@ -52,7 +52,7 @@ CAltNamesParser::CAltNamesParser(char *fname, bool &init)
 
 CAltNamesParser::~CAltNamesParser()
 {
-	std::hash_map<DWORD, char*>::iterator it;
+	std::unordered_map<DWORD, char*>::iterator it;
 	for(it = nmap.begin(); it != nmap.end(); it++) {
 		free(it->second);
 	}
@@ -121,7 +121,7 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
 int CAltNamesParser::DeleteAltName(DWORD uid)
 {
 	if(classinit) {
-		std::hash_map<DWORD, char*>::iterator it;
+		std::unordered_map<DWORD, char*>::iterator it;
 		if(nmap.find(uid) != nmap.end()) {
 			AltNamesStruct ns;
 			DWORD pos, rd, fn = 0;
@@ -149,11 +149,7 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
 			}
 			if(fn) fCheckedWrite(cb, rd, f);
 			pos = wcftell(f);
-#ifdef WIN32	
-			wctruncate(f, pos);
-#else
 			truncate(ifname, pos);
-#endif
 			unlock_file(f);
 			wcfclose(f);
 		

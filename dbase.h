@@ -31,27 +31,27 @@ extern DWORD Nip;
 
 
 /* cookie data */
-extern int		currentlsel;
-extern int		currenttc;
-extern int		currenttt;
-extern int		currenttv;
-extern int		currentss;
-extern int		currentdsm;
-extern DWORD	currenttopics;
-extern int		currentlann;
-extern int		topicsoverride;
-extern int		currentlm;	// last message
-extern int		currentfm;	// first message
-extern int		currentlt;	// last threads
-extern int		currentft;	// first threads
+extern DWORD		currentlsel;
+extern DWORD		currenttc;
+extern DWORD		currenttt;
+extern DWORD		currenttv;
+extern DWORD		currentss;
+extern DWORD		currentdsm;
+extern DWORD	        currenttopics;
+extern DWORD		currentlann;
+extern DWORD		topicsoverride;
+extern DWORD		currentlm;	// last message
+extern DWORD		currentfm;	// first message
+extern DWORD		currentlt;	// last threads
+extern DWORD		currentft;	// first threads
 extern int		currenttz;	
 
-extern int cookie_lsel;
-extern int cookie_tc;
-extern int cookie_tt;
-extern int cookie_tv;
-extern int cookie_ss;
-extern int cookie_dsm;
+extern DWORD cookie_lsel;
+extern DWORD cookie_tc;
+extern DWORD cookie_tt;
+extern DWORD cookie_tv;
+extern DWORD cookie_ss;
+extern DWORD cookie_dsm;
 extern DWORD cookie_topics;
 extern int cookie_tz;
 
@@ -91,10 +91,10 @@ protected:
 			*ffm,	// free spaces in message headers
 			*ffb;	// free spaces in message bodies
 
-	int alrprn;		// count of already printed threads
+	DWORD alrprn;		// count of already printed threads
 	int nt_counter;	// count of printed new threads
 	int nm_counter;	// count of printed new msgs
-	int maxm_counter; // last printed msgs
+	DWORD maxm_counter; // last printed msgs
 	/* fpr printhtmlindex */
 	int invflag;	// "invisible thread was printed" flag
 	int collapsed;	// "rolled thread was printed" flags

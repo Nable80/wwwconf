@@ -2353,15 +2353,11 @@ int main()
 	DB_Base DB;
 	SMessage mes;
 
-#ifndef WIN32
-
 	if(!isEnoughSpace()) {
 		printf("Content-type: text/html\n\n"
 		"Sorry guys, no space left for DB - wwwconf shutting down.");
 		exit(1);
 	}
-
-#endif
 
 #ifdef RT_REDIRECT
 #define BADURL "/board/"
@@ -2413,16 +2409,6 @@ int main()
 			strcpy(DESIGN_threads_divider, DESIGN_THREADS_DIVIDER_IMG);
 	}
 
-#if defined(WIN32) && defined(IP_TO_HOSTNAME_RESOLVE)
-
-	WSADATA wsaData;
-	if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0 ) {
-		// Tell the user that we could not find a usable
-		// WinSock DLL, but here just do nothing and bailing out
-		return -1;
-	}
-
-#endif
 
 	/*
 	// -----------------------------
@@ -3136,11 +3122,6 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 		mesb = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
 		// this is needed because of char #10 filtering.
 		// in WIN32 printf() works incorrectly with it
-#if defined(WIN32)
-		FilterMessageForPreview(mesb, &mb);
-		free(mesb);
-		mesb = mb;
-#endif
 		
 		// read dct (disable WWWConf Tags)
 		st = strget(par,"dct=", 10, '&');
@@ -4667,24 +4648,13 @@ print2log("incor pass %s", par);
 
 					// this is needed because of char #10 filtering.
 					// in WIN32 printf() works incorrectly with it
-#if defined(WIN32)
-					FilterMessageForPreview(fui.AboutUser, &mb);
-					strcpy(fui.AboutUser, mb);
-					free(mb);
-#endif
 
 					/* read signature */
 					ss = strget(par, "sign=", PROFILES_MAX_SIGNATURE_LENGTH - 1, '&');
 					if(ss != NULL) {
 						// this is needed because of char #10 filtering.
 						// in WIN32 printf() works incorrectly with it
-#if defined(WIN32)
-						FilterMessageForPreview(ss, &mb);
-						strcpy(fui.Signature, mb);
-						free(mb);
-#else
 						strcpy(fui.Signature, ss);
-#endif
 						free(ss);
 					}
 					else fui.Signature[0] = 0;
@@ -4694,13 +4664,7 @@ print2log("incor pass %s", par);
 					if(ss != NULL) {
 						// this is needed because of char #10 filtering.
 						// in WIN32 printf() works incorrectly with it
-#if defined(WIN32)
-						FilterMessageForPreview(ss, &mb);
-						strcpy(fui.SelectedUsers, mb);
-						free(mb);
-#else
 						strcpy(fui.SelectedUsers, ss);
-#endif
 						free(ss);
 					}
 					else fui.SelectedUsers[0] = 0;
@@ -5821,12 +5785,6 @@ print2log("incor pass %s", par);
 				ban_list = strget(par,"ban_list=", MAX_PARAMETERS_STRING, '&');
 				// this is needed because of char #10 filtering.
 				// in WIN32 printf() works incorrectly with it
-#if defined(WIN32)
-				char *mb;
-				FilterMessageForPreview(ban_list, &mb);
-				free(ban_list);
-				ban_list = mb;
-#endif
 				
 				// check ban_list is empty
 				if(ban_list == NULL || *ban_list == 0) {
@@ -5848,11 +5806,7 @@ print2log("incor pass %s", par);
 				}
 
 
-#ifdef WIN32	
-				wctruncate(BAN_FILE, strlen(ban_list));
-#else
 				truncate(F_BANNEDIP, strlen(ban_list));
-#endif
 
 				unlock_file(BAN_FILE);
 				wcfclose(BAN_FILE);
@@ -5951,14 +5905,6 @@ End_part:
 
 #if _DEBUG_ == 1
 	//print2log("Exit success");
-#ifdef WIN32
-#ifdef _DEBUG
-	free(Cip);
-	free(deal);
-	free(ConfTitle);
-	_CrtDumpMemoryLeaks();
-#endif
-#endif // WIN32
 #endif // _DEBUG_
 
 	return EXIT_SUCCESS;
