@@ -994,7 +994,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
 	// *******************************
 	// BUG BUG with aname
 	//////////////////////////////////
-	char *mp = NULL, *pb, aname[1000], tm[200];
+	char *mp = NULL, *pb;
 	DWORD ff;
 
 
@@ -1019,7 +1019,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
 
 	
 
-	if((fb = wcfopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL) printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
+	if((fb = wcfopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)  printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
 	if(wcfseek(fb, mes->MIndex, SEEK_SET) == -1) printhtmlerror();
 	body = (char*)malloc(xml_body_length + 10);
 	if((readed = wcfread(body, 1, xml_body_length + 2, fb)) < xml_body_length) printhtmlerror();
@@ -1343,7 +1343,7 @@ End_of_Prn:
 		printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT);
 
 		printf("<script language=\"JavaScript\" type=\"text/javascript\">"
-			"current_last=%lu; counter_nm=%ld; counter_nt=%ld; counter_all=%ld; current_nm=%ld;</script>",
+			"current_last=%lu; counter_nm=%d; counter_nt=%d; counter_all=%ld; current_nm=%ld;</script>",
 			maxm_counter,nm_counter,nt_counter,totalcount, currentlm);
 	
 
@@ -1384,12 +1384,10 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 	DWORD ri,fisize, rd;
 	SMessageTable *buf;
 	SMessage *msg;
-	unsigned char haddr[4];
 	void *tmp;
 	signed long i;
 	int code;
 	int re; // reply flag
-	hostent *he;
 	DWORD MFlags, msigned = 0;
 
 	CProfiles *uprof = NULL;
@@ -1398,7 +1396,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 
 	/****** check User ******/
 	SProfile_UserInfo UI;
-	SProfile_FullUserInfo FUI;
 
 	if(passw != NULL && *passw != 0) {
 		uprof = new CProfiles();
@@ -1583,7 +1580,6 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
 			if(msg->UniqUserID != 0 && prof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
 				((msg->Flag & MESSAGE_MAIL_NOTIFIATION) || (ui.Flags & PROFILES_FLAG_ALWAYS_EMAIL_ACKN)) ) {
 				char *pb, *pb1, *pb2;
-				DWORD tmp;
 
 				DWORD flags = MESSAGE_ENABLED_TAGS;
 
@@ -2427,11 +2423,11 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 		for(DWORD i = 0; i < TOPICS_COUNT; i++) {
 			if(Topics_List_map[i] == msg->Topics) {
 				// define default choise
-				printf("<OPTION VALUE=\"%d\"" LISTBOX_SELECTED ">%s\n", 
+				printf("<OPTION VALUE=\"%lu\"" LISTBOX_SELECTED ">%s\n", 
 					Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 			else {
-				printf("<OPTION VALUE=\"%d\">%s\n", 
+				printf("<OPTION VALUE=\"%lu\">%s\n", 
 					Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 		}
@@ -2502,7 +2498,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
 int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 {
-	char *an, *pb, *ps = NULL;
+	char *pb, *ps = NULL;
 	DWORD tmp;
 	DWORD flg;
 	CProfiles prof;
@@ -2960,7 +2956,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
 	DWORD rr, fipos, toread;
 	DWORD fmpos, fl, EndLevel, viroot;
 	DWORD fisize, rd;
-	int i, j;
+	int i;
 	
 	// array for storing selecting messages
 	*mescnt = 0;
@@ -3067,6 +3063,7 @@ PT_Found:
 					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
 					rr = (toread + 1)/ sizeof(SMessage);
 					
+					DWORD j;
 					for(j = 0; j < rr; j++) {
 						if(viroot == msgs[j].ViIndex) {
 							reachviroot = 1;
@@ -3104,6 +3101,7 @@ PT_Found:
 					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
 					rr = (toread + 1)/ sizeof(SMessage) - 1;
 					
+					DWORD j;
 					for(j=rr; j >= 0; j--) {
 						if(viroot == msgs[j].ViIndex) {
 							reachviroot = 1;
@@ -3367,7 +3365,7 @@ int DB_Base::DecrementMainThreadCount()
 }
 
 
-DWORD Fsize(char *s)
+DWORD Fsize(const char *s)
 {
 	WCFILE *f;
 	register DWORD r;

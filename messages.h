@@ -511,7 +511,7 @@ extern char *UserRight_List[USERRIGHT_COUNT];
 #define TOPICS_DEFAULT_SELECTED	0
 // this variable should be defined in main.cpp
 extern char *Topics_List[TOPICS_COUNT];
-extern int Topics_List_map[TOPICS_COUNT];
+extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
 /**************************** title messages *****************************/
@@ -586,7 +586,7 @@ extern int Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_SELECTTOPIC		"Выберите тему:"
 
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT		"новых потоков(сообщений): <a name=n0 href=\"#n1\" "\
-	"style=\"color: #f00;font-weight:bold;\">+</a> %ld(%ld) из %ld"
+	"style=\"color: #f00;font-weight:bold;\">+</a> %d(%d) из %ld"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
 				
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT	"новых сообщений нет, всего %ld"
@@ -659,7 +659,7 @@ extern int Topics_List_map[TOPICS_COUNT];
 "%s ответил на ваше сообщение <strong>%s</strong>.<br /><br />"\
 "Тема ответа:<strong> %s</strong><br />"\
 "----------- Сообщение ---------<br />%s<br />-------------------------------<br /><br />"\
-"Весь тред можно увидеть <a href=\"" MA_READURL "?read=%d\">здесь</A><br /><br />"
+"Весь тред можно увидеть <a href=\"" MA_READURL "?read=%lu\">здесь</A><br /><br />"
 
 //	password recovery
 #define MAILACKN_LOSTPASS_SUBJECT  	WWWCONF_FULL_NAME ": пароль для профиля %s"
@@ -725,9 +725,9 @@ extern int Topics_List_map[TOPICS_COUNT];
 #define TAG_MSG_HAVE_PIC		"(pic)"
 #define TAG_MSG_HAVE_URL		"(url)"
 #define TAG_MSG_CLOSED_THREAD	"<span class=\"close\" id=c%ld>(закрыто) </span>"
-#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%d</b>)</span><br></span>"
-#define TAG_MSG_ROLLED_THREAD_MARKNEW	"<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%d</b>, новых: <b>%d</b>," \
-										" последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
+#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
+#define TAG_MSG_ROLLED_THREAD_MARKNEW	"<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>" \
+                                        "(ответов: <b>%lu</b>, новых: <b>%d</b>, последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
 #define TAG_REPLY_PREFIX		"Re: "
 #define TAG_IP_NOT_DETECTED		"X.X.X.X"
 #define BAD_WORD_SYMBOL			'#'

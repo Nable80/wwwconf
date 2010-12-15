@@ -32,7 +32,7 @@ protected:
 	int init;
 	DWORD wasted_block;
 public:
-	CFreeDBFile(char *ifname, DWORD wasted_block);
+	CFreeDBFile(const char *ifname, DWORD wasted_block);
 	~CFreeDBFile();
 	DWORD errnum;
 	DWORD MarkFreeSpace(DWORD bIndex, DWORD bsize);

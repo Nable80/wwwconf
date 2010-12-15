@@ -159,7 +159,7 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
 	return 0xFFFFFFFF;
 }
 
-CFreeDBFile::CFreeDBFile(char *ifname, DWORD wasted_b)
+CFreeDBFile::CFreeDBFile(const char *ifname, DWORD wasted_b)
 {
 	init = 0;
 	if(ifname == NULL || strlen(ifname) < 1) {
