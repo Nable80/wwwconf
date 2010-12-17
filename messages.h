@@ -15,7 +15,7 @@
 /* константы связанные со временем
  * 0,1,2,3 -> час день неделя месяц
  */
-extern char *MESSAGEHEAD_timetypes[4];
+extern const char *MESSAGEHEAD_timetypes[4];
 
 #define MESSAGEHEAD_preview_preview_message	"Предварительный просмотр"
 #define MESSAGEHEAD_preview_change_message	""
@@ -137,7 +137,7 @@ extern char *MESSAGEHEAD_timetypes[4];
 
 #define MESSAGEMAIN_browser_return		"<P ALIGN=CENTER>Ваш броузер должен вернуть вас к списку сообщений через несколько секунд</P>"
 
-#define MESSAGEMAIN_browser_to_thread		"<P><P ALIGN=CENTER><B><A STYLE=\"text-decoration:underline;\" HREF=\"" MY_CGI_URL "?read=%d\">Вернуться</A> к своему сообщению</B></P></P><P></P>"
+#define MESSAGEMAIN_browser_to_thread		"<P><P ALIGN=CENTER><B><A STYLE=\"text-decoration:underline;\" HREF=\"" MY_CGI_URL "?read=%lu\">Вернуться</A> к своему сообщению</B></P></P><P></P>"
 
 #define MESSAGEMAIN_admin_contact 		"Если Вы считаете что это неправильно, обратитесь к <A HREF=\"mailto:" ADMIN_MAIL "\">Администратору</A> конференции"
 
@@ -267,9 +267,9 @@ extern char *MESSAGEHEAD_timetypes[4];
 
 //	user statuses
 #define USER_STATUS_COUNT 5
-extern char *UserStatus_List[USER_STATUS_COUNT];
+extern const char *UserStatus_List[USER_STATUS_COUNT];
 
-extern char *UserRight_List[USERRIGHT_COUNT];
+extern const char *UserRight_List[USERRIGHT_COUNT];
 
 /******************* session information *******************/
 #define MESSAGEMAIN_session_intro		"Зарегистрированные сессии "
@@ -510,7 +510,7 @@ extern char *UserRight_List[USERRIGHT_COUNT];
 #define TOPICS_COUNT	19
 #define TOPICS_DEFAULT_SELECTED	0
 // this variable should be defined in main.cpp
-extern char *Topics_List[TOPICS_COUNT];
+extern const char *Topics_List[TOPICS_COUNT];
 extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
@@ -871,7 +871,7 @@ extern char DESIGN_break[10];
 /******************* new msg **************************/
 
 #define DESIGN_FORM_MESSAGE_QEDITINPUT	"<input type=\"button\" class=\"qe_button\" accesskey=\"%s\" name=\"style%s\" "\
-"value=\"%s\" style=\"width: %ldpx\" onclick=\"setstyle(%ld)\" title=\"%s\" tabindex=\"%ld\" />&nbsp;"
+"value=\"%s\" style=\"width: %dpx\" onclick=\"setstyle(%d)\" title=\"%s\" tabindex=\"%d\" />&nbsp;"
 
 #define DESIGN_FORM_MESSAGE_QEDITSMILES "<div class=\"smilestable\" id=\"smilestable\">" \
 "<table class=\"smilestable\"><tr>" \
@@ -909,7 +909,7 @@ extern char DESIGN_break[10];
 "<input type=\"checkbox\" name=\"%s\" class=\"cl\" %s /></td></tr>"
 
 
-#define DESIGN_FORM_MESSAGE_BUTTON	"<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%ld\">"
+#define DESIGN_FORM_MESSAGE_BUTTON	"<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
 
 
 #define SCRIPT_FORM_MESSAGE_QEDIT "<script language=\"JavaScript\" type=\"text/javascript\" "\
@@ -940,7 +940,7 @@ extern char DESIGN_break[10];
 	"<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
 	"<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
-#define HTML_TOPBANNER_HEADER ""
+#define HTML_TOPBANNER_HEADER "\0"
 
 #define HTML_STYLE_HEADER "</head><body>\n" DESIGN_SCRIPT_POPUP
 

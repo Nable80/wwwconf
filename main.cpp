@@ -35,7 +35,7 @@
 
 char *ConfTitle;
 
-char *MESSAGEHEAD_timetypes[4] = {
+const char *MESSAGEHEAD_timetypes[4] = {
 	"час(а)",		// coded as "1"
 	"день/дня",		// coded as "2"
 	"неделю(и)",	// coded as "3"
@@ -51,7 +51,7 @@ int LENGTH_timetypes_hours[4] = {
 
 
 #if TOPICS_SYSTEM_SUPPORT
-char *Topics_List[TOPICS_COUNT] = {
+const char *Topics_List[TOPICS_COUNT] = {
 	"без темы",
 	"Мурзилка",
 	"Программирование",
@@ -72,7 +72,7 @@ char *Topics_List[TOPICS_COUNT] = {
 	"Потеряно/Найдено",
 	"Спорт"
 };
-int Topics_List_map[TOPICS_COUNT] = {
+DWORD Topics_List_map[TOPICS_COUNT] = {
 	0, //"без темы",
 	4, //"Учеба",
 	3, //"Работа",
@@ -95,7 +95,7 @@ int Topics_List_map[TOPICS_COUNT] = {
 };
 #endif
 
-char *UserStatus_List[USER_STATUS_COUNT] = {
+const char *UserStatus_List[USER_STATUS_COUNT] = {
 	"Новичок",
 	"Дурачок",
 	"Эксперт",
@@ -103,7 +103,7 @@ char *UserStatus_List[USER_STATUS_COUNT] = {
 	"Флудер"
 };
 
-char *UserRight_List[USERRIGHT_COUNT] = {
+const char *UserRight_List[USERRIGHT_COUNT] = {
 	"SUPERUSER",
 	"VIEW_MESSAGE",
 	"MODIFY_MESSAGE",
@@ -134,7 +134,7 @@ int getAction(char* par)
 {
 #define JS_POST_FIELD "jpost"
 	int i = -1;
-	char* szActions[] = {
+	const char* szActions[] = {
 		"post",
 		"preview",
 		"edit"
@@ -169,7 +169,7 @@ static void HttpRedirect(char *url)
 	printf("Location: %s\n\n",url);
 }
 
-static void PrintBoardError(char *s1, char *s2, int code, DWORD msgid = 0)
+static void PrintBoardError(const char *s1, const char *s2, int code, DWORD msgid = 0)
 {
 	printf(DESIGN_GLOBAL_BOARD_MESSAGE, s1, s2);
 	if(code & HEADERSTRING_REFRESH_TO_MAIN_PAGE)
@@ -181,7 +181,7 @@ static void PrintBoardError(char *s1, char *s2, int code, DWORD msgid = 0)
 static void PrintBanList  ()
 {
 	FILE *f;
-	int readed;
+	size_t readed;
 	void *buf = malloc(MAX_HTML_FILE_SIZE);
 	if((f = fopen(F_BANNEDIP, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
 	if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
@@ -251,11 +251,11 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 		for(DWORD i = 0; i < TOPICS_COUNT; i++) {
 			if(Topics_List_map[i] == msg->Topics) {
 				// define default choise
-				printf("<OPTION VALUE=\"%d\"" LISTBOX_SELECTED ">%s\n",
+				printf("<OPTION VALUE=\"%lu\"" LISTBOX_SELECTED ">%s\n",
 					Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 			else {
-				printf("<OPTION VALUE=\"%d\">%s\n", Topics_List_map[i], Topics_List[Topics_List_map[i]]);
+				printf("<OPTION VALUE=\"%lu\">%s\n", Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 		}
 		printf("</SELECT>");
@@ -402,7 +402,6 @@ static void PrintLostPasswordForm()
 static void PrintConfig()	
 {
 	char str1[20], str2[20], str3[20], str4[20], str5[20], str6[20], str7[20], str8[20], str9[20];
-	char strm[10][20];
 	int i;
 
 	printf("<TABLE align=center width=\"100%%\"><tr><td><FORM METHOD=POST ACTION=\"%s?configure=action\" name=\"configure\">",
@@ -430,7 +429,7 @@ static void PrintConfig()
 		break;
 	}
 	printf("<INPUT TYPE=RADIO NAME=lsel VALUE=1 %s>%s" \
-		"<INPUT TYPE=TEXT NAME=\"tv\" SIZE=2 VALUE=%d><SELECT NAME=\"tt\">" \
+		"<INPUT TYPE=TEXT NAME=\"tv\" SIZE=2 VALUE=%lu><SELECT NAME=\"tt\">" \
 		"<OPTION VALUE=\"1\"%s>%s<OPTION VALUE=\"2\"%s>%s<OPTION VALUE=\"3\" %s>" \
 		"%s<OPTION VALUE=\"4\"%s>%s</SELECT><BR>",
 		str1, MESSAGEHEAD_configure_msgslast, currenttv,
@@ -456,7 +455,7 @@ static void PrintConfig()
 		break;
 	}
 
-	printf("<INPUT TYPE=RADIO NAME=lsel VALUE=2 %s>%s<INPUT TYPE=TEXT NAME=\"tc\" SIZE=3 VALUE=%d>"
+	printf("<INPUT TYPE=RADIO NAME=lsel VALUE=2 %s>%s<INPUT TYPE=TEXT NAME=\"tc\" SIZE=3 VALUE=%lu>"
 		"<BR><BR>%s<BR><SELECT NAME=\"ss\"><OPTION VALUE=\"2\" %s>%s<OPTION VALUE=\"3\" %s>%s<OPTION VALUE=\"4\"%s>"
 		"%s</SELECT>",
 		str1, MESSAGEHEAD_configure_lastnum, currenttc, 
@@ -481,7 +480,7 @@ static void PrintConfig()
 		if(currenttopics & (1<<Topics_List_map[i]))
 			strcpy(str4, RADIO_CHECKED);
 		else str4[0] = 0;
-		printf("%s <INPUT TYPE=CHECKBOX NAME=\"topic%d\" %s><br>\n",
+		printf("%s <INPUT TYPE=CHECKBOX NAME=\"topic%lu\" %s><br>\n",
 			Topics_List[Topics_List_map[i]], Topics_List_map[i], str4);
 	}
 	printf("</TD></TR></TABLE>");
@@ -670,8 +669,8 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
 
 	if((code & HEADERSTRING_NO_CACHE_THIS) != 0) printf("Cache-Control: no-cache\nPragma: no-cache\n");
 
-	printf("Set-Cookie: " COOKIE_NAME_STRING "name=%s|lsel=%d|tc=%d|tt=%d|tv=%d|ss=%d|" \
-		"lm=%ld|fm=%ld|lt=%ld|ft=%ld|dsm=%d|seq=%08x%08x|topics=%d|lann=%d|tovr=%d|tz=%d&;" \
+	printf("Set-Cookie: " COOKIE_NAME_STRING "name=%s|lsel=%lu|tc=%lu|tt=%lu|tv=%lu|ss=%lu|" \
+		"lm=%ld|fm=%ld|lt=%ld|ft=%ld|dsm=%lu|seq=%08lx%08lx|topics=%lu|lann=%lu|tovr=%lu|tz=%d&;" \
 		" expires=" COOKIE_EXPIRATION_DATE "path=" COOKIE_SERVER_PATH
 		"\nSet-Cookie: " COOKIE_SESSION_NAME "on&; path=" COOKIE_SERVER_PATH "\n\n", 
 		CodeHttpString(cookie_name, 0), cookie_lsel, cookie_tc, cookie_tt, cookie_tv,
@@ -875,7 +874,7 @@ int PrintAdminToolbar(DWORD root, int mflag, DWORD UID)
 		/* delete thread */
 		if(fl & 0x0080) {
 			if(g) printf(DESIGN_BUTTONS_DIVIDER);
-			printf("<A HREF=\"%s?delmsg=%d\"><font color=\"#FF1000\">%s</font></A>",
+			printf("<A HREF=\"%s?delmsg=%lu\"><font color=\"#FF1000\">%s</font></A>",
 				MY_CGI_URL, root, MESSAGEMAIN_moderate_delete_thread);
 		}
 
@@ -970,7 +969,7 @@ void PrintSearchForm(char *s, DB_Base *db, int start = 0)
 		DWORD LastMsg = 0, LastDate = 0;
 		f = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_R);
 		if(f != NULL) {
-			fscanf(f, "%d %d", &LastMsg, &LastDate);
+			fscanf(f, "%lu %lu", &LastMsg, &LastDate);
 			fclose(f);
 		}
 		if(LastMsg != 0) {
@@ -978,7 +977,7 @@ void PrintSearchForm(char *s, DB_Base *db, int start = 0)
 			if(ReadDBMessage(db->TranslateMsgIndex(LastMsg), &mes)) {
 				char s[200];
 				ConvertTime(mes.Date, s);
-				sprintf(LastMsgStr, "%d (%s)", LastMsg, s);
+				sprintf(LastMsgStr, "%lu (%s)", LastMsg, s);
 			}
 			else strcpy(LastMsgStr, MESSAGEMAIN_search_indexerror);
 		}
@@ -999,7 +998,7 @@ void PrintSearchForm(char *s, DB_Base *db, int start = 0)
 }
 
 #if STABLE_TITLE == 0
-void Tittle_cat(char *s)
+void Tittle_cat(const char *s)
 {
 	// set title
 	ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(s) + 1);
@@ -1152,7 +1151,6 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
 void PrintSessionsList(DWORD Uid)
 {
 	char **buf = NULL;
-	char name[1000];
 	DWORD sc = 0, i;
 	DWORD seqid[2], userid;
 	if(ULogin.GenerateListSessionForUser(&buf, &sc, Uid)){
@@ -1365,7 +1363,7 @@ int PrintAboutUserInfo(char *name)
 			}
 			// only for admin :)
 			if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0)
-				printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%d</STRONG></TD></TR>", 
+				printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%lu</STRONG></TD></TR>", 
 					MESSAGEMAIN_profview_refreshcnt, ui.RefreshCount);
 			printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG></TD></TR>",
 				MESSAGEMAIN_profview_lastip, hname);
@@ -1407,8 +1405,8 @@ int PrintAboutUserInfo(char *name)
 		}
 		printf("</SELECT>");
 
-		printf("<BR>" MESSAGEMAIN_profview_sechdr "<INPUT TYPE=TEXT SIZE=3 NAME=\"sechdr\" VALUE=\"%d\">", (DWORD)ui.secheader);
-		printf("<BR>" MESSAGEMAIN_profview_secbdy "<INPUT TYPE=TEXT SIZE=3 NAME=\"secbdy\" VALUE=\"%d\">", (DWORD)ui.secur);
+		printf("<BR>" MESSAGEMAIN_profview_sechdr "<INPUT TYPE=TEXT SIZE=3 NAME=\"sechdr\" VALUE=\"%u\">", (unsigned)ui.secheader);
+		printf("<BR>" MESSAGEMAIN_profview_secbdy "<INPUT TYPE=TEXT SIZE=3 NAME=\"secbdy\" VALUE=\"%u\">", (unsigned)ui.secur);
 		printf("<INPUT TYPE=HIDDEN SIZE=0 NAME=\"name\" VALUE=\"%s\">", nickname);
 
 		// user rights here
@@ -1487,7 +1485,7 @@ void PrintUserList(DB_Base *dbb, int code)
 		printhtmlerror();
 
 	// Print header of user list
-	printf("<CENTER><P><B>%s</B><BR>%s%d<P>", MESSAGEHEAD_userlist, MESSAGEMAIN_total_user_count, uc);
+	printf("<CENTER><P><B>%s</B><BR>%s%lu<P>", MESSAGEHEAD_userlist, MESSAGEMAIN_total_user_count, uc);
 
 	switch(code) {
 		case 1:
@@ -1548,7 +1546,7 @@ void PrintUserList(DB_Base *dbb, int code)
 				break;
 			case 6:
 				oldval = *((DWORD*)(buf[0] + 16));
-				printf("<B>(%08x)</B><BR>", *((DWORD*)(buf[0] + 16)));
+				printf("<B>(%08lx)</B><BR>", *((DWORD*)(buf[0] + 16)));
 				break;
 		}
 	}
@@ -1582,7 +1580,7 @@ void PrintUserList(DB_Base *dbb, int code)
 				break;
 			case 6:
 				if(oldval != *((DWORD*)(buf[i] + 16))) {
-					printf("<BR><BR><B>(%08x)</B><BR>", *((DWORD*)(buf[i] + 16)));
+					printf("<BR><BR><B>(%08lx)</B><BR>", *((DWORD*)(buf[i] + 16)));
 					oldval = *((DWORD*)(buf[i] + 16));
 					cc = 0;
 				}
@@ -1619,7 +1617,7 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
 			return PROFILE_CHK_ERROR_INVALID_PASSWORD;
 	}
 	/* password and confirm password */
-	if(op != 3 && (strcmp(ui->password, p2) != 0 || (strlen(p2) < PROFILES_MIN_PASSWORD_LENGTH) && strlen(p2) != 0))
+	if(op != 3 && (strcmp(ui->password, p2) != 0 || ((strlen(p2) < PROFILES_MIN_PASSWORD_LENGTH) && strlen(p2) != 0)))
 		return PROFILE_CHK_ERROR_INVALID_PASSWORD_REP;
 	
 	if(strlen(p2) == 0) {
@@ -1700,7 +1698,7 @@ cleanup_and_parseerror:
 		{
 			// Do post user creation/modificaton job
 #if USER_ALT_NICK_SPELLING_SUPPORT
-			if(op == 1 || op == 2 && needregisteraltnick) {
+		        if(op == 1 || (op == 2 && needregisteraltnick)) {
 				if(ui->altdisplayname[0] != 0) {
 					char *st;
 

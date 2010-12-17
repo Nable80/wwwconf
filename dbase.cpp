@@ -1385,7 +1385,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 	SMessageTable *buf;
 	SMessage *msg;
 	void *tmp;
-	signed long i;
+	signed long i = 0;
 	int code;
 	int re; // reply flag
 	DWORD MFlags, msigned = 0;
@@ -1969,7 +1969,7 @@ int DB_Base::DB_DeleteMessage(DWORD root)
 	SMessageTable *buf;
 	DWORD fbsize, fbindex, oldroot;
 	DWORD fl, fisize, rd;
-	int i;
+	int i = 0;
 	void *tmp;
 	oldroot = root;
 	root = TranslateMsgIndex(root);
@@ -2500,7 +2500,7 @@ int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 {
 	char *pb, *ps = NULL;
 	DWORD tmp;
-	DWORD flg;
+	DWORD flg = 0;
 	CProfiles prof;
 
 
@@ -2644,7 +2644,7 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
 	DWORD fmpos, fl, oldroot;
 	DWORD fisize, rd;
 	int LastLevel = 0;
-	int i;
+	int i = 0;
 	// translate virtual to real index, and check it
 	root = TranslateMsgIndex(root);
 	if(root == NO_MESSAGE_CODE) return 0; // invalid or nonexisting index

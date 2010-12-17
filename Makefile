@@ -4,7 +4,7 @@
 #
 
 CC=g++
-CFLAGS=-O2 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x
+CFLAGS=-O2 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
 .SUFFIXES: .cpp .o
 .cpp.o:
 	$(CC) $(CFLAGS) -c $*.cpp
