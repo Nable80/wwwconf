@@ -1343,7 +1343,7 @@ End_of_Prn:
 		printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT);
 
 		printf("<script language=\"JavaScript\" type=\"text/javascript\">"
-			"current_last=%lu; counter_nm=%d; counter_nt=%d; counter_all=%ld; current_nm=%ld;</script>",
+			"current_last=%lu; counter_nm=%lu; counter_nt=%lu; counter_all=%ld; current_nm=%ld;</script>",
 			maxm_counter,nm_counter,nt_counter,totalcount, currentlm);
 	
 

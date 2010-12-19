@@ -164,7 +164,7 @@ int store_hostaddress(unsigned char *where, const char *hostname)
 
 /* Create an internet connection to HOSTNAME on PORT.  The created
    socket will be stored to *SOCK.  */
-int make_connection(int *sock, char *hostname, unsigned short port)
+int make_connection(int *sock, const char *hostname, unsigned short port)
 {
 	struct sockaddr_in sock_name;
 	/* struct hostent *hptr; */

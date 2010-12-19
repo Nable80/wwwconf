@@ -297,7 +297,7 @@ next_sym: ;
 /* insert string s to string d at position index
  * return d, DOES NOT CONTROL ANY ERRORS
  */
-char* strins(char *d, char *s, int index)
+char* strins(char *d, const char *s, int index)
 {
 	register char *p = d + index; // from
 	register char *t = d + index + strlen(s); // to

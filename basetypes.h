@@ -164,7 +164,7 @@
 #define CONFIGURE_SETTING_DEFAULT_toverride		0			// own settings
 
 #define CONFIGURE_SETTING_MAX_tc	10000
-#define CONFIGURE_SETTING_MAX_hours	1440
+#define CONFIGURE_SETTING_MAX_hours	1440u
 /********************** common params **********************/
 #define MY_CGI_URL	""
 #define MY_HOST_URL	""
@@ -174,7 +174,7 @@
 													// NOTE: it's not absolute path on server
 													// it's only HTTP path
 
-#define HTTP_REFERER_CHECK	1	
+#define HTTP_REFERER_CHECK	0	
 // this string should be in HTTP_REFERER to pass trough the test
 #define ALLOWED_HTTP_REFERER "rt.mipt.ru"
 
@@ -194,7 +194,7 @@
 
 #define COOKIE_NAME_STRING			"RTBB="
 #define COOKIE_SESSION_NAME			"SessionRT="
-#define COOKIE_EXPIRATION_DATE		"Fri, 31-Dec-2009 00:00:00 GMT;"
+#define COOKIE_EXPIRATION_DATE		"Fri, 31-Dec-2019 00:00:00 GMT;"
 #define COOKIE_SERVER_PATH			"/;"
 
 // the maximum size for top and bottom files

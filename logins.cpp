@@ -24,7 +24,7 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
 	SSavedAuthSeq *buf;
 	WCFILE *f;
 	int el;
-	DWORD id, id1, rr, i, ii;
+	DWORD id, id1, rr = 0, i, ii;
 
 	/* set creation time */
 	time_t tn = time(NULL);
@@ -107,7 +107,7 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
 {
 	SSavedAuthSeq *buf = NULL;
 	WCFILE *f;
-	DWORD rr, i, ii = 0;
+	DWORD rr = 0, i, ii = 0;
 	time_t tn = time(NULL);
 
 	if(( (id[0] != 0 || id[1] != 0) && Uid != 0) || (id[0] == 0 && id[1] == 0 && Uid == 0))

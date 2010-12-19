@@ -42,7 +42,7 @@ const char *MESSAGEHEAD_timetypes[4] = {
 	"месяц(а)"		// coded as "4"
 };
 
-int LENGTH_timetypes_hours[4] = {
+unsigned LENGTH_timetypes_hours[4] = {
 	1,
 	24,
 	168,
@@ -346,7 +346,7 @@ static void PrintLoginForm()
 	printf(MESSAGEMAIN_login_lostpassw);
 }
 
-static void PrintPrivateMessageForm(char *name, char *body)
+static void PrintPrivateMessageForm(char *name, const char *body)
 {
 	printf("<CENTER><FORM METHOD=POST ACTION=\"%s?persmsgpost\"><P>&nbsp;<P>", MY_CGI_URL);
 
@@ -365,7 +365,7 @@ static void PrintPrivateMessageForm(char *name, char *body)
 		MESSAGEMAIN_privatemsg_prev_msg_btn, MESSAGEMAIN_privatemsg_send_msg_btn);
 }
 
-static void PrintAnnounceForm(char *body, int ChangeAnn = 0)
+static void PrintAnnounceForm(const char *body, int ChangeAnn = 0)
 {
 	printf("<CENTER><FORM METHOD=POST ACTION=\"%s?globann=post\"><P>&nbsp;<P>", MY_CGI_URL);
 
@@ -956,7 +956,7 @@ void PrintChangelog()
 }
 										
 
-void PrintSearchForm(char *s, DB_Base *db, int start = 0)
+void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
 {
 	printf("<FORM METHOD=POST ACTION=\"%s?search=action\">",
 		MY_CGI_URL);
@@ -1525,7 +1525,7 @@ void PrintUserList(DB_Base *dbb, int code)
 		else printf("<B>%s</B><BR><BR>", MESSAGEMAIN_userlist_sortbyright);
 	}
 
-	DWORD oldval;
+	DWORD oldval = 0;
 	if(uc) {
 		unsigned char *aa = (unsigned char*)buf[0];
 		switch(code) {
@@ -1550,50 +1550,51 @@ void PrintUserList(DB_Base *dbb, int code)
 				break;
 		}
 	}
+
 	int cc = 0;
 	// print begin
 	for(i = 0; i < uc; i++) {
-		switch(code) {
-			case 2:
-				if(oldval != *((DWORD*)(buf[i] + 4))) {
-					printf("<BR><BR><B>(%lu)</B><BR>", *((DWORD*)(buf[i] + 4)));
-					oldval = *((DWORD*)(buf[i] + 4));
-					cc = 0;
-				}
-				break;
-			case 3:
-				if(oldval != *((DWORD*)(buf[i]))) {
-					unsigned char *aa = (unsigned char*)buf[i];
-					printf("<BR><BR><B>(%u.%u.%u.%u)</B><BR>", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
-					oldval = *((DWORD*)(buf[i]));
-					cc = 0;
-				}
-				break;
-			case 4:
-				break;
-			case 5:
-				if(oldval != *((DWORD*)(buf[i] + 12))) {
-					printf("<BR><BR><B>(%lu)</B><BR>", *((DWORD*)(buf[i] + 12)));
-					oldval = *((DWORD*)(buf[i] + 12));
-					cc = 0;
-				}
-				break;
-			case 6:
-				if(oldval != *((DWORD*)(buf[i] + 16))) {
-					printf("<BR><BR><B>(%08lx)</B><BR>", *((DWORD*)(buf[i] + 16)));
-					oldval = *((DWORD*)(buf[i] + 16));
-					cc = 0;
-				}
-				break;
-		}
-		if((cc % 10) != 0) printf(" | ");
-		if(((cc % 10) == 0) && cc != 0)  printf("<BR>");
-		
-		cc++;
-
-		dbb->Profile_UserName(buf[i] + 20, name, 1);
-		printf("%s", name);
-		free(buf[i]);
+	       switch(code) {
+	       case 2:
+	               if(oldval != *((DWORD*)(buf[i] + 4))) {
+		               printf("<BR><BR><B>(%lu)</B><BR>", *((DWORD*)(buf[i] + 4)));
+			       oldval = *((DWORD*)(buf[i] + 4));
+			       cc = 0;
+		       }
+		       break;
+	       case 3:
+		       if(oldval != *((DWORD*)(buf[i]))) {
+		               unsigned char *aa = (unsigned char*)buf[i];
+			       printf("<BR><BR><B>(%u.%u.%u.%u)</B><BR>", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
+			       oldval = *((DWORD*)(buf[i]));
+			       cc = 0;
+		       }
+		       break;
+	       case 4:
+		       break;
+	       case 5:
+		       if(oldval != *((DWORD*)(buf[i] + 12))) {
+			       printf("<BR><BR><B>(%lu)</B><BR>", *((DWORD*)(buf[i] + 12)));
+			       oldval = *((DWORD*)(buf[i] + 12));
+			       cc = 0;
+		       }
+		       break;
+	       case 6:
+		       if(oldval != *((DWORD*)(buf[i] + 16))) {
+			       printf("<BR><BR><B>(%08lx)</B><BR>", *((DWORD*)(buf[i] + 16)));
+			       oldval = *((DWORD*)(buf[i] + 16));
+			       cc = 0;
+		       }
+		       break;
+	       }
+	       if((cc % 10) != 0) printf(" | ");
+	       if(((cc % 10) == 0) && cc != 0)  printf("<BR>");
+	       
+	       cc++;
+	       
+	       dbb->Profile_UserName(buf[i] + 20, name, 1);
+	       printf("%s", name);
+	       free(buf[i]);
 	}
 	if(buf) free(buf);
 	printf("</CENTER>");
@@ -1754,6 +1755,8 @@ cleanup_and_parseerror:
 #endif 
 		printhtmlerror();
 	}
+
+        return 0; //abnormal
 }
 
 void PrintFavouritesList()
@@ -1937,7 +1940,7 @@ char* GetParams(DWORD maxlen)
 	char* pCL = getenv("CONTENT_LENGTH");
 	if(pCL != NULL)
 	{
-		int nCL = atoi(pCL);
+	        DWORD nCL = strtoul(pCL, NULL, 10);
 		if(nCL > maxlen) nCL = maxlen;
 		if(nCL > 0)
 		{
@@ -1992,7 +1995,7 @@ char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing)
 	if(par == NULL) return NULL;
 	if(find == NULL) return NULL;
 	if((s = strstr(par, find)) == NULL) return NULL;
-	if(bZend = ((x = strchr(s, end)) == NULL))
+	if((bZend = ((x = strchr(s, end)) == NULL)))
 		x = strchr(s, 0);
 	else
 		*x = 0; // temporary change '&' to '\0'
@@ -2068,19 +2071,19 @@ void ParseCookie()
 			strcat(ss,"|");
 			
 			
-			if(t = strget(ss, "name=", AUTHOR_NAME_LENGTH - 1, '|', 0)){
+			if((t = strget(ss, "name=", AUTHOR_NAME_LENGTH - 1, '|', 0))){
 				cookie_name = t;
 			}
 
 			
-			if(t = strget(ss, "seq=", 30, '|', 0)){
+			if((t = strget(ss, "seq=", 30, '|', 0))){
 				cookie_seq = t;
 			}
 
 
 
 			// read lsel (show type selection)
-			if(t = strget(ss, "lsel=", 3, '|', 0)) {
+			if((t = strget(ss, "lsel=", 3, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(( (*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 2 && tmp >= 1)
 				{
@@ -2090,7 +2093,7 @@ void ParseCookie()
 			}
 		
 			// read tc (thread count)
-			if(t = strget(ss, "tc=", 12, '|', 0)) {
+			if((t = strget(ss, "tc=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2103,7 +2106,7 @@ void ParseCookie()
 						cookie_tc = CONFIGURE_SETTING_MAX_tc;
 
 			// read tt (time type)
-			if(t = strget(ss, "tt=", 3, '|', 0)) {
+			if((t = strget(ss, "tt=", 3, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 4 && tmp > 0)
 				{
@@ -2113,7 +2116,7 @@ void ParseCookie()
 			}
 
 			// read tv (time value)
-			if(t  = strget(ss, "tv=", 12, '|', 0)) {
+			if((t  = strget(ss, "tv=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2126,7 +2129,7 @@ void ParseCookie()
 						cookie_tv = CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[cookie_tt-1];
 
 			// read ss (style string)
-			if(t = strget(ss, "ss=", 12, '|', 0)) {
+			if((t = strget(ss, "ss=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0 && tmp <= 4)
 				{
@@ -2137,7 +2140,7 @@ void ParseCookie()
 		
 
 			// read lt (last thread)
-			if(t = strget(ss, "lt=", 12, '|', 0)){
+			if((t = strget(ss, "lt=", 12, '|', 0))){
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2147,7 +2150,7 @@ void ParseCookie()
 			}
 					
 			// read fm (first message)
-			if(t = strget(ss, "ft=", 12, '|', 0)) {
+			if((t = strget(ss, "ft=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2157,7 +2160,7 @@ void ParseCookie()
 			}
 				
 			// read lm (last message)
-			if(t = strget(ss, "lm=", 12, '|', 0)){
+			if((t = strget(ss, "lm=", 12, '|', 0))){
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2167,7 +2170,7 @@ void ParseCookie()
 			}
 			
 			// read fm (first message)
-			if(t = strget(ss, "fm=", 12, '|', 0)){
+			if((t = strget(ss, "fm=", 12, '|', 0))){
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2177,7 +2180,7 @@ void ParseCookie()
 			}
 			
 			// read dsm (globally disable smiles, picture, and 2-d link bar)
-			if(t = strget(ss, "dsm=", 12, '|', 0)) {
+			if((t = strget(ss, "dsm=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
 				{
@@ -2188,7 +2191,7 @@ void ParseCookie()
 			
 #if	TOPICS_SYSTEM_SUPPORT
 			// read topics
-			if(t = strget(ss, "topics=", 20, '|', 0)) {
+			if((t = strget(ss, "topics=", 20, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
 				{
@@ -2198,7 +2201,7 @@ void ParseCookie()
 			}
 
 			// read topics override
-			if(t = strget(ss, "tovr=", 12, '|', 0)) {
+			if((t = strget(ss, "tovr=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
 				{
@@ -2209,7 +2212,7 @@ void ParseCookie()
 #endif
 
 			// read lann (last hided announce)
-			if(t = strget(ss, "lann=", 12, '|', 0)) {
+			if((t = strget(ss, "lann=", 12, '|', 0))) {
 				tmp = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp >= 0)
 				{
@@ -2221,7 +2224,7 @@ void ParseCookie()
 			}
 			
 			// read timezone
-			if(t = strget(ss, "tz=", 12, '|', 0) ) {
+			if((t = strget(ss, "tz=", 12, '|', 0))) {
 				tmp_int = strtol(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp_int >= -12 && tmp_int <= 12)
 				{
@@ -2284,7 +2287,7 @@ void calc_print_time()
 	}
 }*/
 
-static void PrepareActionResult(int action, char **c_par1, char **c_par2)
+static void PrepareActionResult(int action, const char **c_par1, const char **c_par2)
 {
 	switch(action) {
 	case MSG_CHK_ERROR_NONAME :
@@ -2683,7 +2686,7 @@ int main()
 		for(DWORD i = 0; i < TOPICS_COUNT; i++) {
 			if(Topics_List_map[i] == (topicsoverride - 1)) strcpy(sel, LISTBOX_SELECTED);
 			else sel[0] = 0; // ""
-			sprintf(tmp, "<OPTION VALUE=\"?index=%d\"%s>%s</OPTION>\n", Topics_List_map[i]+1, sel, Topics_List[Topics_List_map[i]]);
+			sprintf(tmp, "<OPTION VALUE=\"?index=%lu\"%s>%s</OPTION>\n", Topics_List_map[i]+1, sel, Topics_List[Topics_List_map[i]]);
 			strcat(topicselect, tmp);
 		}
 		strcat(topicselect, "</SELECT>");
@@ -2694,7 +2697,7 @@ int main()
 		
 		// print info about personal messages
 		if(ULogin.LU.ID[0] != 0 && ULogin.pui->persmescnt - ULogin.pui->readpersmescnt > 0) {
-			sprintf( privmesinfo, ", <A HREF=\"" MY_CGI_URL "?persmsg\" STYLE=\"text-decoration:underline;\"><FONT COLOR=RED>" MESSAGEMAIN_privatemsg_newmsgann " %ld " \
+			sprintf( privmesinfo, ", <A HREF=\"" MY_CGI_URL "?persmsg\" STYLE=\"text-decoration:underline;\"><FONT COLOR=RED>" MESSAGEMAIN_privatemsg_newmsgann " %d " \
 			MESSAGEMAIN_privatemsg_newmsgann1 "</FONT></A>", (ULogin.pui->persmescnt - ULogin.pui->readpersmescnt) );
 		}
 
@@ -2743,9 +2746,9 @@ int main()
 						if(((ULogin.LU.right & USERRIGHT_POST_GLOBAL_ANNOUNCE) != 0 && ga[i].UIdFrom ==
 							ULogin.LU.UniqID) || (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0)
 						{
-							sprintf(del, "<A HREF=\"" MY_CGI_URL "?ganndel=%d\" "
+							sprintf(del, "<A HREF=\"" MY_CGI_URL "?ganndel=%lu\" "
 								"STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_globann_delannounce
-								"</A> <A HREF=\"" MY_CGI_URL "?globann=%d\" "
+								"</A> <A HREF=\"" MY_CGI_URL "?globann=%lu\" "
 								"STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_globann_updannounce
 								"</A>", ga[i].Number, ga[i].Number);
 					}	
@@ -2762,11 +2765,11 @@ int main()
 					}
 				}
 				if(something_printed) {
-					printf("<CENTER><A HREF=\"?rann=%d\" STYLE=\"text-decoration:underline;\" class=cl>" MESSAGEMAIN_globann_hidenewann "</A></CENTER><BR>", ga[cnt-1].Number);
+					printf("<CENTER><A HREF=\"?rann=%lu\" STYLE=\"text-decoration:underline;\" class=cl>" MESSAGEMAIN_globann_hidenewann "</A></CENTER><BR>", ga[cnt-1].Number);
 				}
 				else {
 					// show all announces
-					printf("<CENTER><A HREF=\"?rann=0\" STYLE=\"text-decoration:underline;\" class=cl>" MESSAGEMAIN_globann_showall "(%d)</A></CENTER><BR>", cnt);
+					printf("<CENTER><A HREF=\"?rann=0\" STYLE=\"text-decoration:underline;\" class=cl>" MESSAGEMAIN_globann_showall "(%lu)</A></CENTER><BR>", cnt);
 				}
 			}
 			if(ga) free(ga);
@@ -2931,7 +2934,7 @@ int main()
 				goto End_part;
 			}
 			
-			printf("<data><mes_num>%d</mes_num><mes_body><![CDATA[", tmp);
+			printf("<data><mes_num>%lu</mes_num><mes_body><![CDATA[", tmp);
 			DB.DB_PrintMessageBody(tmp, 1);
 			printf("]]></mes_body></data>");
 
@@ -2992,7 +2995,7 @@ int main()
 	
 	if(strncmp(deal, "xpost", 5) == 0) {
 		char *ss = NULL;
-		char *passw, *mb, *c_host;
+		char *passw, *c_host;
 		DWORD ROOT = 0;
 		DWORD CFlags = 0, LogMeIn = 0;
 
@@ -3220,7 +3223,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 				char *banreason = NULL;
 				if((cr = DB.DB_InsertMessage(&mes, ROOT, strlen(mesb), &mesb, CFlags, passw, &banreason)) != MSG_CHK_ERROR_PASSED)
 				{
-					char *c_ActionResult1, *c_ActionResult2;
+					const char *c_ActionResult1, *c_ActionResult2;
 					PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
 					PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
 					PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
@@ -3320,7 +3323,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 				char *banreason = NULL;
 				if((cr = CheckSpellingBan(&mes, &mesb, &banreason, CFlags, &rf)) != MSG_CHK_ERROR_PASSED)
 				{
-					char *c_ActionResult1, *c_ActionResult2;
+					const char *c_ActionResult1, *c_ActionResult2;
 					PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
 					PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
 					PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
@@ -3403,7 +3406,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 				if((cr = DB.DB_ChangeMessage(ROOT, &msg, // what message
 					&mesb, strlen(mesb), CFlags, &banreason)) != MSG_CHK_ERROR_PASSED)
 				{
-					char *c_ActionResult1, *c_ActionResult2;
+					const char *c_ActionResult1, *c_ActionResult2;
 					PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
 					PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
 					PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
@@ -3459,7 +3462,6 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 				
 				if(par != NULL) {
 					char *st, *ss;
-					DWORD tmp;
 
 #define READ_PARAM_MASK(param, var, mask) {		\
 	char *ss = strget(par, param, 20, '&');	\
@@ -3550,7 +3552,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 						for(i = 0; i < TOPICS_COUNT; i++)
 						{
 							char st[30];
-							sprintf(st, "topic%d=", i);
+							sprintf(st, "topic%lu=", i);
 							if((ss = strget(par, st,  3, '&')) != NULL)
 							{
 								if(strcmp(ss, "on") == 0)
@@ -3652,7 +3654,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 
 							//	Prepare conference login greetings
 							char boardgreet[1000];
-							char *greetnames[4] = {
+							const char *greetnames[4] = {
 								MESSAGEMAIN_login_helloday,
 								MESSAGEMAIN_login_helloevn,
 								MESSAGEMAIN_login_hellonight,
@@ -4217,12 +4219,12 @@ print2log("incor pass %s", par);
 							char *wrd = CodeHttpString(ss, 0);
 							if(wrd) {
 								printf("<CENTER>" MESSAGEMAIN_search_result_pages);
-								int max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
+								DWORD max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
 									(((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-								for(int i = 0; i < max; i++) {
+								for(DWORD i = 0; i < max; i++) {
 									if(i > 0 && (i % 20) == 0) printf("<BR>");
-									if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%d\">%d</A>&nbsp;", wrd, i+1, i+1);
-									else printf("<B>&nbsp;%d&nbsp;</B>", i+1);
+									if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%lu\">%lu</A>&nbsp;", wrd, i+1, i+1);
+									else printf("<B>&nbsp;%lu&nbsp;</B>", i+1);
 								}
 								printf("</CENTER>");
 							}
@@ -4238,12 +4240,12 @@ print2log("incor pass %s", par);
 							char *wrd = CodeHttpString(ss, 0);
 							if(wrd) {
 								printf("<BR><CENTER>" MESSAGEMAIN_search_result_pages);
-								int max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
+								DWORD max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
 									(((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-								for(int i = 0; i < max; i++) {
+								for(DWORD i = 0; i < max; i++) {
 									if(i > 0 && (i % 20 == 0)) printf("<BR>");
-									if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%d\">%d</A>&nbsp;", wrd, i+1, i+1);
-									else printf("<B>&nbsp;%d&nbsp;</B>", i+1);
+									if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%lu\">%lu</A>&nbsp;", wrd, i+1, i+1);
+									else printf("<B>&nbsp;%lu&nbsp;</B>", i+1);
 								}
 								printf("</CENTER>");
 							}
@@ -4440,7 +4442,7 @@ print2log("incor pass %s", par);
 						for(i = 0; i < USERRIGHT_COUNT; i++)
 						{
 							char st[30];
-							sprintf(st, "right%d=", i);
+							sprintf(st, "right%lu=", i);
 							if((ss = strget(par, st,  4, '&')) != NULL)
 							{
 								if(strcmp(ss, "on") == 0)
@@ -4549,7 +4551,7 @@ print2log("incor pass %s", par);
 				/* get parameters */
 				par = GetParams(MAX_PARAMETERS_STRING);
 				if(par !=NULL) {
-					char *ss, *passwdconfirm, *oldpasswd, *act, *mb;
+					char *ss, *passwdconfirm, *oldpasswd, *act;
 
 					/* what we should do: edit, delete or create */
 					act = strget(par, "register=", 255, '&');
@@ -5167,11 +5169,11 @@ print2log("incor pass %s", par);
 			"<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg
 			"</A></CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
 
-		char tostr[1000], newm[100], *nickurl;
+		char tostr[1000], newm[100];
 		char *ss;
 		SPersonalMessage *pmsg;
-		int i = 0;
-		int j = 0;
+		DWORD i = 0;
+		DWORD j = 0;
 		int received = 0;	// posted or received
 		for(;;) {
 			// check exit expression
@@ -5270,8 +5272,8 @@ print2log("incor pass %s", par);
 				Tittle_cat(TITLE_PostGlobalAnnounce);
 
 				char *ss, body[GLOBAL_ANNOUNCE_MAXSIZE];
-				int cgann_num;
-				cgann_num = strtol(sn, &ss, 10);
+				DWORD cgann_num;
+				cgann_num = strtoul(sn, &ss, 10);
 				if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
 					cgann_num = 0;
 				}
@@ -5717,7 +5719,6 @@ print2log("incor pass %s", par);
 		    		DWORD 
 					PostCount = *((DWORD*)(buf[i] + 4)),
 					RefreshCount = *((DWORD*)(buf[i] + 12)),
-					UserRight =  *((DWORD*)(buf[i] + 16)),
 					LoginDate = *((DWORD*)(buf[i] + 8)),
 					activity = PostCount + RefreshCount;
 				char *username = buf[i] + 20;
@@ -5749,12 +5750,12 @@ print2log("incor pass %s", par);
 			} //for(;i<uc;)
 			if(fDelete) {
 				printf(
-					"<br /> <b>удалено %d из %d пользователей</b> \n", 
+					"<br /> <b>удалено %lu из %lu пользователей</b> \n", 
 					ii, 
 					uc);
 			} else {
 				printf(
-					"<br /> <b>Будет удалено <fonc color=red>%d</font> из %d пользователей</b> \n",
+					"<br /> <b>Будет удалено <fonc color=red>%lu</font> из %lu пользователей</b> \n",
 					ii, 
 					uc);
 				printf(

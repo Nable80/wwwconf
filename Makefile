@@ -23,14 +23,14 @@ all: index dbtool
 	@echo Compiling Done
 
 index: $(OBJECTS_INDEX) .depend
-	$(CC) -o index.cgi $(OBJECTS_INDEX)
+	$(CC) $(CFLAGS) -o index.cgi -Wl,-\( $(OBJECTS_INDEX) -Wl,-\)
 dbtool: $(OBJECTS_DBTOOL) .depend
-	$(CC) -o dbtool $(OBJECTS_DBTOOL)
+	$(CC) $(CFLAGS) -o dbtool -Wl,-\( $(OBJECTS_DBTOOL) -Wl,-\)
 
 .depend: $(SOURCES)
 	@echo "Creating .depend"
 	@rm -f .depend
-	$(CC) -MM -MG $(SOURCES) >> .depend
+	$(CC) $(CFLAGS) -MM -MG $(SOURCES) > .depend
 
 clean:
 	@rm -f *.o .depend

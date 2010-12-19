@@ -41,7 +41,7 @@ static char* mstrstr(char *s, char *f, DWORD size)
 	return NULL;
 }
 
-DWORD hashstr(char *s, DWORD m)
+DWORD hashstr(const char *s, DWORD m)
 {
 	DWORD sum = 0;
 	for(; *s != 0; s++) {
@@ -104,7 +104,7 @@ int GetIndexOfString(char *s, DWORD *Index)
 	return HASHINDEX_ER_OK;
 }
 
-int AddStringToHashedIndex(char *s, DWORD Index)
+int AddStringToHashedIndex(const char *s, DWORD Index)
 {
 	WCFILE *f;
 	DWORD oldhash, hash, neededsize, i;
@@ -279,7 +279,7 @@ int AddStringToHashedIndex(char *s, DWORD Index)
 	return HASHINDEX_ER_OK;
 }
 
-int DeleteStringFromHashedIndex(char *s)
+int DeleteStringFromHashedIndex(const char *s)
 {
 	WCFILE *f;
 	DWORD hash;

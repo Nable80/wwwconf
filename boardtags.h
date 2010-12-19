@@ -44,27 +44,27 @@
 /* element of table for converting WWWConf Tags to HTML */
 struct STagConvert {
 	/* board tag */
-	char *tag;
+	const char *tag;
 	/* corresponding opening and closing HTML tags */
-	char *topentag;
-	char typeopen;
-	char *tclosetag;
-	char typeclose;
+	const char *topentag;
+	const char typeopen;
+	const char *tclosetag;
+	const char typeclose;
 	/* security level of tag
 	 * zero - is highest level
 	 */
-	BYTE security;
+	const BYTE security;
 };
 
 struct SPicConvert {
 	/* board code */
-	char *tag;
+	const char *tag;
 	/* Pic URL */
-	char *url;
+	const char *url;
 	/* security level of smile
 	 * zero - is highest level
 	 */
-	BYTE security;
+	const BYTE security;
 };
 
 /* Struct for saving last opened tag */

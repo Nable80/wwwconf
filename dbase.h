@@ -77,7 +77,7 @@ DWORD Fsize(const char *s);
 int ConvertTime(time_t tt, char *s);
 char *ConvertFullTime(time_t tt);
 int ReadDBMessage(DWORD midx, SMessage *mes);
-int ReadDBMessageBody(char *buf, DWORD index, int size);
+int ReadDBMessageBody(char *buf, DWORD index, DWORD size);
 int WriteDBMessage(DWORD midx, SMessage *mes);
 int IP2HostName(DWORD IP, char *hostname, int maxlen);
 
@@ -92,8 +92,8 @@ protected:
 			*ffb;	// free spaces in message bodies
 
 	DWORD alrprn;		// count of already printed threads
-	int nt_counter;	// count of printed new threads
-	int nm_counter;	// count of printed new msgs
+	DWORD nt_counter;	// count of printed new threads
+	DWORD nm_counter;	// count of printed new msgs
 	DWORD maxm_counter; // last printed msgs
 	/* fpr printhtmlindex */
 	int invflag;	// "invisible thread was printed" flag

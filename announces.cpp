@@ -186,6 +186,7 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
 		return ANNOUNCES_RETURN_IO_ERROR;
 	}
 	an->Number = 0xffffffff;
+	pos = 0;
 	while(!wcfeof(f))
 	{
 		pos = wcftell(f);
@@ -265,6 +266,7 @@ int UpdateGlobalAnnounce(DWORD id, char *username, DWORD uniqid, char *announce,
 		return ANNOUNCES_RETURN_IO_ERROR;
 	}
 	an->Number = 0xffffffff;
+        pos = 0;
 	while(!wcfeof(f))
 	{
 		pos = wcftell(f);

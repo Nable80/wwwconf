@@ -586,7 +586,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_SELECTTOPIC		"Выберите тему:"
 
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT		"новых потоков(сообщений): <a name=n0 href=\"#n1\" "\
-	"style=\"color: #f00;font-weight:bold;\">+</a> %d(%d) из %ld"
+	"style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %ld"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
 				
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT	"новых сообщений нет, всего %ld"
@@ -614,8 +614,8 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 			
 	
 
-#define MESSAGEMAIN_WELCOME_DISPLAYTIME		", показаны сообщения за %d %s"
-#define MESSAGEMAIN_WELCOME_DISPLAYTHREADS	", показаны последние %d потоков"
+#define MESSAGEMAIN_WELCOME_DISPLAYTIME		", показаны сообщения за %lu %s"
+#define MESSAGEMAIN_WELCOME_DISPLAYTHREADS	", показаны последние %lu потоков"
 
 #define MESSAGEMAIN_WELCOME_YOURSETTINGS	"выбранные темы"
 #define MESSAGEMAIN_WELCOME_ALLTOPICS		"все темы"
@@ -707,7 +707,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define LOG_SPAM_TRY				"Spam try from %s:, deal=%s"
 #define LOG_UNKNOWN_URL				"Unknown URL request from : %s, deal=%s"
 #define LOG_UNHANDLED				"UNHANDLED EXCEPTION at %s at line %d from : %s\n\tError: %s\t\tQUERY_STRING=%s"
-#define LOG_UNHANDLED_HTML			"UNHANDLED EXCEPTION at %s at line %d from : %s<BR><table width=100%% cellpadding=1 cellspacing=1 border=1 bgcolor=#E1E1E1><TR><TD>%s</TD><TD>QUERY_STRING=%s</TD></TR></TABLE>"
+#define LOG_UNHANDLED_HTML			"UNHANDLED EXCEPTION at %s at line %lu from : %s<BR><table width=100%% cellpadding=1 cellspacing=1 border=1 bgcolor=#E1E1E1><TR><TD>%s</TD><TD>QUERY_STRING=%s</TD></TR></TABLE>"
 #define LOG_ERRORTYPEUNKN			"Unknown"
 #define LOG_ACCESS_DENIED			"Access denied from : %s, deal=%s"
 #define LOG_PSWDERROR				"Incorrect password from : %s, deal=%s"
@@ -935,7 +935,7 @@ extern char DESIGN_break[10];
 #define RSS_END "</channel></rss>"							   
 
 #define HTML_ENCODING_HEADER	"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
-	"<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
+	"<link rel=\"shortcut icon\" href=\"/favicon.png\" />"\
 	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
 	"<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
 	"<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"

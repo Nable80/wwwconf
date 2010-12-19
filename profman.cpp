@@ -35,7 +35,8 @@ void printusage(char *iam)
 	exit(0);
 }
 
-int mmkdir(const char *s)
+/*
+int mmkdir(char *s)
 {
 	int r;
 	char *ss;
@@ -46,14 +47,12 @@ int mmkdir(const char *s)
 			os[ss - s] = 0;
 			mkdir(os, DIR_CREATION_MASK);
 		}
-		if((r =
-			mkdir(s, DIR_CREATION_MASK)
-		) != 0)
+		if((r = mkdir(s, DIR_CREATION_MASK)strchr) != 0)
 			return r;
 	}
 	return r;
 }
-
+*/
 
 void printuserrigth(DWORD r)
 {
@@ -236,10 +235,10 @@ int CreateMessagesDatabase()
 	return 1;
 }
 
-int CheckAndCreateFolder(char *d, char *s)
+int CheckAndCreateFolder(const char *d, const char *s)
 {
 	if(chdir(d) != 0) {
-		if(mmkdir(d) != 0) {
+	   if(mkdir(d, DIR_CREATION_MASK) != 0) {
 			printf("Cannot create directory %s\n", d);
 			return 0;
 		}
@@ -376,7 +375,7 @@ int main(int argc, char *argv[])
 			printf("Login name : %s  Password : %s\n", ui.username, ui.password);
 			fui.SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;
 			printf("AltName : %s\n, Full name : %s, E-mail : %s\nSelected users: %s\nAbout : %s\nSignature: %s\n"
-				   "Flags: 0x%08x\nSecurity right byte (hdr) : %d\nSecurity right byte (body) : %d\nRefresh count : %d\n",
+				   "Flags: 0x%08lx\nSecurity right byte (hdr) : %d\nSecurity right byte (body) : %d\nRefresh count : %lu\n",
 				ui.altdisplayname, fui.FullName, fui.Email, fui.SelectedUsers, fui.AboutUser,
 				fui.Signature, ui.Flags, sr, srb, ui.RefreshCount);
 			printuserrigth(ui.right);
@@ -449,7 +448,7 @@ int main(int argc, char *argv[])
 		if((errcode = ul->GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
 			printf("Clean Privates\n");
 		
-			printf("Login name : %s  persmescnt : %ld\n", ui.username, ui.persmescnt);
+			printf("Login name : %s  persmescnt : %d\n", ui.username, ui.persmescnt);
 			
 			ui.persmescnt = 0;
 			ui.persmsg = 0xffffffff;
@@ -694,18 +693,18 @@ int main(int argc, char *argv[])
 		
 		fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_RW);
 		if(fl != NULL) {
-			fscanf(fl, "%d %d", &StartMsg, &LastDate, &DBDirty);
+			fscanf(fl, "%lu %lu", &StartMsg, &LastDate);
 			fclose(fl);
 			if(DBDirty) {
-				printf("Database marked as dirty (another instance of indexer in progress?)\n", F_SEARCH_LASTINDEX);
+				printf("Database marked as dirty (another instance of indexer in progress?)\n");
 				goto go_stop;
 			}
 		}
 
 		// mark as dirty
 		fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_CW);
-		if(f != NULL) {
-			fprintf(fl, "%d %d %d", StartMsg, LastDate, 1);
+		if(fl != NULL) {
+			fprintf(fl, "%lu %lu %d", StartMsg, LastDate, 1);
 			fclose(fl);
 		}
 		else {
@@ -801,7 +800,7 @@ int main(int argc, char *argv[])
 					*(ss-1) = *ss;
 				}
 				if(strlen(mbody) > 65000) {
-					printf("\nIncorrect DB format: Body of message %d is too long\n", sm->ViIndex);
+					printf("\nIncorrect DB format: Body of message %lu is too long\n", sm->ViIndex);
 					goto go_stop;
 				}
 				in->InsertMessageToIndex(mbody, sm->ViIndex);
@@ -809,7 +808,7 @@ int main(int argc, char *argv[])
 			}
 			if((wc % 100) == 0) {
 				now = time(NULL);
-				printf("%ld-%d.", wc, start - now);
+				printf("%ld-%d.", wc, (int) difftime(start, now));
 				start = now;
 				fflush(stdout);
 			}
@@ -825,7 +824,7 @@ int main(int argc, char *argv[])
 
 		fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_CW);
 		if(f != NULL) {
-			fprintf(fl, "%d %d %d", StartMsg, LastDate, 0);
+			fprintf(fl, "%lu %lu %d", StartMsg, LastDate, 0);
 			fclose(fl);
 		}
 
