@@ -15,7 +15,7 @@
 /* константы св€занные со временем
  * 0,1,2,3 -> час день недел€ мес€ц
  */
-extern char *MESSAGEHEAD_timetypes[4];
+extern const char *MESSAGEHEAD_timetypes[4];
 
 #define MESSAGEHEAD_preview_preview_message	"ѕредварительный просмотр"
 #define MESSAGEHEAD_preview_change_message	""
@@ -137,7 +137,7 @@ extern char *MESSAGEHEAD_timetypes[4];
 
 #define MESSAGEMAIN_browser_return		"<P ALIGN=CENTER>¬аш броузер должен вернуть вас к списку сообщений через несколько секунд</P>"
 
-#define MESSAGEMAIN_browser_to_thread		"<P><P ALIGN=CENTER><B><A STYLE=\"text-decoration:underline;\" HREF=\"" MY_CGI_URL "?read=%d\">¬ернутьс€</A> к своему сообщению</B></P></P><P></P>"
+#define MESSAGEMAIN_browser_to_thread		"<P><P ALIGN=CENTER><B><A STYLE=\"text-decoration:underline;\" HREF=\"" MY_CGI_URL "?read=%lu\">¬ернутьс€</A> к своему сообщению</B></P></P><P></P>"
 
 #define MESSAGEMAIN_admin_contact 		"≈сли ¬ы считаете что это неправильно, обратитесь к <A HREF=\"mailto:" ADMIN_MAIL "\">јдминистратору</A> конференции"
 
@@ -267,9 +267,9 @@ extern char *MESSAGEHEAD_timetypes[4];
 
 //	user statuses
 #define USER_STATUS_COUNT 5
-extern char *UserStatus_List[USER_STATUS_COUNT];
+extern const char *UserStatus_List[USER_STATUS_COUNT];
 
-extern char *UserRight_List[USERRIGHT_COUNT];
+extern const char *UserRight_List[USERRIGHT_COUNT];
 
 /******************* session information *******************/
 #define MESSAGEMAIN_session_intro		"«арегистрированные сессии "
@@ -510,8 +510,8 @@ extern char *UserRight_List[USERRIGHT_COUNT];
 #define TOPICS_COUNT	19
 #define TOPICS_DEFAULT_SELECTED	0
 // this variable should be defined in main.cpp
-extern char *Topics_List[TOPICS_COUNT];
-extern int Topics_List_map[TOPICS_COUNT];
+extern const char *Topics_List[TOPICS_COUNT];
+extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
 /**************************** title messages *****************************/
@@ -586,7 +586,7 @@ extern int Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_SELECTTOPIC		"¬ыберите тему:"
 
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT		"новых потоков(сообщений): <a name=n0 href=\"#n1\" "\
-	"style=\"color: #f00;font-weight:bold;\">+</a> %ld(%ld) из %ld"
+	"style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %ld"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
 				
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT	"новых сообщений нет, всего %ld"
@@ -614,8 +614,8 @@ extern int Topics_List_map[TOPICS_COUNT];
 			
 	
 
-#define MESSAGEMAIN_WELCOME_DISPLAYTIME		", показаны сообщени€ за %d %s"
-#define MESSAGEMAIN_WELCOME_DISPLAYTHREADS	", показаны последние %d потоков"
+#define MESSAGEMAIN_WELCOME_DISPLAYTIME		", показаны сообщени€ за %lu %s"
+#define MESSAGEMAIN_WELCOME_DISPLAYTHREADS	", показаны последние %lu потоков"
 
 #define MESSAGEMAIN_WELCOME_YOURSETTINGS	"выбранные темы"
 #define MESSAGEMAIN_WELCOME_ALLTOPICS		"все темы"
@@ -659,7 +659,7 @@ extern int Topics_List_map[TOPICS_COUNT];
 "%s ответил на ваше сообщение <strong>%s</strong>.<br /><br />"\
 "“ема ответа:<strong> %s</strong><br />"\
 "----------- —ообщение ---------<br />%s<br />-------------------------------<br /><br />"\
-"¬есь тред можно увидеть <a href=\"" MA_READURL "?read=%d\">здесь</A><br /><br />"
+"¬есь тред можно увидеть <a href=\"" MA_READURL "?read=%lu\">здесь</A><br /><br />"
 
 //	password recovery
 #define MAILACKN_LOSTPASS_SUBJECT  	WWWCONF_FULL_NAME ": пароль дл€ профил€ %s"
@@ -707,7 +707,7 @@ extern int Topics_List_map[TOPICS_COUNT];
 #define LOG_SPAM_TRY				"Spam try from %s:, deal=%s"
 #define LOG_UNKNOWN_URL				"Unknown URL request from : %s, deal=%s"
 #define LOG_UNHANDLED				"UNHANDLED EXCEPTION at %s at line %d from : %s\n\tError: %s\t\tQUERY_STRING=%s"
-#define LOG_UNHANDLED_HTML			"UNHANDLED EXCEPTION at %s at line %d from : %s<BR><table width=100%% cellpadding=1 cellspacing=1 border=1 bgcolor=#E1E1E1><TR><TD>%s</TD><TD>QUERY_STRING=%s</TD></TR></TABLE>"
+#define LOG_UNHANDLED_HTML			"UNHANDLED EXCEPTION at %s at line %lu from : %s<BR><table width=100%% cellpadding=1 cellspacing=1 border=1 bgcolor=#E1E1E1><TR><TD>%s</TD><TD>QUERY_STRING=%s</TD></TR></TABLE>"
 #define LOG_ERRORTYPEUNKN			"Unknown"
 #define LOG_ACCESS_DENIED			"Access denied from : %s, deal=%s"
 #define LOG_PSWDERROR				"Incorrect password from : %s, deal=%s"
@@ -725,9 +725,9 @@ extern int Topics_List_map[TOPICS_COUNT];
 #define TAG_MSG_HAVE_PIC		"(pic)"
 #define TAG_MSG_HAVE_URL		"(url)"
 #define TAG_MSG_CLOSED_THREAD	"<span class=\"close\" id=c%ld>(закрыто) </span>"
-#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%d</b>)</span><br></span>"
-#define TAG_MSG_ROLLED_THREAD_MARKNEW	"<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%d</b>, новых: <b>%d</b>," \
-										" последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
+#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
+#define TAG_MSG_ROLLED_THREAD_MARKNEW	"<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>" \
+                                        "(ответов: <b>%lu</b>, новых: <b>%d</b>, последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
 #define TAG_REPLY_PREFIX		"Re: "
 #define TAG_IP_NOT_DETECTED		"X.X.X.X"
 #define BAD_WORD_SYMBOL			'#'
@@ -871,7 +871,7 @@ extern char DESIGN_break[10];
 /******************* new msg **************************/
 
 #define DESIGN_FORM_MESSAGE_QEDITINPUT	"<input type=\"button\" class=\"qe_button\" accesskey=\"%s\" name=\"style%s\" "\
-"value=\"%s\" style=\"width: %ldpx\" onclick=\"setstyle(%ld)\" title=\"%s\" tabindex=\"%ld\" />&nbsp;"
+"value=\"%s\" style=\"width: %dpx\" onclick=\"setstyle(%d)\" title=\"%s\" tabindex=\"%d\" />&nbsp;"
 
 #define DESIGN_FORM_MESSAGE_QEDITSMILES "<div class=\"smilestable\" id=\"smilestable\">" \
 "<table class=\"smilestable\"><tr>" \
@@ -909,7 +909,7 @@ extern char DESIGN_break[10];
 "<input type=\"checkbox\" name=\"%s\" class=\"cl\" %s /></td></tr>"
 
 
-#define DESIGN_FORM_MESSAGE_BUTTON	"<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%ld\">"
+#define DESIGN_FORM_MESSAGE_BUTTON	"<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
 
 
 #define SCRIPT_FORM_MESSAGE_QEDIT "<script language=\"JavaScript\" type=\"text/javascript\" "\
@@ -935,12 +935,12 @@ extern char DESIGN_break[10];
 #define RSS_END "</channel></rss>"							   
 
 #define HTML_ENCODING_HEADER	"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
-	"<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
+	"<link rel=\"shortcut icon\" href=\"/favicon.png\" />"\
 	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
 	"<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
 	"<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
-#define HTML_TOPBANNER_HEADER ""
+#define HTML_TOPBANNER_HEADER "\0"
 
 #define HTML_STYLE_HEADER "</head><body>\n" DESIGN_SCRIPT_POPUP
 

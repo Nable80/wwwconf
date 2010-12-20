@@ -164,7 +164,7 @@ int store_hostaddress(unsigned char *where, const char *hostname)
 
 /* Create an internet connection to HOSTNAME on PORT.  The created
    socket will be stored to *SOCK.  */
-int make_connection(int *sock, char *hostname, unsigned short port)
+int make_connection(int *sock, const char *hostname, unsigned short port)
 {
 	struct sockaddr_in sock_name;
 	/* struct hostent *hptr; */
@@ -227,11 +227,7 @@ int wcSendMail(char *to, char *subj, char *body)
 	if(send(ssock, sbuf, strlen(sbuf), 0) != (int)strlen(sbuf))
 		return 0;
 
-#ifdef WIN32
-	Sleep(500);
-#else	//ifdef WIN32
 	sleep(1);
-#endif	//ifdef WIN32
 	rc = recv(ssock, rbuf, 9999, 0);
 
 	
@@ -248,11 +244,7 @@ int wcSendMail(char *to, char *subj, char *body)
 		return 0;
 	rc = recv(ssock, rbuf, 9999, 0);
 	
-#ifdef WIN32
-	Sleep(500);
-#else	//ifdef WIN32
 	sleep(1);
-#endif	//ifdef WIN32
 	shutdown(ssock, 2);
 	return 1;
 }

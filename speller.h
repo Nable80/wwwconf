@@ -71,7 +71,7 @@ char* FilterHTMLTags(char *s, WORD ml, int allocmem = 1);
 char* FilterWhitespaces(char *s);
 
 /* prepare every text in this board to be printed to browser */
-int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags, int spfl = SPELLER_FILTER_HTML | SPELLER_PARSE_TAGS);
+int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags);
 
 /* check message for correct and check HTML Tags, bad words list, and banned user */
 int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason, 

@@ -30,13 +30,13 @@ typedef struct _HASHINDEX_BLOCKINFO {
 	DWORD Next;
 } HASHINDEX_BLOCKINFO, *PHASHINDEX_BLOCKINFO;
 
-DWORD hashstr(char *s, DWORD m);
+DWORD hashstr(const char *s, DWORD m);
 
-int AddStringToHashedIndex(char *s, DWORD Index);
+int AddStringToHashedIndex(const char *s, DWORD Index);
 
 int GetIndexOfString(char *s, DWORD *Index);
 
-int DeleteStringFromHashedIndex(char *s);
+int DeleteStringFromHashedIndex(const char *s);
 
 int GenerateHashwordList(char **names);
 

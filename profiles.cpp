@@ -979,7 +979,7 @@ int CProfiles::ReadPersonalMessagesByDate(char *username, DWORD userindex,
 	curpos = ui.persmsg;
 	i = 0;
 	if(curpos != 0xffffffff) {
-		for(0;;) {
+		for(;;) {
 			if(wcfseek(fp, curpos, SEEK_SET) != 0)
 				goto PostPersMsg_Error;
 			if(!fCheckedRead(&(msg[i]), sizeof(SPersonalMessage), fp))

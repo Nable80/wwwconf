@@ -23,27 +23,27 @@ static int curcolor = 1;
 
 
 // current message displaying parameters
-int currentlsel;
-int currenttc;
-int currenttt;
-int currenttv;
-int currentss;
-int currentdsm;
+DWORD currentlsel;
+DWORD currenttc;
+DWORD currenttt;
+DWORD currenttv;
+DWORD currentss;
+DWORD currentdsm;
 DWORD currenttopics;
-int currentlm;
-int currentfm;
-int currentlt;
-int currentft;
-int currentlann;
-int topicsoverride;
+DWORD currentlm;
+DWORD currentfm;
+DWORD currentlt;
+DWORD currentft;
+DWORD currentlann;
+DWORD topicsoverride;
 int currenttz;
 
-int cookie_lsel;
-int cookie_tc;
-int cookie_tt;
-int cookie_tv;
-int cookie_ss;
-int cookie_dsm;
+DWORD cookie_lsel;
+DWORD cookie_tc;
+DWORD cookie_tt;
+DWORD cookie_tv;
+DWORD cookie_ss;
+DWORD cookie_dsm;
 DWORD cookie_topics;
 int cookie_tz;
 
@@ -94,7 +94,7 @@ int ReadDBMessage(DWORD midx, SMessage *mes)
 	return 1;
 }
 
-int ReadDBMessageBody(char *buf, DWORD index, int size)
+int ReadDBMessageBody(char *buf, DWORD index, DWORD size)
 {
 	FILE *f;
 	if((f = fopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)return 0;
@@ -193,7 +193,7 @@ int ConvertTime(time_t tt, char *s)
 
 char* ConvertFullTime(time_t tt)
 {
-	char *days[7] = {
+	const char *days[7] = {
 		MESSAGEMAIN_DATETIME_DAY_SUN,
 		MESSAGEMAIN_DATETIME_DAY_MON,
 		MESSAGEMAIN_DATETIME_DAY_TEU,
@@ -202,7 +202,7 @@ char* ConvertFullTime(time_t tt)
 		MESSAGEMAIN_DATETIME_DAY_FRI,
 		MESSAGEMAIN_DATETIME_DAY_SAT
 	};
-	char *months[12] = {
+	const char *months[12] = {
 		MESSAGEMAIN_DATETIME_JAN,
 		MESSAGEMAIN_DATETIME_FEB,
 		MESSAGEMAIN_DATETIME_MAR,
@@ -832,15 +832,16 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 	DWORD ff;
 	DWORD flg;
 	
-	printf("<span id=m%d>", mes->ViIndex);
+	printf("<span id=m%lu>", mes->ViIndex);
 
 #if ALLOW_MARK_NEW_MESSAGES == 2
 	if((currentdsm & CONFIGURE_plu) != 0) {
-		if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref,++newhref+1);
-	}
-	else {
+	        if(currentlm < mes->ViIndex || newmessmark) {
+		  printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref, newhref+1);
+		  ++newhref;
+		}
+	} else
 		if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
-	}
 #endif
 #if ALLOW_MARK_NEW_MESSAGES == 1
 	if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
@@ -993,7 +994,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
 	// *******************************
 	// BUG BUG with aname
 	//////////////////////////////////
-	char *mp = NULL, *pb, aname[1000], tm[200];
+	char *mp = NULL, *pb;
 	DWORD ff;
 
 
@@ -1018,7 +1019,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
 
 	
 
-	if((fb = wcfopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL) printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
+	if((fb = wcfopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)  printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
 	if(wcfseek(fb, mes->MIndex, SEEK_SET) == -1) printhtmlerror();
 	body = (char*)malloc(xml_body_length + 10);
 	if((readed = wcfread(body, 1, xml_body_length + 2, fb)) < xml_body_length) printhtmlerror();
@@ -1342,7 +1343,7 @@ End_of_Prn:
 		printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT);
 
 		printf("<script language=\"JavaScript\" type=\"text/javascript\">"
-			"current_last=%ld; counter_nm=%ld; counter_nt=%ld; counter_all=%ld; current_nm=%ld;</script>",
+			"current_last=%lu; counter_nm=%lu; counter_nt=%lu; counter_all=%ld; current_nm=%ld;</script>",
 			maxm_counter,nm_counter,nt_counter,totalcount, currentlm);
 	
 
@@ -1383,12 +1384,10 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 	DWORD ri,fisize, rd;
 	SMessageTable *buf;
 	SMessage *msg;
-	unsigned char haddr[4];
 	void *tmp;
-	signed long i;
+	signed long i = 0;
 	int code;
 	int re; // reply flag
-	hostent *he;
 	DWORD MFlags, msigned = 0;
 
 	CProfiles *uprof = NULL;
@@ -1397,7 +1396,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 
 	/****** check User ******/
 	SProfile_UserInfo UI;
-	SProfile_FullUserInfo FUI;
 
 	if(passw != NULL && *passw != 0) {
 		uprof = new CProfiles();
@@ -1582,7 +1580,6 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
 			if(msg->UniqUserID != 0 && prof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
 				((msg->Flag & MESSAGE_MAIL_NOTIFIATION) || (ui.Flags & PROFILES_FLAG_ALWAYS_EMAIL_ACKN)) ) {
 				char *pb, *pb1, *pb2;
-				DWORD tmp;
 
 				DWORD flags = MESSAGE_ENABLED_TAGS;
 
@@ -1972,7 +1969,7 @@ int DB_Base::DB_DeleteMessage(DWORD root)
 	SMessageTable *buf;
 	DWORD fbsize, fbindex, oldroot;
 	DWORD fl, fisize, rd;
-	int i;
+	int i = 0;
 	void *tmp;
 	oldroot = root;
 	root = TranslateMsgIndex(root);
@@ -2116,11 +2113,7 @@ LB_MsgFound:
 
 	if(!oldroot) fisize-=sizeof(SMessageTable);
 	
-#ifdef WIN32	
-	if(!oldroot) if(wctruncate(fi, fisize) != 0) {
-#else
 	if(!oldroot) if(truncate(F_INDEX, fisize) != 0) {
-#endif
 		unlock_file(fi);
 		printhtmlerror();
 	}
@@ -2430,11 +2423,11 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 		for(DWORD i = 0; i < TOPICS_COUNT; i++) {
 			if(Topics_List_map[i] == msg->Topics) {
 				// define default choise
-				printf("<OPTION VALUE=\"%d\"" LISTBOX_SELECTED ">%s\n", 
+				printf("<OPTION VALUE=\"%lu\"" LISTBOX_SELECTED ">%s\n", 
 					Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 			else {
-				printf("<OPTION VALUE=\"%d\">%s\n", 
+				printf("<OPTION VALUE=\"%lu\">%s\n", 
 					Topics_List_map[i], Topics_List[Topics_List_map[i]]);
 			}
 		}
@@ -2505,9 +2498,9 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
 int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 {
-	char *an, *pb, *ps = NULL;
+	char *pb, *ps = NULL;
 	DWORD tmp;
-	DWORD flg;
+	DWORD flg = 0;
 	CProfiles prof;
 
 
@@ -2651,7 +2644,7 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
 	DWORD fmpos, fl, oldroot;
 	DWORD fisize, rd;
 	int LastLevel = 0;
-	int i;
+	int i = 0;
 	// translate virtual to real index, and check it
 	root = TranslateMsgIndex(root);
 	if(root == NO_MESSAGE_CODE) return 0; // invalid or nonexisting index
@@ -2963,7 +2956,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
 	DWORD rr, fipos, toread;
 	DWORD fmpos, fl, EndLevel, viroot;
 	DWORD fisize, rd;
-	int i, j;
+	int i;
 	
 	// array for storing selecting messages
 	*mescnt = 0;
@@ -3070,6 +3063,7 @@ PT_Found:
 					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
 					rr = (toread + 1)/ sizeof(SMessage);
 					
+					DWORD j;
 					for(j = 0; j < rr; j++) {
 						if(viroot == msgs[j].ViIndex) {
 							reachviroot = 1;
@@ -3107,6 +3101,7 @@ PT_Found:
 					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
 					rr = (toread + 1)/ sizeof(SMessage) - 1;
 					
+					DWORD j;
 					for(j=rr; j >= 0; j--) {
 						if(viroot == msgs[j].ViIndex) {
 							reachviroot = 1;
@@ -3369,47 +3364,8 @@ int DB_Base::DecrementMainThreadCount()
 	return 1;
 }
 
-#ifdef WIN32
 
-DWORD Fsize(char *s)
-{
-	HANDLE hFile = CreateFile(s, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, 
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	DWORD sizeHigh, sizeLow;
-	if(hFile == INVALID_HANDLE_VALUE) 
-	{
-		if(GetLastError() == ERROR_SHARING_VIOLATION)
-		{
-			WIN32_FIND_DATA wfd;
-			HANDLE hSearch = FindFirstFile(s, &wfd);
-			if(hSearch != INVALID_HANDLE_VALUE)
-			{				
-				FindClose(hSearch);
-				sizeLow = wfd.nFileSizeLow;
-				sizeHigh = wfd.nFileSizeHigh;
-				goto ret_size;
-			}
-		}
-		else {
-			char ss[10000];
-			sprintf(ss, LOG_GETFILESIZEFAILED, s);
-			printhtmlerrormes(ss);
-		}
-	}
-	sizeLow = GetFileSize(hFile, &sizeHigh);
-	CloseHandle(hFile);
-ret_size:
-	if(sizeHigh) {
-		char ss[10000];
-		sprintf(ss, LOG_FILESIZETOOHIGH, s);
-		printhtmlerrormes(ss);
-	}
-	return sizeLow;
-}
-
-#else //WIN32
-
-DWORD Fsize(char *s)
+DWORD Fsize(const char *s)
 {
 	WCFILE *f;
 	register DWORD r;
@@ -3428,4 +3384,3 @@ DWORD Fsize(char *s)
 	return r;
 }
 
-#endif //WIN32

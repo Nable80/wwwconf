@@ -22,7 +22,7 @@
 /* Indexer class constructor: open or create
  * chartable must be NULL if CREATE_NEW not set 
  */
-CIndexFile::CIndexFile(char *ifname, DWORD flags, WORD chartablelen, char *chartable, DWORD maxi)
+CIndexFile::CIndexFile(const char *ifname, DWORD flags, WORD chartablelen, const char *chartable, DWORD maxi)
 {
 	init = 0;
 	DWORD i;
@@ -477,7 +477,7 @@ DWORD CIndexFile::TestIndexWord(char *iword)
 DWORD CIndexFile::PutOrGetIndexByWordAssoc(char *iword, BYTE MinLength, void *vpms)// DWORD NewBlockMark, DWORD NewBlockDelta)
 {
 	CMessageSearcher *pMS = (CMessageSearcher*)vpms;
-	DWORD indlength, curpos, cpos, NewLocation;
+	DWORD indlength, curpos, cpos = 0, NewLocation;
 	DWORD i;
 	SCacheElIndex *bcache;
 	SSymbolIndex *iblk;
@@ -657,10 +657,10 @@ DWORD CIndexFile::PutOrGetIndexByWordAssoc(char *iword, BYTE MinLength, void *vp
  */
 DWORD CIndexFile::GetIndexByWord(char *iword, DWORD *LocIndex, int *exact)
 {
-	DWORD curpos, i, cpos;
+	DWORD curpos, i, cpos = 0;
 	DWORD indlength;
 	SCacheElIndex *bcache;
-	SSymbolIndex *iblk;
+	SSymbolIndex *iblk = NULL;
 
 #if INDEXER_RUNTIME_CHECK
 	if(ifh == NULL || iblock == NULL)
@@ -772,10 +772,10 @@ DWORD CIndexFile::GetIndexByWord(char *iword, DWORD *LocIndex, int *exact)
  */
 DWORD CIndexFile::ModifyIndexByWord(char *iword, DWORD oldLocIndex, DWORD NewLocIndex)
 {
-	DWORD curpos, i, cpos;
+	DWORD curpos, i, cpos = 0;
 	DWORD indlength;
 	SCacheElIndex *bcache;
-	SSymbolIndex *iblk;
+	SSymbolIndex *iblk = NULL;
 
 #if INDEXER_RUNTIME_CHECK
 	if(ifh == NULL)

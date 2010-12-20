@@ -64,7 +64,7 @@ protected:
 	SCacheElIndex* AllocCacheBlock(DWORD symcount);
 	int FreeCacheBlock(SCacheElIndex *cb);
 public:
-	CIndexFile(char *ifname, DWORD flags, WORD chartablelen, char *chartable, DWORD maxi);
+	CIndexFile(const char *ifname, DWORD flags, WORD chartablelen, const char *chartable, DWORD maxi);
 	~CIndexFile();
 	DWORD errnum;
 

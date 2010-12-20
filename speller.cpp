@@ -61,7 +61,7 @@ int FilterBadWords(char *s)
 	FILE *f;
 	char dic[MAX_STRING];
 	char *sx, *ss = (char*)malloc(strlen(s) + 1);
-	int c;
+	char c;
 	int x = 0;
 	strcpy(ss, s);
 	ss = toupperstr(ss);
@@ -179,11 +179,12 @@ void FilterMessageForPreview(char *s, char **dd)
 	*dd = (char*)realloc(*dd, d - (*dd) + 2);
 }
 
-int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags, int spfl)
+int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags)
 {
 	DWORD tmp;
 	char *st;
 	int memalloc = 0;
+	int spfl = SPELLER_FILTER_HTML | SPELLER_PARSE_TAGS;
 
 	*res = NULL;
 
@@ -257,7 +258,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
 		while(!feof(f)) {
 			bool fProxy = false;
 			ip[0] = 0;
-			fscanf(f, "%[^ \n]", &ip);		// get ip
+			fscanf(f, "%254[^ \n]", ip);		// get ip
 			if(feof(f)) break;
 			fscanf(f, "%c", &c);			// skip " "
 			if(c == '\n') continue;
