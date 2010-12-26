@@ -21,83 +21,83 @@
  */
 DWORD OpenAuthSequence(SSavedAuthSeq *ui)
 {
-	SSavedAuthSeq *buf;
-	WCFILE *f;
-	int el;
-	DWORD id, id1, rr = 0, i, ii;
+        SSavedAuthSeq *buf;
+        WCFILE *f;
+        int el;
+        DWORD id, id1, rr = 0, i, ii;
 
-	/* set creation time */
-	time_t tn = time(NULL);
+        /* set creation time */
+        time_t tn = time(NULL);
 
-	if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL) {
-		// if file doesn't exist - create it
-		if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_CW)) == NULL) {
-			return 0;
-		}
-		else {
-			wcfclose(f);
-			if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL) {
-				return 0;
-			}
-		}
-	}
-	buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL) {
+                // if file doesn't exist - create it
+                if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_CW)) == NULL) {
+                        return 0;
+                }
+                else {
+                        wcfclose(f);
+                        if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL) {
+                                return 0;
+                        }
+                }
+        }
+        buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
 
-	/******** lock f ********/
-	logins_lock_file();
+        /******** lock f ********/
+        logins_lock_file();
 
-	ii = 0;
-	while(!wcfeof(f)) {
-		if((rr = wcfread(((char*)buf + ii*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT), 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f)) !=
-			sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT) {
-			if((rr%sizeof(SSavedAuthSeq)) != 0) {
-				free(buf);
-				unlock_and_logins_io_error();
-			}
-		}
-		ii++;
-		buf = (SSavedAuthSeq*)realloc(buf, (ii+1)*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
-	}
+        ii = 0;
+        while(!wcfeof(f)) {
+                if((rr = wcfread(((char*)buf + ii*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT), 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f)) !=
+                        sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT) {
+                        if((rr%sizeof(SSavedAuthSeq)) != 0) {
+                                free(buf);
+                                unlock_and_logins_io_error();
+                        }
+                }
+                ii++;
+                buf = (SSavedAuthSeq*)realloc(buf, (ii+1)*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        }
 
-	// Generate random sequence for user session
-	// if generated sequence exist regenerate it again
+        // Generate random sequence for user session
+        // if generated sequence exist regenerate it again
 L_Try:
-//	print2log("->>> %d", ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SAuthUserSeq)));
-	id = rand32();
-	id1 = rand32();
-	el = -1;
-	for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++) {
-		if(buf[i].ID[0] == id && buf[i].ID[1] == id1)
-			goto L_Try;
-		if(buf[i].ExpireDate < tn) {
-			if(el < 0) el = i;
-		}
-	}
+//        print2log("->>> %d", ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SAuthUserSeq)));
+        id = rand32();
+        id1 = rand32();
+        el = -1;
+        for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++) {
+                if(buf[i].ID[0] == id && buf[i].ID[1] == id1)
+                        goto L_Try;
+                if(buf[i].ExpireDate < tn) {
+                        if(el < 0) el = i;
+                }
+        }
 
-	free(buf);
+        free(buf);
 
-	// Sequence was successfully generated, save it
-	ui->ID[0] = id;
-	ui->ID[1] = id1;
-	ui->ExpireDate = time(NULL) + SEQUENCE_LIVE_TIME;
+        // Sequence was successfully generated, save it
+        ui->ID[0] = id;
+        ui->ID[1] = id1;
+        ui->ExpireDate = time(NULL) + SEQUENCE_LIVE_TIME;
 
-	if(el < 0) {
-		if(wcfseek(f, 0, SEEK_END) < 0)
-			unlock_and_logins_io_error();
-	}
-	else {
-		if(wcfseek(f, el*sizeof(SSavedAuthSeq), SEEK_SET) < 0)
-			unlock_and_logins_io_error();
-	}
+        if(el < 0) {
+                if(wcfseek(f, 0, SEEK_END) < 0)
+                        unlock_and_logins_io_error();
+        }
+        else {
+                if(wcfseek(f, el*sizeof(SSavedAuthSeq), SEEK_SET) < 0)
+                        unlock_and_logins_io_error();
+        }
 
-	if(!fCheckedWrite(ui, sizeof(SSavedAuthSeq), f))
-		unlock_and_logins_io_error();
+        if(!fCheckedWrite(ui, sizeof(SSavedAuthSeq), f))
+                unlock_and_logins_io_error();
 
-	logins_unlock_file();
-	/********* unlock f *********/
+        logins_unlock_file();
+        /********* unlock f *********/
 
-	wcfclose(f);
-	return 1;
+        wcfclose(f);
+        return 1;
 }
 
 /* close authorization sequence by Session id (=id) or userId (=Uid)
@@ -105,65 +105,65 @@ L_Try:
  */
 int CloseAuthSequence(DWORD id[2], DWORD Uid)
 {
-	SSavedAuthSeq *buf = NULL;
-	WCFILE *f;
-	DWORD rr = 0, i, ii = 0;
-	time_t tn = time(NULL);
+        SSavedAuthSeq *buf = NULL;
+        WCFILE *f;
+        DWORD rr = 0, i, ii = 0;
+        time_t tn = time(NULL);
 
-	if(( (id[0] != 0 || id[1] != 0) && Uid != 0) || (id[0] == 0 && id[1] == 0 && Uid == 0))
-		return 0;	// incorrect params
-	
-	if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
-		return 0;
+        if(( (id[0] != 0 || id[1] != 0) && Uid != 0) || (id[0] == 0 && id[1] == 0 && Uid == 0))
+                return 0;        // incorrect params
+        
+        if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
+                return 0;
 
-	buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
 
-	//******** lock f ********
-	logins_lock_file();
+        //******** lock f ********
+        logins_lock_file();
 
-	while(!wcfeof(f)) {
-		if((rr = wcfread(((char*)buf + ii*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT), 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f)) !=
-			sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT)
-		{
-			if((rr%sizeof(SSavedAuthSeq)) != 0) {
-				free(buf);
-				unlock_and_logins_io_error();
-			}
-		}
-		ii++;
-		buf = (SSavedAuthSeq*)realloc(buf, (ii+1)*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
-	}
+        while(!wcfeof(f)) {
+                if((rr = wcfread(((char*)buf + ii*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT), 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f)) !=
+                        sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT)
+                {
+                        if((rr%sizeof(SSavedAuthSeq)) != 0) {
+                                free(buf);
+                                unlock_and_logins_io_error();
+                        }
+                }
+                ii++;
+                buf = (SSavedAuthSeq*)realloc(buf, (ii+1)*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        }
 
-	int changed = 0;
-	for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++)
-	{
-		if( buf[i].ExpireDate > tn && ((buf[i].ID[0] == id[0] && buf[i].ID[1] == id[1] && Uid == 0) ||
-			(buf[i].UniqID == Uid && id[0] == 0 && id[1] == 0)) )
-		{
-			if(wcfseek(f, i*sizeof(SSavedAuthSeq), SEEK_SET) < 0) {
-				free(buf);
-				unlock_and_logins_io_error();
-			}
+        int changed = 0;
+        for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++)
+        {
+                if( buf[i].ExpireDate > tn && ((buf[i].ID[0] == id[0] && buf[i].ID[1] == id[1] && Uid == 0) ||
+                        (buf[i].UniqID == Uid && id[0] == 0 && id[1] == 0)) )
+                {
+                        if(wcfseek(f, i*sizeof(SSavedAuthSeq), SEEK_SET) < 0) {
+                                free(buf);
+                                unlock_and_logins_io_error();
+                        }
 
-			// set time as sequence expired == free sequence
-			buf[i].ExpireDate = time(NULL) - 1;
+                        // set time as sequence expired == free sequence
+                        buf[i].ExpireDate = time(NULL) - 1;
 
-			if(wcfwrite(&buf[i], 1, sizeof(SSavedAuthSeq), f) != sizeof(SSavedAuthSeq)) {
-				free(buf);
-				unlock_and_logins_io_error();
-			}
-			changed = 1;
-			if(id[0] != 0) break;
-		}
-	}
+                        if(wcfwrite(&buf[i], 1, sizeof(SSavedAuthSeq), f) != sizeof(SSavedAuthSeq)) {
+                                free(buf);
+                                unlock_and_logins_io_error();
+                        }
+                        changed = 1;
+                        if(id[0] != 0) break;
+                }
+        }
 
-	free(buf);
+        free(buf);
 
-	//******** unlock f ********
-	logins_unlock_file();
+        //******** unlock f ********
+        logins_unlock_file();
 
-	wcfclose(f);
-	return changed;
+        wcfclose(f);
+        return changed;
 }
 
 
@@ -173,147 +173,147 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
 */
 int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
 {
-	*buflist = NULL;
-	*sc = 0;
-	SSavedAuthSeq *buf;
-	WCFILE *f;
-	DWORD rr, i, cn=0, fpos;
+        *buflist = NULL;
+        *sc = 0;
+        SSavedAuthSeq *buf;
+        WCFILE *f;
+        DWORD rr, i, cn=0, fpos;
 
-	if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_R)) == NULL) return 0;
-								
-	buf = (SSavedAuthSeq*)malloc(SEQUENCE_READ_COUNT*sizeof(SSavedAuthSeq));
-	if(!(*buflist = (char**)malloc(sizeof(char**)))) return 0;
+        if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_R)) == NULL) return 0;
+                                                                
+        buf = (SSavedAuthSeq*)malloc(SEQUENCE_READ_COUNT*sizeof(SSavedAuthSeq));
+        if(!(*buflist = (char**)malloc(sizeof(char**)))) return 0;
 
-	/******** lock f ********/
-	logins_lock_file();
-								
-	do {
-		fpos = wcftell(f);
-		rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
+        /******** lock f ********/
+        logins_lock_file();
+                                                                
+        do {
+                fpos = wcftell(f);
+                rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
 
-		if((rr%sizeof(SSavedAuthSeq)) != 0) {
-		/* read error */
-			free(buf);
-			for(i = 0; i < cn; i++)  free((*buflist)[i]);
-			free(buflist);
-			*buflist = NULL;
-			unlock_and_logins_io_error();
-		}
-																																								
-		rr = rr/sizeof(SSavedAuthSeq);
-		for(i = 0; i < rr; i++) {
-			if( Uid==0 || (buf[i].UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) == Uid ){
-				*buflist = (char**)realloc(*buflist, (cn+1)*sizeof(char**));
-				(*buflist)[cn] = (char*)malloc(5*sizeof(DWORD) + 1);
-				memcpy(((char*)((*buflist)[cn])), &buf[i].ExpireDate, sizeof(DWORD));
-				memcpy(((char*)((*buflist)[cn]))+4, &buf[i].IP, sizeof(DWORD));
-				memcpy(((char*)((*buflist)[cn]))+8, &buf[i].ID[0], sizeof(DWORD));
-				memcpy(((char*)((*buflist)[cn]))+12, &buf[i].ID[1], sizeof(DWORD));
-				memcpy(((char*)((*buflist)[cn]))+16, &buf[i].UniqID, sizeof(DWORD));
-				cn++;
-			}
-		}
-	} while(rr == SEQUENCE_READ_COUNT);
-																																																																																	
-	free(buf);
-																																																																										
-	logins_unlock_file();
-	/********* unlock f *********/
-																																																																																				
-	wcfclose(f);
-	*sc = cn;
-	return 1;	
+                if((rr%sizeof(SSavedAuthSeq)) != 0) {
+                /* read error */
+                        free(buf);
+                        for(i = 0; i < cn; i++)  free((*buflist)[i]);
+                        free(buflist);
+                        *buflist = NULL;
+                        unlock_and_logins_io_error();
+                }
+                                                                                                                                                                                                                                                                                                                                
+                rr = rr/sizeof(SSavedAuthSeq);
+                for(i = 0; i < rr; i++) {
+                        if( Uid==0 || (buf[i].UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) == Uid ){
+                                *buflist = (char**)realloc(*buflist, (cn+1)*sizeof(char**));
+                                (*buflist)[cn] = (char*)malloc(5*sizeof(DWORD) + 1);
+                                memcpy(((char*)((*buflist)[cn])), &buf[i].ExpireDate, sizeof(DWORD));
+                                memcpy(((char*)((*buflist)[cn]))+4, &buf[i].IP, sizeof(DWORD));
+                                memcpy(((char*)((*buflist)[cn]))+8, &buf[i].ID[0], sizeof(DWORD));
+                                memcpy(((char*)((*buflist)[cn]))+12, &buf[i].ID[1], sizeof(DWORD));
+                                memcpy(((char*)((*buflist)[cn]))+16, &buf[i].UniqID, sizeof(DWORD));
+                                cn++;
+                        }
+                }
+        } while(rr == SEQUENCE_READ_COUNT);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+        free(buf);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        logins_unlock_file();
+        /********* unlock f *********/
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        wcfclose(f);
+        *sc = cn;
+        return 1;        
 }
 
 
-																																																																																																				
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 /* check and update sequence 'id' with ttl - Time To Live
  * return 1 if successfull otherwise -1 if not found and 0 if i/o error
  */
 int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
 {
-	SSavedAuthSeq *buf;
-	WCFILE *f;
-	DWORD rr, i, cn, fpos;
-	
-	if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
-		return 0;
-	buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        SSavedAuthSeq *buf;
+        WCFILE *f;
+        DWORD rr, i, cn, fpos;
+        
+        if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
+                return 0;
+        buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
 
-	/******** lock f ********/
-	logins_lock_file();
+        /******** lock f ********/
+        logins_lock_file();
 
 
-	while(!wcfeof(f)) {
-		fpos = wcftell(f);
-		rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
+        while(!wcfeof(f)) {
+                fpos = wcftell(f);
+                rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
 
-		if((rr%sizeof(SSavedAuthSeq)) != 0) {
-			/* read error */
-			free(buf);
-			unlock_and_logins_io_error();
-		}
-		cn = rr/sizeof(SSavedAuthSeq);
+                if((rr%sizeof(SSavedAuthSeq)) != 0) {
+                        /* read error */
+                        free(buf);
+                        unlock_and_logins_io_error();
+                }
+                cn = rr/sizeof(SSavedAuthSeq);
 
-		time_t tn = time(NULL);
+                time_t tn = time(NULL);
 
-		for(i = 0; i < cn; i++) {
-			if( buf[i].ExpireDate > tn && buf[i].ID[0] == id[0] && buf[i].ID[1] == id[1] &&
-			( (buf[i].UniqID & SEQUENCE_IP_CHECK_DISABLED) != 0 || buf[i].IP == IP || IP == 0 ) )
-			{
-				memcpy((void*)ui, &buf[i], sizeof(SSavedAuthSeq));
+                for(i = 0; i < cn; i++) {
+                        if( buf[i].ExpireDate > tn && buf[i].ID[0] == id[0] && buf[i].ID[1] == id[1] &&
+                        ( (buf[i].UniqID & SEQUENCE_IP_CHECK_DISABLED) != 0 || buf[i].IP == IP || IP == 0 ) )
+                        {
+                                memcpy((void*)ui, &buf[i], sizeof(SSavedAuthSeq));
 
-				if(IP){
+                                if(IP){
 
-					if(wcfseek(f, fpos + i*sizeof(SSavedAuthSeq), SEEK_SET) != 0) {
-						free(buf);
-						unlock_and_logins_io_error();
-					}
+                                        if(wcfseek(f, fpos + i*sizeof(SSavedAuthSeq), SEEK_SET) != 0) {
+                                                free(buf);
+                                                unlock_and_logins_io_error();
+                                        }
 
-					buf[i].ExpireDate = time(NULL) + SEQUENCE_LIVE_TIME;
-					if(!fCheckedWrite(&buf[i], sizeof(SSavedAuthSeq), f)) {
-						free(buf);
-						unlock_and_logins_io_error();
-					}
-				}
+                                        buf[i].ExpireDate = time(NULL) + SEQUENCE_LIVE_TIME;
+                                        if(!fCheckedWrite(&buf[i], sizeof(SSavedAuthSeq), f)) {
+                                                free(buf);
+                                                unlock_and_logins_io_error();
+                                        }
+                                }
 
-				free(buf);
-				
-				logins_unlock_file();
-				/********* unlock f *********/
-				
-				wcfclose(f);
-				return 1;
-			}
-		}
-	}
+                                free(buf);
+                                
+                                logins_unlock_file();
+                                /********* unlock f *********/
+                                
+                                wcfclose(f);
+                                return 1;
+                        }
+                }
+        }
 
-	logins_unlock_file();
-	/********* unlock f *********/
+        logins_unlock_file();
+        /********* unlock f *********/
 
-	return -1;
+        return -1;
 }
 
 /********************** CUserLogin **********************/
 CUserLogin::CUserLogin()
 {
-	uprof = NULL;
-	pui = NULL;
-	pfui = NULL;
-	LU.SIndex = 0xFFFFFFFF;
-	LU.right = DEFAULT_NOBODY_RIGHT;
-	LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-	LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
-	LU.UniqID = 0;
-	LU.ID[0] = 0;
-	LU.ID[1] = 0;
+        uprof = NULL;
+        pui = NULL;
+        pfui = NULL;
+        LU.SIndex = 0xFFFFFFFF;
+        LU.right = DEFAULT_NOBODY_RIGHT;
+        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
+        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
+        LU.UniqID = 0;
+        LU.ID[0] = 0;
+        LU.ID[1] = 0;
 }
 
 CUserLogin::~CUserLogin()
 {
-	if(uprof != NULL)	delete uprof;
-	if(pui != NULL)		free(pui);
-	if(pfui != NULL)	free(pfui);
+        if(uprof != NULL)        delete uprof;
+        if(pui != NULL)                free(pui);
+        if(pfui != NULL)        free(pfui);
 }
 
 /* open user session and return 1 if successfull (all information will be stored
@@ -321,96 +321,96 @@ CUserLogin::~CUserLogin()
  */
 DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *Fui, DWORD lIP, DWORD IPCheckD)
 {
-	int cr;
-	if(uprof == NULL) {
-		uprof = new CProfiles();
-		if(uprof->errnum != PROFILE_RETURN_ALLOK) {
+        int cr;
+        if(uprof == NULL) {
+                uprof = new CProfiles();
+                if(uprof->errnum != PROFILE_RETURN_ALLOK) {
 #if ENABLE_LOG >= 1
-			print2log("call to CProfiles::CProfiles failed at CUserLogin::OpenSession(), line %d", __LINE__);
+                        print2log("call to CProfiles::CProfiles failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
-			return 0;
-		}
-	}
+                        return 0;
+                }
+        }
 
-	if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-	if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
+        if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
+        if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
 
-	if((cr = uprof->GetUserByName(uname, pui, pfui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
-		strcmp(passw, pui->password) == 0)
-	{
-		/* prepare SUserInfo structure */
-		LU.right = pui->right;
-		LU.sec = pui->secur;
-		LU.sechdr = pui->secheader;
-		LU.UniqID = pui->UniqID;
+        if((cr = uprof->GetUserByName(uname, pui, pfui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
+                strcmp(passw, pui->password) == 0)
+        {
+                /* prepare SUserInfo structure */
+                LU.right = pui->right;
+                LU.sec = pui->secur;
+                LU.sechdr = pui->secheader;
+                LU.UniqID = pui->UniqID;
 
-		/* modify SUPERUSER right */
-		if(LU.right & USERRIGHT_SUPERUSER) {
-			LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
-				USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
-				USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
-				USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
-		}
+                /* modify SUPERUSER right */
+                if(LU.right & USERRIGHT_SUPERUSER) {
+                        LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
+                                USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
+                                USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
+                                USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
+                }
 
-		// fill sequence info
-		//SEQ.ID;					//	ID of session
-		//SEQ.Reserved;				//	Reserved place
-		//SEQ.ExpireDate;			//	Expiration date of the session
-		SEQ.UniqID = pui->UniqID;	//	UniqID of user
-		if(IPCheckD) SEQ.UniqID |= SEQUENCE_IP_CHECK_DISABLED;
-		SEQ.IP = lIP;				//	IP address of session
-		SEQ.SIndex = LU.SIndex;		//	Index in profindex file
+                // fill sequence info
+                //SEQ.ID;                                        //        ID of session
+                //SEQ.Reserved;                                //        Reserved place
+                //SEQ.ExpireDate;                        //        Expiration date of the session
+                SEQ.UniqID = pui->UniqID;        //        UniqID of user
+                if(IPCheckD) SEQ.UniqID |= SEQUENCE_IP_CHECK_DISABLED;
+                SEQ.IP = lIP;                                //        IP address of session
+                SEQ.SIndex = LU.SIndex;                //        Index in profindex file
 
-		/* open sequence for user */
-		if(OpenAuthSequence(&SEQ) != 1) {
-			LU.SIndex = 0xFFFFFFFF;
-			LU.right = DEFAULT_NOBODY_RIGHT;
-			LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-			LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
-			LU.UniqID = 0;
-			LU.ID[0] = 0;
-			LU.ID[1] = 0;
-			free(pui);
-			free(pfui);
-			pui = NULL;
-			pfui = NULL;
+                /* open sequence for user */
+                if(OpenAuthSequence(&SEQ) != 1) {
+                        LU.SIndex = 0xFFFFFFFF;
+                        LU.right = DEFAULT_NOBODY_RIGHT;
+                        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
+                        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
+                        LU.UniqID = 0;
+                        LU.ID[0] = 0;
+                        LU.ID[1] = 0;
+                        free(pui);
+                        free(pfui);
+                        pui = NULL;
+                        pfui = NULL;
 #if ENABLE_LOG >= 1
-			print2log("Call to OpenAuthSequence failed at CUserLogin::OpenSession(), line %d", __LINE__);
+                        print2log("Call to OpenAuthSequence failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
-			return 0;
-		}
-		else {
-			// save to LU
-			LU.ID[0] = SEQ.ID[0];
-			LU.ID[1] = SEQ.ID[1];
-			LU.ExpireDate = SEQ.ExpireDate;
-		}
+                        return 0;
+                }
+                else {
+                        // save to LU
+                        LU.ID[0] = SEQ.ID[0];
+                        LU.ID[1] = SEQ.ID[1];
+                        LU.ExpireDate = SEQ.ExpireDate;
+                }
 
-		// update IP and last login date
-		pui->lastIP = lIP;
-		pui->LoginDate = time(NULL);
-		if(uprof->SetUInfo(LU.SIndex, pui) != 1) {
+                // update IP and last login date
+                pui->lastIP = lIP;
+                pui->LoginDate = time(NULL);
+                if(uprof->SetUInfo(LU.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
-			print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), lined %d", __LINE__);
+                        print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), lined %d", __LINE__);
 #endif
-		}
+                }
 
-		// copy Full user info if requred
-		if(Fui != NULL) memcpy(Fui, pfui, sizeof(SProfile_FullUserInfo));
-		return 1;
-	}
-	else {
+                // copy Full user info if requred
+                if(Fui != NULL) memcpy(Fui, pfui, sizeof(SProfile_FullUserInfo));
+                return 1;
+        }
+        else {
 #if ENABLE_LOG >= 1
-		if(cr == PROFILE_RETURN_DB_ERROR)
-			print2log("Call to CProfiles::GetUserByName failed at CUserLogin::OpenSession(), line %d", __LINE__);
+                if(cr == PROFILE_RETURN_DB_ERROR)
+                        print2log("Call to CProfiles::GetUserByName failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
-		free(pui);
-		free(pfui);
-		pui = NULL;
-		pfui = NULL;
-		/* invalid username/password */
-		return 0;
-	}
+                free(pui);
+                free(pfui);
+                pui = NULL;
+                pfui = NULL;
+                /* invalid username/password */
+                return 0;
+        }
 }
 
 /* check sequence seq for activity, set LU to this sequence and 
@@ -423,125 +423,125 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
 DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 {
 
-	if(  Uid != 0  && lIP != 0) goto SessionErrorEnd;  //invalid calls
+        if(  Uid != 0  && lIP != 0) goto SessionErrorEnd;  //invalid calls
 
 
-	if(CheckAndUpdateAuthSequence(seq, lIP, &SEQ) == 1) {
-		if(lIP){
+        if(CheckAndUpdateAuthSequence(seq, lIP, &SEQ) == 1) {
+                if(lIP){
 
-			if(uprof == NULL) {
-				uprof = new CProfiles();
-				if(uprof->errnum != PROFILE_RETURN_ALLOK) {
+                        if(uprof == NULL) {
+                                uprof = new CProfiles();
+                                if(uprof->errnum != PROFILE_RETURN_ALLOK) {
 #if ENABLE_LOG >= 1
-					print2log("call to CProfiles::CProfiles failed at CUserLogin::CheckSession(), line %d", __LINE__);
+                                        print2log("call to CProfiles::CProfiles failed at CUserLogin::CheckSession(), line %d", __LINE__);
 #endif
-					goto SessionError1;
-				}
-			}
+                                        goto SessionError1;
+                                }
+                        }
 
-			if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-			if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
+                        if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
+                        if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
 
-			if(uprof->GetUInfo(SEQ.SIndex, pui) != 1) {
+                        if(uprof->GetUInfo(SEQ.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
-				print2log("call to CProfiles::GetUInfo failed at CUserLogin::CheckSession(), line %d" \
-					" (maybe user has been deleted)", __LINE__);
+                                print2log("call to CProfiles::GetUInfo failed at CUserLogin::CheckSession(), line %d" \
+                                        " (maybe user has been deleted)", __LINE__);
 #endif
-				goto SessionError2;
-			}
+                                goto SessionError2;
+                        }
 
 
-			
-			if(uprof->GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
+                        
+                        if(uprof->GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
 #if ENABLE_LOG >= 1
-				print2log("call to CProfiles::GetFullInfo() failed at CUserLogin::CheckSession(), line %d"
-					" (maybe user have been deleted)", __LINE__);
+                                print2log("call to CProfiles::GetFullInfo() failed at CUserLogin::CheckSession(), line %d"
+                                        " (maybe user have been deleted)", __LINE__);
 #endif
-				goto SessionError2;
-			}
+                                goto SessionError2;
+                        }
 
-			// security check that session was open by this account
-			if(pfui->CreateDate + SEQUENCE_LIVE_TIME > SEQ.ExpireDate) {
-				print2log("warning! session is older than account \"%s\"", pui->username);
-				goto SessionError2;
-			}
+                        // security check that session was open by this account
+                        if(pfui->CreateDate + SEQUENCE_LIVE_TIME > SEQ.ExpireDate) {
+                                print2log("warning! session is older than account \"%s\"", pui->username);
+                                goto SessionError2;
+                        }
 
-			// Update IP and last login date
-			pui->lastIP = lIP;
-			pui->LoginDate = time(NULL);
-			pui->RefreshCount++;
+                        // Update IP and last login date
+                        pui->lastIP = lIP;
+                        pui->LoginDate = time(NULL);
+                        pui->RefreshCount++;
 
-			if(uprof->SetUInfo(SEQ.SIndex, pui) != 1) {
+                        if(uprof->SetUInfo(SEQ.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
-				print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), lined %d", __LINE__);
+                                print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), lined %d", __LINE__);
 #endif
-				goto SessionError2;
-			}
+                                goto SessionError2;
+                        }
 
 
-			// Pui + Pfui is ok
-			// profile updated
-			// Load to LU
+                        // Pui + Pfui is ok
+                        // profile updated
+                        // Load to LU
 
-			LU.ID[0] = SEQ.ID[0];
-			LU.ID[1] = SEQ.ID[1];
-			LU.SIndex = SEQ.SIndex;
+                        LU.ID[0] = SEQ.ID[0];
+                        LU.ID[1] = SEQ.ID[1];
+                        LU.SIndex = SEQ.SIndex;
 
-			LU.UniqID = (SEQ.UniqID & (~SEQUENCE_IP_CHECK_DISABLED));
-			LU.ExpireDate = SEQ.ExpireDate;
+                        LU.UniqID = (SEQ.UniqID & (~SEQUENCE_IP_CHECK_DISABLED));
+                        LU.ExpireDate = SEQ.ExpireDate;
 
-			// LOAD REAL RIGHTS !!!
-			LU.right = pui->right;
+                        // LOAD REAL RIGHTS !!!
+                        LU.right = pui->right;
 
-			// LOAD REAL SECURITY BYTES
-			LU.sechdr = pui->secheader;
-			LU.sec = pui->secur;
+                        // LOAD REAL SECURITY BYTES
+                        LU.sechdr = pui->secheader;
+                        LU.sec = pui->secur;
 
-			/* modify SUPERUSER right */
-			if(LU.right & USERRIGHT_SUPERUSER) {
-				LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
-					USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
-					USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
-					USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
-			}
-		}
-		else {
-			//smb wants check own Uid's session
-			if( Uid !=0 && (SEQ.UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) != Uid ) return 0;
-		}
+                        /* modify SUPERUSER right */
+                        if(LU.right & USERRIGHT_SUPERUSER) {
+                                LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
+                                        USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
+                                        USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
+                                        USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
+                        }
+                }
+                else {
+                        //smb wants check own Uid's session
+                        if( Uid !=0 && (SEQ.UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) != Uid ) return 0;
+                }
 
-		return 1;
-	}
-	// seqence cannot be found
+                return 1;
+        }
+        // seqence cannot be found
 
-	goto SessionErrorEnd; 
-	
+        goto SessionErrorEnd; 
+        
 SessionError2:
 
-	if(CloseAuthSequence(seq, 0) == 0) {}
-				
-	free(pui);
-	free(pfui);
-	pui = NULL;
-	pfui = NULL;
+        if(CloseAuthSequence(seq, 0) == 0) {}
+                                
+        free(pui);
+        free(pfui);
+        pui = NULL;
+        pfui = NULL;
 
 SessionError1:
 
-	delete uprof;
-	uprof = NULL;
+        delete uprof;
+        uprof = NULL;
 
 SessionErrorEnd:
 
-	// init as no session
-	LU.SIndex = 0xFFFFFFFF;
-	LU.right = DEFAULT_NOBODY_RIGHT;
-	LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-	LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
-	LU.UniqID = 0;
-	LU.ID[0] = 0;
-	LU.ID[1] = 0;
+        // init as no session
+        LU.SIndex = 0xFFFFFFFF;
+        LU.right = DEFAULT_NOBODY_RIGHT;
+        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
+        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
+        LU.UniqID = 0;
+        LU.ID[0] = 0;
+        LU.ID[1] = 0;
 
-	return 0;
+        return 0;
 }
 
 /* close sequence seq
@@ -549,25 +549,25 @@ SessionErrorEnd:
  */
 DWORD CUserLogin::CloseSession(DWORD seq[2])
 {
-	if(CloseAuthSequence(seq, 0) == 1) {
-		LU.SIndex = 0xFFFFFFFF;
-		LU.right = DEFAULT_NOBODY_RIGHT;
-		LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-		LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
-		LU.UniqID = 0;
-		LU.ID[0] = 0;
-		LU.ID[1] = 0;
-		if(pui != NULL) {
-			free(pui);
-			pui = NULL;
-		}
-		if(pfui != NULL) {
-			free(pfui);
-			pfui = NULL;
-		}
-		return 1;
-	}
-	return 0;
+        if(CloseAuthSequence(seq, 0) == 1) {
+                LU.SIndex = 0xFFFFFFFF;
+                LU.right = DEFAULT_NOBODY_RIGHT;
+                LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
+                LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
+                LU.UniqID = 0;
+                LU.ID[0] = 0;
+                LU.ID[1] = 0;
+                if(pui != NULL) {
+                        free(pui);
+                        pui = NULL;
+                }
+                if(pfui != NULL) {
+                        free(pfui);
+                        pfui = NULL;
+                }
+                return 1;
+        }
+        return 0;
 }
 
 /* force closing session if user such user logged in.
@@ -575,25 +575,25 @@ DWORD CUserLogin::CloseSession(DWORD seq[2])
  */
 DWORD CUserLogin::ForceCloseSessionForUser(DWORD UniqID)
 {
-	DWORD x[2];
-	memset(&x, 0, 8);
-	if(CloseAuthSequence(x, UniqID) == 1) {
-		return 1;
-	}
-	return 0;
+        DWORD x[2];
+        memset(&x, 0, 8);
+        if(CloseAuthSequence(x, UniqID) == 1) {
+                return 1;
+        }
+        return 0;
 }
 
 DWORD CUserLogin::ForceCloseSessionBySeq(DWORD seq[2])
 {
 
-	if(CloseAuthSequence(seq, 0) == 1) {
-		return 1;
-	}
-	return 0;
+        if(CloseAuthSequence(seq, 0) == 1) {
+                return 1;
+        }
+        return 0;
 }
 
 DWORD CUserLogin::GenerateListSessionForUser(char ***list, DWORD *scounter, DWORD Uniqid)
 {
-	if( GenerateListAuthSequence(list, scounter, Uniqid) == 1) return 1;
-	return 0;
-}	
+        if( GenerateListAuthSequence(list, scounter, Uniqid) == 1) return 1;
+        return 0;
+}        

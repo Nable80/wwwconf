@@ -13,9 +13,9 @@
 
 struct SActivityLogRecord
 {
-	DWORD IP;
-	DWORD Count;
-	DWORD Time;
+        DWORD IP;
+        DWORD Count;
+        DWORD Time;
 };
 
 int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt);

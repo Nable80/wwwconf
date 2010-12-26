@@ -13,27 +13,27 @@
 #include "sha1.h"
 
 // antispam codes
-#define POST_MSG		1
-#define REFRESH_INDEX	2
-#define READ_MSG		3
+#define POST_MSG                1
+#define REFRESH_INDEX        2
+#define READ_MSG                3
 
-#define SPAMQUEUE_PREFIX		 0
-#define SPAMQUEUE_LENGTH		60
+#define SPAMQUEUE_PREFIX                 0
+#define SPAMQUEUE_LENGTH                60
 
-#define READQUEUE_PREFIX		60*sizeof(SSpamQueue)
-#define READQUEUE_LENGTH		60
+#define READQUEUE_PREFIX                60*sizeof(SSpamQueue)
+#define READQUEUE_LENGTH                60
 
 struct SSpamQueue
 {
-	DWORD IP;				// ip address
-	time_t Date;			// date
+        DWORD IP;                                // ip address
+        time_t Date;                        // date
 };
 
 struct SReadQueue
 {
-	time_t Date;	// date
-	DWORD IP;		// IP-address
-	DWORD MsgIndex; // message index
+        time_t Date;        // date
+        DWORD IP;                // IP-address
+        DWORD MsgIndex; // message index
 };
 
 int MarkPostfromIPInvalid(DWORD IP, int TimeInterval);

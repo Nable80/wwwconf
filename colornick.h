@@ -12,29 +12,29 @@
 #include "basetypes.h"
 #include <unordered_map>
 
-#define MAX_REAL_NICK_SIZE	30
-#define MAX_ALT_NICK_SIZE	300
+#define MAX_REAL_NICK_SIZE        30
+#define MAX_ALT_NICK_SIZE        300
 
 class CAltNamesParser {
 private:
-	int classinit;
-	WCFILE *f;
-	char ifname[1000];
-	std::unordered_map<DWORD, char*> nmap;
+        int classinit;
+        WCFILE *f;
+        char ifname[1000];
+        std::unordered_map<DWORD, char*> nmap;
 #pragma pack(1)
-	typedef struct _AltNamesStruct {
-		DWORD uid;
-		char rname[MAX_REAL_NICK_SIZE];
-		char aname[MAX_ALT_NICK_SIZE];
-	} AltNamesStruct, *PAltNamesStruct;
+        typedef struct _AltNamesStruct {
+                DWORD uid;
+                char rname[MAX_REAL_NICK_SIZE];
+                char aname[MAX_ALT_NICK_SIZE];
+        } AltNamesStruct, *PAltNamesStruct;
 #pragma pack(4)
 public:
-	CAltNamesParser(const char *fname, bool &init);
-	~CAltNamesParser();
+        CAltNamesParser(const char *fname, bool &init);
+        ~CAltNamesParser();
 
-	int AddAltName(DWORD uid, char *name, char *altname);
-	int DeleteAltName(DWORD uid);
-	int NameToAltName(DWORD uid, char *altname);
+        int AddAltName(DWORD uid, char *name, char *altname);
+        int DeleteAltName(DWORD uid);
+        int NameToAltName(DWORD uid, char *altname);
 };
 
 #endif

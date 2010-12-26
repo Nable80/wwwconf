@@ -17,110 +17,110 @@
  */
 int CheckForIpAndMsgInQueue(DWORD ip, DWORD Msg, SReadQueue *buf, int n, int &Alatest)
 {
-	Alatest = 0; // Max time
+        Alatest = 0; // Max time
 
-	for(int i = 0; i < n; i++)
-	{
-		// also find latest date
-		if(buf[Alatest].Date > buf[i].Date) Alatest = i;
-		
-		if(buf[i].IP == ip && buf[i].MsgIndex == Msg)
-		{
-			return i;
-		}
-	}
+        for(int i = 0; i < n; i++)
+        {
+                // also find latest date
+                if(buf[Alatest].Date > buf[i].Date) Alatest = i;
+                
+                if(buf[i].IP == ip && buf[i].MsgIndex == Msg)
+                {
+                        return i;
+                }
+        }
 
-	return -1;
+        return -1;
 }
 
 /* */
 int CheckReadValidity(DWORD IP, DWORD MsgIndex)
 {
-	WCFILE *f;
-	SReadQueue buf[READQUEUE_LENGTH + 1];
-	time_t t = time(NULL);
-	int x, Alatest;
+        WCFILE *f;
+        SReadQueue buf[READQUEUE_LENGTH + 1];
+        time_t t = time(NULL);
+        int x, Alatest;
 
-	if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
-	{
-		if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_CW)) != NULL)
-		{
-			// create and save post list
+        if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
+        {
+                if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_CW)) != NULL)
+                {
+                        // create and save post list
 
-			lock_file(f);
+                        lock_file(f);
 
-			SSpamQueue *mbuf = (SSpamQueue*)malloc(SPAMQUEUE_LENGTH*sizeof(SSpamQueue) + 1);
-			memset(mbuf, 0, sizeof(SSpamQueue)*SPAMQUEUE_LENGTH);
+                        SSpamQueue *mbuf = (SSpamQueue*)malloc(SPAMQUEUE_LENGTH*sizeof(SSpamQueue) + 1);
+                        memset(mbuf, 0, sizeof(SSpamQueue)*SPAMQUEUE_LENGTH);
 
-			if(!fCheckedWrite(mbuf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f)) {
-				unlock_file(f);
-				wcfclose(f);
-				printhtmlerror();
-			}
-			free(mbuf);
+                        if(!fCheckedWrite(mbuf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f)) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
+                        free(mbuf);
 
-			// create and save read list
+                        // create and save read list
 
-			memset(buf, 0, sizeof(SReadQueue)*READQUEUE_LENGTH);
+                        memset(buf, 0, sizeof(SReadQueue)*READQUEUE_LENGTH);
 
-			if(!fCheckedWrite(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
-				unlock_file(f);
-				wcfclose(f);
-				printhtmlerror();
-			}
+                        if(!fCheckedWrite(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
 
-			unlock_file(f);
+                        unlock_file(f);
 
-			wcfclose(f);
+                        wcfclose(f);
 
-			if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
-				printhtmlerror();
-		}
-		else printhtmlerror();
-	}
+                        if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
+                                printhtmlerror();
+                }
+                else printhtmlerror();
+        }
 
-	lock_file(f);
+        lock_file(f);
 
-	if(wcfseek(f, READQUEUE_PREFIX, SEEK_SET) != 0) {
-		unlock_file(f);
-		wcfclose(f);
-		printhtmlerror();
-	}
+        if(wcfseek(f, READQUEUE_PREFIX, SEEK_SET) != 0) {
+                unlock_file(f);
+                wcfclose(f);
+                printhtmlerror();
+        }
 
-	if(!fCheckedRead(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
-		unlock_file(f);
-		wcfclose(f);
-		printhtmlerror();
-	}
+        if(!fCheckedRead(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
+                unlock_file(f);
+                wcfclose(f);
+                printhtmlerror();
+        }
 
-	if((x = CheckForIpAndMsgInQueue(IP, MsgIndex, buf, READQUEUE_LENGTH, Alatest)) != -1)
-	{
-		unlock_file(f);
-		wcfclose(f);
-		// return status = READ INVALID
-		return 0;
-	}
+        if((x = CheckForIpAndMsgInQueue(IP, MsgIndex, buf, READQUEUE_LENGTH, Alatest)) != -1)
+        {
+                unlock_file(f);
+                wcfclose(f);
+                // return status = READ INVALID
+                return 0;
+        }
 
-	// update: delete entry with most early date
-	// and set our client information
-	buf[Alatest].IP = IP;
-	buf[Alatest].Date = t;
-	buf[Alatest].MsgIndex = MsgIndex;
-	
-	if(wcfseek(f, READQUEUE_PREFIX, SEEK_SET) != 0) {
-		unlock_file(f);
-		wcfclose(f);
-		printhtmlerror();
-	}
-	if(!fCheckedWrite(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
-		unlock_file(f);
-		wcfclose(f);
-		printhtmlerror();
-	}
-	unlock_file(f);
-	wcfclose(f);
-	// return status - READ VALID
-	return 1;
+        // update: delete entry with most early date
+        // and set our client information
+        buf[Alatest].IP = IP;
+        buf[Alatest].Date = t;
+        buf[Alatest].MsgIndex = MsgIndex;
+        
+        if(wcfseek(f, READQUEUE_PREFIX, SEEK_SET) != 0) {
+                unlock_file(f);
+                wcfclose(f);
+                printhtmlerror();
+        }
+        if(!fCheckedWrite(buf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
+                unlock_file(f);
+                wcfclose(f);
+                printhtmlerror();
+        }
+        unlock_file(f);
+        wcfclose(f);
+        // return status - READ VALID
+        return 1;
 }
 
 /* find out is IP in buf
@@ -128,59 +128,59 @@ int CheckReadValidity(DWORD IP, DWORD MsgIndex)
  */
 int CheckForIpInQueue(DWORD ip, SSpamQueue *buf, int n, int &Alatest)
 {
-	Alatest = 0; // Max time
+        Alatest = 0; // Max time
 
-	for(int i = 0; i < n; i++)
-	{
-		// also find latest date
-		if(buf[Alatest].Date > buf[i].Date) Alatest = i;
-		
-		if(buf[i].IP == ip)
-		{
-			return i;
-		}
-	}
+        for(int i = 0; i < n; i++)
+        {
+                // also find latest date
+                if(buf[Alatest].Date > buf[i].Date) Alatest = i;
+                
+                if(buf[i].IP == ip)
+                {
+                        return i;
+                }
+        }
 
-	return -1;
+        return -1;
 }
 
 
 int MarkPostfromIPInvalid(DWORD IP, int TimeInterval)
 {
-	int Alatest;
-	WCFILE *f;
-	time_t t = time(NULL);
-	SSpamQueue buf[SPAMQUEUE_LENGTH + 1];
+        int Alatest;
+        WCFILE *f;
+        time_t t = time(NULL);
+        SSpamQueue buf[SPAMQUEUE_LENGTH + 1];
 
-	if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
-		printhtmlerror();
+        if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
+                printhtmlerror();
 
-	lock_file(f);
-	
-	if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
-		printhtmlerror();
+        lock_file(f);
+        
+        if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
+                printhtmlerror();
 
-	Alatest = 0; //	Max time
+        Alatest = 0; //        Max time
 
-	for(int i = 0; i < SPAMQUEUE_LENGTH; i++)
-	{
-		//	find earliest date
-		if(buf[Alatest].Date > buf[i].Date) Alatest = i;
-	}
+        for(int i = 0; i < SPAMQUEUE_LENGTH; i++)
+        {
+                //        find earliest date
+                if(buf[Alatest].Date > buf[i].Date) Alatest = i;
+        }
 
-	// update: delete entry with most early date
-	buf[Alatest].IP = IP;
-	buf[Alatest].Date = t;
+        // update: delete entry with most early date
+        buf[Alatest].IP = IP;
+        buf[Alatest].Date = t;
 
-	if(wcfseek(f, 0, SEEK_SET) != 0)
-		printhtmlerror();
-	if(!fCheckedWrite(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
-		printhtmlerror();
+        if(wcfseek(f, 0, SEEK_SET) != 0)
+                printhtmlerror();
+        if(!fCheckedWrite(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
+                printhtmlerror();
 
-	unlock_file(f);
-	wcfclose(f);
+        unlock_file(f);
+        wcfclose(f);
 
-	return 0;
+        return 0;
 }
 
 /* check if it valid enter of user with IP
@@ -188,67 +188,67 @@ int MarkPostfromIPInvalid(DWORD IP, int TimeInterval)
  */
 int CheckPostfromIPValidity(DWORD IP, int TimeInterval)
 {
-	WCFILE *f;
-	SSpamQueue buf[SPAMQUEUE_LENGTH + 1];
-	time_t t = time(NULL);
-	int x, Alatest;
+        WCFILE *f;
+        SSpamQueue buf[SPAMQUEUE_LENGTH + 1];
+        time_t t = time(NULL);
+        int x, Alatest;
 
-	if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
-	{
-		if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_CW)) != NULL)
-		{
-			// create and save post list
+        if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_RW)) == NULL)
+        {
+                if((f = wcfopen(F_ANTISPAM, FILE_ACCESS_MODES_CW)) != NULL)
+                {
+                        // create and save post list
 
-			lock_file(f);
+                        lock_file(f);
 
-			memset(buf, 0, sizeof(SSpamQueue)*SPAMQUEUE_LENGTH);
+                        memset(buf, 0, sizeof(SSpamQueue)*SPAMQUEUE_LENGTH);
 
-			if(!fCheckedWrite(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f)) {
-				unlock_file(f);
-				wcfclose(f);
-				printhtmlerror();
-			}
+                        if(!fCheckedWrite(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f)) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
 
-			// create and save read list
+                        // create and save read list
 
-			SReadQueue *mbuf = (SReadQueue*)malloc(READQUEUE_LENGTH*sizeof(SReadQueue) + 1);
-			memset(mbuf, 0, sizeof(SReadQueue)*READQUEUE_LENGTH);
+                        SReadQueue *mbuf = (SReadQueue*)malloc(READQUEUE_LENGTH*sizeof(SReadQueue) + 1);
+                        memset(mbuf, 0, sizeof(SReadQueue)*READQUEUE_LENGTH);
 
-			if(!fCheckedWrite(mbuf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
-				unlock_file(f);
-				wcfclose(f);
-				printhtmlerror();
-			}
-			free(mbuf);
+                        if(!fCheckedWrite(mbuf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
+                        free(mbuf);
 
-			unlock_file(f);
+                        unlock_file(f);
 
-			wcfclose(f);
+                        wcfclose(f);
 
-			return 1;
-		}
-		else printhtmlerror();
-	}
-	
-	lock_file(f);
-	
-	if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
-		printhtmlerror();
+                        return 1;
+                }
+                else printhtmlerror();
+        }
+        
+        lock_file(f);
+        
+        if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
+                printhtmlerror();
 
-	unlock_file(f);
-	wcfclose(f);
+        unlock_file(f);
+        wcfclose(f);
 
-	if((x = CheckForIpInQueue(IP, buf, SPAMQUEUE_LENGTH, Alatest)) != -1)
-	{
-		if(buf[x].Date + TimeInterval > t && buf[x].Date < t )
-		{
-			// return status - POST INVALID
-			return 0;
-		}
-	}
+        if((x = CheckForIpInQueue(IP, buf, SPAMQUEUE_LENGTH, Alatest)) != -1)
+        {
+                if(buf[x].Date + TimeInterval > t && buf[x].Date < t )
+                {
+                        // return status - POST INVALID
+                        return 0;
+                }
+        }
 
-	// return status - POST VALID
-	return 1;
+        // return status - POST VALID
+        return 1;
 }
 
 //  This code makes available Marsaglia's highly portable generator
@@ -306,27 +306,27 @@ static bool            init_done = false;
 
 static unsigned short col(short anyint, unsigned short size)
 {
-	short i = anyint;
-	if(i < 0) i = - (i / 2);
-	while (i >= size) i = i / 2;
-	return i;
+        short i = anyint;
+        if(i < 0) i = - (i / 2);
+        while (i >= size) i = i / 2;
+        return i;
 }
 
 void init_rand(unsigned short seed_a, unsigned short seed_b)
 {
-	DWORD s,bit;
-	WORD ii,jj,kk,mm;	// [0..p-1]
-	WORD ll;			// [0..q-1]
-	short sd;
+        DWORD s,bit;
+        WORD ii,jj,kk,mm;        // [0..p-1]
+        WORD ll;                        // [0..q-1]
+        short sd;
 
-	sd = col(seed_a, pm1 * pm1);
-	ii = 1 + sd / pm1; jj = 1 + sd % pm1;
+        sd = col(seed_a, pm1 * pm1);
+        ii = 1 + sd / pm1; jj = 1 + sd % pm1;
 
-	sd = col(seed_b, pm1 * q);
-	kk = 1 + sd / pm1; ll = sd % q;
+        sd = col(seed_b, pm1 * q);
+        kk = 1 + sd / pm1; ll = sd % q;
 
-	if (ii == 1 && jj == 1 && kk == 1)
-		ii = 2;
+        if (ii == 1 && jj == 1 && kk == 1)
+                ii = 2;
 
     for(short ind = 0; ind < state_size; ind++)
     {
@@ -359,53 +359,53 @@ void init_rand(unsigned short seed_a, unsigned short seed_b)
 
 static DWORD rand24(void)
 {
-	DWORD temp;
+        DWORD temp;
 
-	if(!init_done)
-	{
-		temp = (DWORD)time(NULL);
+        if(!init_done)
+        {
+                temp = (DWORD)time(NULL);
         init_rand((WORD)(temp >> 16), (WORD)temp);
-	}
+        }
 
-	c = (c < cd ? c + (cm - cd) : c - cd);
+        c = (c < cd ? c + (cm - cd) : c - cd);
 
-	temp = (u[index_i] -= u[index_j]);
+        temp = (u[index_i] -= u[index_j]);
 
-	if(!index_i--)
-		index_i = state_size - 1;
+        if(!index_i--)
+                index_i = state_size - 1;
 
-	if(!index_j--)
-		index_j = state_size - 1;
+        if(!index_j--)
+                index_j = state_size - 1;
 
-	return (temp - c) & (two_to_24 - 1);
+        return (temp - c) & (two_to_24 - 1);
 }
 
 // Return uniformly distributed pseudo random number in the range
 // 0..2^(32)-1 inclusive. There are 2^32 possible return values.
 
-static BYTE buf[13];	// buffer for conversion from 24 to
-						// 32 bit output
-static unsigned short bno = 0;	// number of output values in buffer
+static BYTE buf[13];        // buffer for conversion from 24 to
+                                                // 32 bit output
+static unsigned short bno = 0;        // number of output values in buffer
 
 DWORD rand32(void)
 {
-	if(!bno)
-	{
-		for(unsigned short i = 0; i < 12; i += 3)
-			*(DWORD*)(buf + i) = rand24();
-		bno = 12;
-	}
-	bno -= 4;
-	return *(DWORD*)(buf + 8 - bno);
+        if(!bno)
+        {
+                for(unsigned short i = 0; i < 12; i += 3)
+                        *(DWORD*)(buf + i) = rand24();
+                bno = 12;
+        }
+        bno -= 4;
+        return *(DWORD*)(buf + 8 - bno);
 }
 
 /*
 void MakeSHA(char *origstring, char *shastring)
 {
-	CSHA1 sha1;
-	sha1.Reset();
-	sha1.Update((UINT_8 *)origstring, strlen(origstring));
-	sha1.Final();
-	sha1.GetHash((UINT_8 *)shastring);
+        CSHA1 sha1;
+        sha1.Reset();
+        sha1.Update((UINT_8 *)origstring, strlen(origstring));
+        sha1.Final();
+        sha1.GetHash((UINT_8 *)shastring);
 }
 */
