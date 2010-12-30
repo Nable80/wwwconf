@@ -36,7 +36,7 @@ char* CodeHttpString(char *s, int allocmem, int type)
                         r+=1;
                 } else {
                         r[0] = '%';
-                        r[1] = TO_HEX( (((*s) &        0x00000000F0) >> 4)        );
+                        r[1] = TO_HEX( (((*s) & 0x00000000F0) >> 4));
                         r[2] = TO_HEX( ( (*s) & 0x000000000F) );
                         r+=3;
                 }

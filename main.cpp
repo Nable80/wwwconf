@@ -5,14 +5,7 @@
     copyright            : (C) 2001 by Alexander Bilichenko
     email                : pricer@mail.ru
 
-:set encoding=8bit-windows-1251
-:set termencoding=8bit-windows-1251
-:set termencoding=8bit-koi8-r
  ***************************************************************************/
-
-//#ifdef HAVE_CONFIG_H
-//#include <config.h>
-//#endif
 
 #include "basetypes.h"
 #include "dbase.h"
@@ -20,7 +13,6 @@
 #include "main.h"
 #include "messages.h"
 #include "speller.h"
-//#include "design.h"
 #include "security.h"
 #include "boardtags.h"
 #include "profiles.h"
@@ -178,7 +170,7 @@ static void PrintBoardError(const char *s1, const char *s2, int code, DWORD msgi
                 printf(MESSAGEMAIN_browser_to_thread, msgid);
 }
 
-static void PrintBanList  ()
+static void PrintBanList()
 {
         FILE *f;
         size_t readed;
@@ -190,7 +182,6 @@ static void PrintBanList  ()
         printf(DESIGN_BAN_FORM2);
         free(buf);
         fclose(f);
-
 }
 
 /* Prints post message form
@@ -1759,18 +1750,6 @@ cleanup_and_parseerror:
         return 0; //abnormal
 }
 
-void PrintFavouritesList()
-{        
-
-        printf("<CENTER><P><B>%s</B><BR>", MESSAGEHEAD_favourites);
-        //for( int i=0; i<20; i++){
-        //                        printf("ULogin.pui->favs[%ld]=%ld<br>",i, ULogin.pui->favs[i]);
-        //}
-        //DB.PrintHtmlMessageBufferByVI(ULogin.pui->favs, PROFILES_FAV_THREADS_COUNT);
-        printf("</CENTER>");
-}
-
-
 /* complete operation with user profile and print 
  * result of execution
  * op == 1 create
@@ -2410,21 +2389,6 @@ int main()
                         strcpy(DESIGN_threads_divider, DESIGN_THREADS_DIVIDER_IMG);
         }
 
-
-        /*
-        // -----------------------------
-        char *s = (char *)&mes;
-        for(int i=0;i<sizeof(SMessage);i++) s[i]=0;
-        s = (char *)&mbody;
-        for(i=0;i<sizeof(SMessageBody);i++) s[i]=0;
-        strcpy(mes.AuthorName,"www");
-        strcpy(mes.MessageHeader,"1111111");
-        strcpy(mes.HostName,"194.85.83.213");
-        char sx[100] = "[i][code];))111 ;)serial[url=http:\\www.ru]serial[/url][code]";
-        i = DB.DB_InsertMessage(&mes, 0, strlen(sx), sx, &mbody, 0xFFFFFFF, "www");
-        goto End_part;
-        // -----------------------------
-        */
 
 #if USE_LOCALE
         /* set locale */
@@ -3121,8 +3085,6 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 
                 // read msg body
                 mesb = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
-                // this is needed because of char #10 filtering.
-                // in WIN32 printf() works incorrectly with it
                 
                 // read dct (disable WWWConf Tags)
                 st = strget(par,"dct=", 10, '&');
