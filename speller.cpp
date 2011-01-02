@@ -197,7 +197,7 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  * Also there is one more thing. Due to existence of weak and neutral 
  * characters it's need to place the special zero-width strong-direction
  * character (Left-to-Right Mark (LRM, &#8206;) or Right-To-Left Mark (RLM,
- * &#8207;) Mark) to guarantee that punctuation and whitespace symbols will
+ * &#8207;)) to guarantee that punctuation and whitespace symbols will
  * have desirable direction. So the function adds this symbol to the end of the
  * output string (LRM in our case).
  *
@@ -228,8 +228,6 @@ char *FilterBiDi(const char *s)
                                         ss += 7;
                                 }
                         } else {
-                                if (!level)
-                                        
                                 strncpy(ss, s, 7);
                                 ++level;
                                 ss += 7;
