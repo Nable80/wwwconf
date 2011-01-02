@@ -66,7 +66,10 @@ void FilterMessageForPreview(char *s, char **dd);
 
 /* filter html tags, if allocmem = 1 - function will allocate memory for you,
  * otherwise internal buffer will be used (10K buffer) */
-char* FilterHTMLTags(char *s, WORD ml, int allocmem = 1);
+char* FilterHTMLTags(const char *s, size_t ml, int allocmem = 1);
+
+/* filter unicode bidirectional markers */
+char* FilterBiDi(const char *s);
 
 char* FilterWhitespaces(char *s);
 

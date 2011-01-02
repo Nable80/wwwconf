@@ -92,48 +92,168 @@ int FilterBadWords(char *s)
         else return 0;
 }
 
+#define min(a, b)                       \
+({                                      \
+        __typeof__(a) aa = (a);         \
+        __typeof__(b) bb = (b);         \
+        (aa < bb) ? aa : bb;            \
+ })
+
+// Detect a unicode symbol in the decimal base NSR format (&#%d;)
+// from the begin of string `s' and return its length.
+// Return 0 if the symbol isn't detected.
+static size_t unicode_len(const char *s)
+{
+        // "&#%d;" - strlen(s) must be 4 at least
+        if (strlen(s) < 4 || *s != '&' || *(s+1) != '#' || !isdigit(*(s+2)))
+                return 0;
+
+        const char *ss = s+3;
+        while (isdigit(*ss))
+                ++ss;
+        // 0x10ffff - the highest code point in UCS-2
+        if (*ss != ';' || strtoul(s+2, NULL, 10) > 0x10ffff)
+                return 0;
+
+        return ss - s + 1;
+}
+
 // return filtered string with length not more than ml bytes (include '\0')
-char* FilterHTMLTags(char *s, WORD ml, int allocmem)
+char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
 {
         char *os, *st;
-        static char *tb[SPELLER_INTERNAL_BUFFER_SIZE];
-        
-        while(*s == '\n') s++;
-        
-        int h = 0, k = 0;        
-        for(k = (int)strlen(s)-1; s[k]=='\n'; k--) h++;
-        k = (int)strlen(s);
-        s[k - h] = '\0';
-        if(allocmem)
-                st = (char*)malloc(4*k + 1);
-        else {
-                st = (char*)(&tb);
+        static char tb[SPELLER_INTERNAL_BUFFER_SIZE];
+
+        if(allocmem) {
+                if (!(st = (char*)malloc(6*strlen(s) + 1))) // 6 == strlen("&quot;")
+                        printhtmlerrormes("malloc");
+        } else {
+                st = tb;
+                if (ml > SPELLER_INTERNAL_BUFFER_SIZE)
+                        ml = SPELLER_INTERNAL_BUFFER_SIZE;
         }
+
+#define REPLACE(subst)                                               \
+{                                                                    \
+        if (!(is_enough = st+strlen(subst) <= os+(ml-1)))            \
+                break;                                               \
+        strcpy(st, subst);                                           \
+        ++s;                                                         \
+        st += strlen(subst);                                         \
+        break;                                                       \
+}
+
+        size_t ulen;
+        int is_enough = 1;
         os = st;
-        while(*s != '\0' && st - os < ml) {
-                if(*s == '<') {
-                        strcpy(st, "&lt;");
-                        st+= 3;
+        while(*s != '\0' && st < os+(ml-1) && is_enough)
+                switch (*s) {
+                case '<':
+                        REPLACE("&lt;");
+                case '>':
+                        REPLACE("&gt;");
+                case '"':
+                        REPLACE("&quot;");
+                case '&':
+                        if ( (ulen = unicode_len(s))) {
+                                if (!(is_enough = st+ulen <= os+(ml-1)))
+                                        break;
+                                strncpy(st, s, ulen);
+                                s += ulen;
+                                st += ulen;
+                                break;
+                        } else
+                                REPLACE("&amp;");
+                default:
+                        *st = *s;
+                        ++s;
+                        ++st;
                 }
-                else if(*s == '>') {
-                        strcpy(st, "&gt;");
-                        st+= 3;
-                }
-                else if(*s == '"') {
-                        strcpy(st, "&quot;");
-                        st+= 5;
-                }
-                else if(*s == '&') {
-                        strcpy(st, "&amp;");
-                        st+= 4;
-                }
-                else *st = *s;
-                s++;
-                st++;
-        }
-        if(st - os > ml) st-=4; // if it was overflow because of '<' or '>'
+
         *st = '\0';
-        if(allocmem) os = (char *)realloc(os, strlen(os) +1);
+        if (allocmem)
+                if (!(os = (char *)realloc(os, strlen(os) +1)))
+                        printhtmlerrormes("realloc");
+        return os;
+}
+
+/*
+ * Controls using of unicode text direction markers.
+ * Returns the safety string filtered from `s' that won't change text direction
+ * of other page content. The returned string is dynamically allocated, so it
+ * must be freed by user.
+ *
+ * Some technical porridge:
+ * There are 4 text direction markers (code points 8234, 8235, 8237, 8238)
+ * and a text direction terminator (code point 8236, abbr.: PDF) in Unicode.
+ * They affect text direction by stack (push-pop) rule, where a direction
+ * marker pushes some direction rule onto a stack and the terminator pops it
+ * off.
+ * This function filters its input so that there aren't attempts to pop
+ * an element from the empty stack and that the stack will be empty at the end
+ * of the output string. So the function does two things:
+ *  - removes excess PDF characters;
+ *  - adds missing PDF characters at the end.
+ * Also there is one more thing. Due to existence of weak and neutral 
+ * characters it's need to place the special zero-width strong-direction
+ * character (Left-to-Right Mark (LRM, &#8206;) or Right-To-Left Mark (RLM,
+ * &#8207;) Mark) to guarantee that punctuation and whitespace symbols will
+ * have desirable direction. So the function adds this symbol to the end of the
+ * output string (LRM in our case).
+ *
+ * All about bidirectional text in Unicode read
+ * http://www.iamcal.com/understanding-bidirectional-text/
+ *
+ * Don't remember that all Unicode symbols are stored in decimal base NCR
+ * format.
+ */
+char *FilterBiDi(const char *s)
+{
+        size_t level = 0;
+        char *os, *ss;
+        if (!(ss = (char*) malloc(strlen(s)+1)))
+                printhtmlerrormes("malloc");
+        os = ss;
+
+        while (*s != '\0')
+                // detect a BiDi symbol
+                if (*s == '&'                        &&
+                    !strncmp(s+1, "#823", 4)         &&
+                    *(s+5) >= '4' && *(s+5) <= '8'   &&
+                    *(s+6) == ';') {
+                        if (*(s+5) == '6') {   // PDF
+                                if (level) {   // the non-empty stack
+                                        strncpy(ss, s, 7);
+                                        --level;
+                                        ss += 7;
+                                }
+                        } else {
+                                if (!level)
+                                        
+                                strncpy(ss, s, 7);
+                                ++level;
+                                ss += 7;
+                        }
+                        s += 7;
+                } else {
+                        *ss = *s;
+                        ++s;
+                        ++ss;
+                }
+        *ss = '\0';
+
+        // +7 for LRM
+        if (!(os = (char*) realloc(os, strlen(os) + level*7 + 7 + 1)))
+                printhtmlerrormes("realloc");
+
+        if (level) {
+                size_t i;
+                for (i = 0; i < level; ++i)
+                        strcat(os, "&#8236;");
+        }
+
+        strcat(os, "&#8206;");
+
         return os;
 }
 

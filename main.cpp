@@ -214,9 +214,11 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 }
                 else {
                         // print name
+                        char *aname = FilterBiDi(msg->AuthorName);
                         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>"\
                                 "<B>%s</B>&nbsp;&nbsp;&nbsp;<A HREF=\"%s?login=logoff\"><SMALL>[%s] </SMALL></A></TD></TR>\n",
-                                MESSAGEMAIN_post_you_name, msg->AuthorName, MY_CGI_URL, MESSAGEHEAD_logoff);
+                                MESSAGEMAIN_post_you_name, aname, MY_CGI_URL, MESSAGEHEAD_logoff);
+                        free(aname);
                 }
         }
         else {
@@ -2800,21 +2802,24 @@ int main()
                                         if(FilterBoardTags(mes.MessageHeader, &an, mes.SecHeader,
                                                 MAX_PARAMETERS_STRING, MESSAGE_ENABLED_TAGS | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                         {
-                                                an = (char*)&(mes.MessageHeader);
+                                                an = mes.MessageHeader;
                                         }
+
+                                        char *an_f = FilterBiDi(an);
                                         if (mes.Topics < TOPICS_COUNT && mes.Topics  != 0 ){
                                                 char *t;
                                                 t = (char*)malloc(strlen(an) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
                                                 *t = 0;
                                                 strcat(t, Topics_List[mes.Topics]);
                                                 strcat(t, TITLE_divider);
-                                                strcat(t, an);
+                                                strcat(t, an_f);
                                                 Tittle_cat(t);
                                                 free(t);
                                         } else 
-                                                Tittle_cat(an);
+                                                Tittle_cat(an_f);
 
-                                        if(an != (char*)&(mes.MessageHeader)) free(an);
+                                        if(an != mes.MessageHeader) free(an);
+                                        free(an_f);
 #endif
                                         // tmpxx contains vindex of parent message if thread is rolled.
                                         // if some sub-thread is rolled, tmpxx contains vindex of MAIN parent of thread
@@ -3084,7 +3089,9 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                 c_host = strget(par,"host=", HOST_NAME_LENGTH - 1, '&');
 
                 // read msg body
-                mesb = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
+                char *mesb_tmp = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
+                mesb = FilterBiDi(mesb_tmp);
+                free(mesb_tmp);
                 
                 // read dct (disable WWWConf Tags)
                 st = strget(par,"dct=", 10, '&');
@@ -4033,11 +4040,13 @@ print2log("incor pass %s", par);
                                 else {
 #if STABLE_TITLE == 0
                                         // set title - change title to change message
-                                        ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(TITLE_ChangingMessage) + strlen(mes.MessageHeader) + 6);
+                                        char *aheader = FilterBiDi(mes.MessageHeader);
+                                        ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(TITLE_ChangingMessage) + strlen(aheader) + 6);
                                         strcat(ConfTitle, TITLE_divider);
                                         strcat(ConfTitle, TITLE_ChangingMessage);
                                         strcat(ConfTitle, " - ");
-                                        strcat(ConfTitle, mes.MessageHeader);
+                                        strcat(ConfTitle, aheader);
+                                        free(aheader);
 #endif
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmp);
 

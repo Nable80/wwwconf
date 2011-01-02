@@ -231,8 +231,10 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
         if(reg) {
                 if(doparsehtml) str = FilterHTMLTags(name, AUTHOR_NAME_LENGTH*3+1, 0);
                 else str = name;
+                str = FilterBiDi(str);
                 str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
                 sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" title=\"Информация о Пользователе\" target=\"_blank\">%s</a>", MY_CGI_URL, str1, str1, str);
+                free(str);
         }
         else
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, name);
@@ -855,7 +857,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if(FilterBoardTags(mes->MessageHeader, &mp, mes->SecHeader, MAX_PARAMETERS_STRING,
                 flg, &ff) != 0) {
         }
-        else mp = (char*)(&mes->MessageHeader);
+        else mp = mes->MessageHeader;
 
         // does this message posted by registred user ?
         if(mes->UniqUserID == 0) sprintf(aname, DESIGN_UNREGISTRED_NICK, mes->AuthorName);
@@ -910,7 +912,9 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         }
 #endif
         // subject
-        printf("%s", mp);
+        char *aheader = FilterBiDi(mp);
+        printf("%s", aheader);
+        free(aheader);
         if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0) printf("</B> ");
         printf("</A> ");
                 
@@ -933,7 +937,9 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 //#        else printf(" -");
 printf(" -");
 
-        printf(" %s", aname);
+        char *aname_fbidi = FilterBiDi(aname);
+        printf(" %s", aname_fbidi);
+        free(aname_fbidi);
         if((currentdsm & CONFIGURE_host) == 0)printf(" (%s)", mes->HostName);
         printf(" - %s", tm);
 
@@ -977,14 +983,15 @@ printf(" -");
                                 }
                         }
                         ConvertTime(lastmes.Date, tm);
-                        printf(TAG_MSG_ROLLED_THREAD_MARKNEW, mes->ViIndex, skipped, newmessmark, MY_CGI_URL, lastmes.ViIndex, aname,
-                                tm);
+                        char *aname_fbidi = FilterBiDi(aname);
+                        printf(TAG_MSG_ROLLED_THREAD_MARKNEW, mes->ViIndex, skipped, newmessmark, MY_CGI_URL, lastmes.ViIndex, aname_fbidi, tm);
+                        free(aname_fbidi);
                 }
                 else
                         printf(TAG_MSG_ROLLED_THREAD, mes->ViIndex, skipped);
         }
 
-        if(mp != (char*)&mes->MessageHeader) free(mp);
+        if(mp != mes->MessageHeader) free(mp);
         return 1;
 }
 
@@ -1001,7 +1008,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
         if(FilterBoardTags(mes->MessageHeader, &mp, mes->SecHeader, MAX_PARAMETERS_STRING,
                 MESSAGE_ENABLED_TAGS, &ff) != 0) {
         }
-        else mp = (char*)(&mes->MessageHeader);
+        else mp = mes->MessageHeader;
         
 
         char *pubdate = ctime(&mes->Date);
@@ -1052,18 +1059,21 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
         printf("<guid>http://board.rt.mipt.ru/index.cgi?index#%ld</guid>\n", mes->ViIndex);
         printf("<comments>http://board.rt.mipt.ru/index.cgi?read=%ld</comments>\n", mes->ViIndex);
         printf("<pubDate>%s</pubDate>\n",pubdate);
-        printf("<author>%s@%s</author>\n", mes->AuthorName, mes->HostName);
+        char *aname_fbidi = FilterBiDi(mes->AuthorName);
+        printf("<author>%s@%s</author>\n", aname_fbidi, mes->HostName);
+        free(aname_fbidi);
 
+        char *aheader = FilterBiDi(mp);
 #if        TOPICS_SYSTEM_SUPPORT
         if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0) {
                 printf( "<category>%s</category>\n" ,Topics_List[mes->Topics]);
-                printf("<title>[%s] %s</title>\n", Topics_List[mes->Topics], mp);
+                printf("<title>[%s] %s</title>\n", Topics_List[mes->Topics], aheader);
         }
         else {
-                printf("<title>%s</title>\n", mp);
+                printf("<title>%s</title>\n", aheader);
         }
 #else
-        printf("<title>%s</title>\n", mp);
+        printf("<title>%s</title>\n", aheader);
 #endif
         
 
@@ -1074,7 +1084,8 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
         printf("</item>\n\n");
         
 
-        if(mp != (char*)&mes->MessageHeader) free(mp);
+        free(aheader);
+        if(mp != mes->MessageHeader) free(mp);
         if(mes->msize > 0 && pb != body) free(pb);
 
         return 1;
@@ -1580,6 +1591,7 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                         if(msg->UniqUserID != 0 && prof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
                                 ((msg->Flag & MESSAGE_MAIL_NOTIFIATION) || (ui.Flags & PROFILES_FLAG_ALWAYS_EMAIL_ACKN)) ) {
                                 char *pb, *pb1, *pb2;
+                                char *pb_f, *pb1_f;
 
                                 DWORD flags = MESSAGE_ENABLED_TAGS;
 
@@ -1588,8 +1600,10 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                                         strcpy(pb, mes->MessageHeader);
                                 }
                                 
-                                sprintf(subj, MAILACKN_REPLY_SUBJECT, pb);
+                                pb_f = FilterBiDi(pb);
+                                sprintf(subj, MAILACKN_REPLY_SUBJECT, pb_f);
                                 free(pb);
+                                free(pb_f);
 
                                 if(!PrepareTextForPrint(mes->MessageHeader, &pb, mes->SecHeader, flags | mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
                                         pb = (char*)malloc(strlen(mes->MessageHeader) + 1);
@@ -1603,8 +1617,12 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                                         pb2 = (char*)malloc(strlen(*body) + 1);
                                         strcpy(pb2, *body);
                                 }
-                                
-                                sprintf(bdy, MAILACKN_REPLY_BODY, msg->AuthorName, mes->AuthorName, pb1,  pb, pb2, viroot);
+
+                                char *root_aname = FilterBiDi(msg->AuthorName);
+                                char *aname = FilterBiDi(mes->AuthorName);
+                                pb_f = FilterBiDi(pb);
+                                pb1_f = FilterBiDi(pb1);
+                                sprintf(bdy, MAILACKN_REPLY_BODY, root_aname, aname, pb1_f,  pb_f, pb2, viroot);
                                 
                                 wcSendMail(fui.Email, subj, bdy);
 
@@ -1613,6 +1631,8 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                                 free(pb);
                                 free(pb1);
                                 free(pb2);
+                                free(pb_f);
+                                free(pb1_f);
                         }
                         if(fui.AboutUser) free(fui.AboutUser);
                 }
@@ -2327,7 +2347,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                 MAX_PARAMETERS_STRING, flg, &tmp) == 1) {
 
         }
-        else an = (char*)&(msg->MessageHeader);
+        else an = msg->MessageHeader;
 
         if(msg->msize > 0) {
                 DWORD flg = msg->Flag | MESSAGE_ENABLED_SMILES | BOARDTAGS_PURL_ENABLE;
@@ -2379,7 +2399,9 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
 #endif
 
-        printf("<BIG>%s</BIG>", an);
+        char *an_f = FilterBiDi(an);
+        printf("<BIG>%s</BIG>", an_f);
+        free(an_f);
 
 #ifdef USER_FAVOURITES_SUPPORT
         {
@@ -2488,7 +2510,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
 
 
-        if(an != (char*)&(msg->MessageHeader)) free(an);
+        if(an != msg->MessageHeader) free(an);
         if(msg->msize > 0 && pb != body) free(pb);
         return 0;
 }
