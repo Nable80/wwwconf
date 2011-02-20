@@ -249,8 +249,13 @@ char *FilterBiDi(const char *s)
                 for (i = 0; i < level; ++i)
                         strcat(os, "&#8236;");
         }
-
-        strcat(os, "&#8206;");
+        
+        // if the string is empty, notning is to add.
+        // !! don't try to return just `s' in this case,
+        // !! 'coz returned value must be freed, so it must
+        // !! be mallocced in this function.
+        if (*os != '\0')
+                strcat(os, "&#8206;");
 
         return os;
 }

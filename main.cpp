@@ -2808,7 +2808,7 @@ int main()
                                         char *an_f = FilterBiDi(an);
                                         if (mes.Topics < TOPICS_COUNT && mes.Topics  != 0 ){
                                                 char *t;
-                                                t = (char*)malloc(strlen(an) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
+                                                t = (char*)malloc(strlen(an_f) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
                                                 *t = 0;
                                                 strcat(t, Topics_List[mes.Topics]);
                                                 strcat(t, TITLE_divider);

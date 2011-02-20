@@ -4,7 +4,11 @@
 #
 
 CC=g++
-CFLAGS=-O2 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
+ifeq ($(MAKECMDGOALS), debug)
+CFLAGS=-g -O0 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
+else
+CFLAGS=-O3 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
+endif
 .SUFFIXES: .cpp .o
 .cpp.o:
 	$(CC) $(CFLAGS) -c $*.cpp
@@ -18,6 +22,10 @@ OBJECTS_DBTOOL=$(FILES_DBTOOL:.cpp=.o)
 
 prefix=/home/bbsadmin/board
 inst=/usr/bin/install -c
+
+.PHONY: debug
+
+debug: all
 
 all: index dbtool
 	@echo Compiling Done
