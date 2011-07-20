@@ -177,7 +177,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         *sc = 0;
         SSavedAuthSeq *buf;
         WCFILE *f;
-        DWORD rr, i, cn=0, fpos;
+        DWORD rr, i, cn=0;
 
         if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_R)) == NULL) return 0;
                                                                 
@@ -188,7 +188,6 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         logins_lock_file();
                                                                 
         do {
-                fpos = wcftell(f);
                 rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
 
                 if((rr%sizeof(SSavedAuthSeq)) != 0) {

@@ -149,6 +149,7 @@ public:
         int DB_PrintHtmlIndex(time_t time1, time_t time2, DWORD mtc);
         int DB_PrintMessageBody(DWORD root, int is_xml = 0);
         void Profile_UserName(char *name, char *tostr, int reg, int doparsehtml = 1);
+	DWORD getparent(DWORD, const char**);
 };
 
 #endif

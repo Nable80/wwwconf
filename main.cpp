@@ -1761,11 +1761,6 @@ cleanup_and_parseerror:
 void DoCheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, char *passwdconfirm, char *oldpasswd, int op, char *deal)
 {
         int err;
-        DWORD delme = 0;
-        
-        if(ULogin.LU.ID[0] != 0 && strcmp(ui->username, ULogin.pui->username) == 0 && op == 3) {
-                delme = 1;
-        }
         
         if(op == 1 ) { 
                 char *f = FilterWhitespaces(ui->username);
@@ -2861,61 +2856,53 @@ int main()
                 else goto End_URLerror;
                 goto End_part;
         }
-        
-        if(strncmp(deal, "xmlread", 7) == 0)
-        {
-                /* security check */
-                if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0)
-                {
-                        printaccessdenied(deal);
-                        goto End_part;
-                }
 
-                printf("Cache-Control: no-cache\nContent-type: application/xml\n\n"); 
-                printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?><reply>");
+	if(strncmp(deal, "xmlread", 7) == 0) {
+		/* security check */
+		if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+			printaccessdenied(deal);
+			goto End_part;
+		}
 
-                if((st = strget(deal,"xmlread=", 16, '&')) != NULL)
-                {
-                        errno = 0;
-                        char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
-                        DWORD x;
-                        if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
-                                tmp < 1 || (x = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE)
-                        {
-                                printf("<result>No Message!</result>");
-                                printf("</reply>");
-                                goto End_part;
-                        }
-                        free(st);
+		printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
+		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?><reply>");
 
-                                // read message
-                        if(!ReadDBMessage(x, &mes)) {
-                                printf("<result>No Message!</result>");
-                                printf("</reply>");
-                                goto End_part;
-                        }
+		if((st = strget(deal,"xmlread=", 16, '&')) != NULL) {
+			errno = 0;
+			char *ss;
+			DWORD tmp = strtol(st, &ss, 10);
+			DWORD x;
+			if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
+			   tmp < 1 || (x = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE) {
+				printf("<error msg=\"nomsgcode\" />");
+				printf("</reply>");
+				goto End_part;
+			}
+			free(st);
 
-                        /* allow read invisible message only to SUPERUSER */
-                        if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
-                                printf("<result>No Message!</result>");
-                                printf("</reply>");
-                                goto End_part;
-                        }
-                        
-                        printf("<data><mes_num>%lu</mes_num><mes_body><![CDATA[", tmp);
-                        DB.DB_PrintMessageBody(tmp, 1);
-                        printf("]]></mes_body></data>");
+			// read message
+			if(!ReadDBMessage(x, &mes)) {
+				printf("<error msg=\"ioerr\"/>");
+				printf("</reply>");
+				goto End_part;
+			}
 
-
-                }
-                else {        
-                        printf("<result>Invalid request</result>");
-                }
-
-                printf("</reply>");
-                goto End_part;
-        }
+			/* allow read invisible message only to SUPERUSER */
+			if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
+				printf("<error msg=\"accden\"/>");
+				printf("</reply>");
+				goto End_part;
+			}
+			printf("<data>");
+			DB.DB_PrintMessageBody(tmp, 1);
+			printf("</data>");
+		}
+		else
+			printf("<error msg=\"badreq\"/>");
+			
+		printf("</reply>");
+		goto End_part;
+	}
 
         if(strncmp(deal, "form", 4) == 0)
         {

@@ -56,9 +56,6 @@ void base64_encode(struct buffer_st *b, const char *source, int length)
 {
   int i, hiteof = 0;
   int offset = 0;
-  int olen;
-  
-  olen = 0;
   
   buffer_new(b);
   
@@ -216,7 +213,6 @@ int make_connection(int *sock, const char *hostname, unsigned short port)
 int wcSendMail(char *to, char *subj, char *body)
 {
         int ssock;
-        int rc;
         char sbuf[100000];
         char rbuf[10000];
 
@@ -228,7 +224,7 @@ int wcSendMail(char *to, char *subj, char *body)
                 return 0;
 
         sleep(1);
-        rc = recv(ssock, rbuf, 9999, 0);
+        recv(ssock, rbuf, 9999, 0);
 
         
         buffer_st subj_base64;
@@ -242,7 +238,7 @@ int wcSendMail(char *to, char *subj, char *body)
         
         if(send(ssock, sbuf, strlen(sbuf), 0) != (int)strlen(sbuf))
                 return 0;
-        rc = recv(ssock, rbuf, 9999, 0);
+        recv(ssock, rbuf, 9999, 0);
         
         sleep(1);
         shutdown(ssock, 2);

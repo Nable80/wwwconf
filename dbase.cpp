@@ -1988,7 +1988,7 @@ int DB_Base::DB_DeleteMessage(DWORD root)
         SMessage msg;
         SMessageTable *buf;
         DWORD fbsize, fbindex, oldroot;
-        DWORD fl, fisize, rd;
+        DWORD fl, fisize;
         int i = 0;
         void *tmp;
         oldroot = root;
@@ -2046,7 +2046,7 @@ int DB_Base::DB_DeleteMessage(DWORD root)
                         unlock_file(fi);
                         printhtmlerror();
                 }
-                rd = i = (toread + 1) / sizeof(SMessageTable) - 1;
+                i = (toread + 1) / sizeof(SMessageTable) - 1;
                 while(i>=0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto LB_MsgFound;
@@ -2516,67 +2516,44 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 }
 
 
-
-
 int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 {
-        char *pb, *ps = NULL;
-        DWORD tmp;
-        DWORD flg = 0;
-        CProfiles prof;
+        DWORD parent;
+        const char *error;
 
+        printf("<number>%lu</number>", msg->ViIndex);
 
+        if ( (parent = getparent(msg->ViIndex, &error)))
+                printf("<parent>%lu</parent>", parent);
+        else if (error)
+                printf("<parent><error msg=\"%s\" /></parent>", error);
+        else
+                // thread root, parent == 0
+                printf("<parent>%lu</parent>", parent);
 
-        if(msg->msize > 0) {
-                DWORD flg = msg->Flag | MESSAGE_ENABLED_SMILES | BOARDTAGS_PURL_ENABLE;
-                if((currentdsm & CONFIGURE_dsm) != 0) flg = flg & (~MESSAGE_ENABLED_SMILES);
+#if TOPICS_SYSTEM_SUPPORT
+        printf("<topic>%lu</topic>\n", msg->Topics);
+#endif
+        printf("<author><![CDATA[%s]]></author>\n", msg->AuthorName);
+        printf("<host>%s</host>\n", msg->HostName);
 
-                if(FilterBoardTags(body, &pb, msg->Security, MAX_PARAMETERS_STRING, flg | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
-                        pb = body;
-        }
+        unsigned char *aa = (unsigned char *)(&msg->IPAddr);
+        printf("<ip>%u.%u.%u.%u</ip>", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
 
-        if(msg->Flag & MESSAGE_WAS_SIGNED) {
-                SProfile_UserInfo ui;
-                SProfile_FullUserInfo fui;
-                if(prof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
-                        msg->UniqUserID == ui.UniqID)
-                {
-                        if(strlen(fui.Signature) > 0) {
-                                // first of all - let's filter HTML !
-                                char *st = FilterHTMLTags(fui.Signature, MAX_PARAMETERS_STRING);
-                                if(st) {
-                                        if(FilterBoardTags(st, &ps, msg->Security, MAX_PARAMETERS_STRING,
-                                                flg | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
-                                        {
-                                                ps = (char*)malloc(strlen(st) + 1);
-                                                strcpy(ps, st);
-                                        }
-                                        free(st);
-                                }
-                        }
-                }
-        }
+        printf("<header><![CDATA[%s]]></header>\n", msg->MessageHeader);
 
-        //        Print body
-        if(msg->msize > 0) {
-                printf("%s", pb);
-        
-                //        Print signature
-                if(ps) {
-                        if((currentdsm & CONFIGURE_dsig) == 0) {
-                                printf("<br>%s", ps);
-                        }
-                        else {
-                                printf("<br>%s", MESSAGEMAIN_viewthread_sigdisabled);
-                        }
-                        free(ps);
-                }
+	if (msg->msize > 0)
+		printf("<body><![CDATA[%s]]></body>\n", body);
+	else
+		printf("<body></body>\n");
 
-        }
-        if(msg->msize > 0 && pb != body) free(pb);
+        printf("<cdate>%ju</cdate>\n", (uintmax_t) msg->Date);
+        printf("<mdate>%ju</mdate>\n", (uintmax_t) msg->MDate);
+        printf("<bodysec>%u</bodysec>", msg->Security);
+        printf("<headsec>%u</headsec>", msg->SecHeader);
+        printf("<flag>%lx</flag>", msg->Flag);
+
         return 0;
-
-
 }
 
 // return 1 if valid, 0 otherwise
@@ -2664,7 +2641,6 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
         SMessage *msgs;
         DWORD rr, fipos, toread;
         DWORD fmpos, fl, oldroot;
-        DWORD fisize, rd;
         int LastLevel = 0;
         int i = 0;
         // translate virtual to real index, and check it
@@ -2696,7 +2672,7 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
         
         /* temporary !!! should be added index support */
         // find index in index file
-        fisize = fl = wcftell(fi);
+        fl = wcftell(fi);
         
         buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE + 1);
         
@@ -2712,7 +2688,7 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                rd = i = (toread + 1) / sizeof(SMessageTable) - 1;
+                i = (toread + 1) / sizeof(SMessageTable) - 1;
                 while(i>=0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto PT_Found;
@@ -2977,7 +2953,6 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         SMessage *msgs;
         DWORD rr, fipos, toread;
         DWORD fmpos, fl, EndLevel, viroot;
-        DWORD fisize, rd;
         int i;
         
         // array for storing selecting messages
@@ -3006,7 +2981,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         
         // temporary !!! should be added index support
         // find index in index file
-        fisize = fl = wcftell(fi);
+        fl = wcftell(fi);
         
         buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE + 1);
         
@@ -3022,7 +2997,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                rd = i = (toread + 1) / sizeof(SMessageTable) - 1;
+                i = (toread + 1) / sizeof(SMessageTable) - 1;
                 while(i>=0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto PT_Found;
@@ -3406,3 +3381,158 @@ DWORD Fsize(const char *s)
         return r;
 }
 
+
+DWORD DB_Base::getparent(DWORD root, const char **error)
+{
+	SMessageTable *buf;
+	SMessage *msgs;
+	DWORD rr, fipos, toread;
+	DWORD fmpos, fl, oldroot, parent = 0;
+	WORD mlevel;
+	int i = 0;
+	int czero = 0, bp = 0;
+	int backward = 0, success = 0;
+	SMessage amsg;
+
+	// translate virtual to real index, and check it
+	root = TranslateMsgIndex(root);
+	if(root == NO_MESSAGE_CODE) {
+		*error = "nomsgcode";
+		return 0; // invalid or nonexisting index
+	}
+
+	// find where is main thread message
+	if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+	if(wcfseek(fm, root, SEEK_SET) == -1) printhtmlerror();
+	if(!fCheckedRead(&amsg, sizeof(SMessage), fm)) printhtmlerror();
+	wcfclose(fm);
+
+	oldroot = amsg.ViIndex;
+	mlevel = amsg.Level;
+
+	if(amsg.Level != 0)
+		rr = amsg.ParentThread;
+	else {
+		*error = NULL;
+		return 0;
+	}
+
+	/* set root index = index of main thread message */
+	root = rr;
+	if((fi = wcfopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+	if(wcfseek(fi, 0, SEEK_END) == -1) printhtmlerror();
+
+	/* temporary !!! should be added index support */
+	// find index in index file
+	fl = wcftell(fi);
+
+	buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE+1);
+	msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER+1);
+
+	while(fl > 0) {
+		DWORD toread;
+		if(fl >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+			fl = fl - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+			toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+		}
+		else {
+			toread = fl;
+			fl = 0;
+		}
+		if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
+		if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
+		i = (toread + 1) / sizeof(SMessageTable) - 1;
+		while(i>=0) {
+			if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
+				goto TT_Found;
+			}
+			i--;
+		}
+	}
+
+	// not found in indexes - fatal error
+	printhtmlerror();
+ TT_Found:
+	fl = fl + (i + 1)*sizeof(SMessageTable);
+
+	if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+	if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
+
+	fipos = wcftell(fi);
+
+
+	for(;;) {
+		if(fipos == 0) break;
+		else {
+			if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+				toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+				fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+			}
+			else {
+				toread = fipos;
+				fipos = 0;
+			}
+		}
+		if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
+		if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
+
+		signed long i = rr / sizeof(SMessageTable) - 1;
+		while(i >= 0) {
+			if(buf[i].begin < buf[i].end ) {
+				// forward direction
+				fmpos = buf[i].begin;
+				if(!czero) fmpos = root;
+				if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
+				while(fmpos != (buf[i].end + 1)) {
+					DWORD toread;
+					if(buf[i].end - fmpos < READ_MESSAGE_HEADER*sizeof(SMessage)) {
+						toread = buf[i].end - fmpos + 1;
+						fmpos = fmpos + toread;
+					}
+					else {
+						toread = READ_MESSAGE_HEADER*sizeof(SMessage);
+						fmpos = fmpos + toread;
+					}
+					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
+					for (DWORD j = 0; j < toread/sizeof(SMessage); j++) {
+						if(fmpos - toread + j*sizeof(SMessage) == root)
+							bp = 1;
+						if (bp) {
+							if (msgs[j].Level == 0 && ++czero == 2)
+								goto TT_Finish;
+							if (msgs[j].Level == mlevel - 1)
+								parent = msgs[j].ViIndex;
+							if (msgs[j].ViIndex == oldroot) {
+								success = 1;
+								goto TT_Finish;
+							}
+						}
+					}
+				}
+			} else {
+				// backward direction is not supposed so error is returned
+				backward = 1;
+				goto TT_Finish;
+			}
+			i--;
+		}
+	}
+ TT_Finish:
+	free(buf);
+	free(msgs);
+	wcfclose(fi);
+	wcfclose(fm);
+
+	if (backward) {
+		*error = "backward";
+		return 0;
+	}
+
+	if (!success) {
+		*error = "notfound";
+		return 0;
+	}
+
+	*error = NULL;
+	return parent;
+}
