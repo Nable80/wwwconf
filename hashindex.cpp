@@ -87,7 +87,8 @@ int GetIndexOfString(char *s, DWORD *Index)
                 //
                 //        Search for string in loaded block
                 //
-                if((fs = mstrstr(buf + sizeof(HASHINDEX_BLOCKINFO), ps, bi.Used)) != NULL) {
+                if((fs = mstrstr(buf + sizeof(HASHINDEX_BLOCKINFO), ps,
+				 bi.Used - sizeof(HASHINDEX_BLOCKINFO))) != NULL) {
                         memcpy(Index, fs + strlen(s) + 2, 4);
                         break;
                 }
@@ -171,7 +172,8 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                 //
                 //        Search for string in loaded block
                 //
-                if(mstrstr(buf+sizeof(bi), prepbuf, bi.Used) != NULL) {
+                if(mstrstr(buf+sizeof(bi), prepbuf,
+			   bi.Used-sizeof(HASHINDEX_BLOCKINFO)) != NULL) {
                         hi_unlock_file();
                         wcfclose(f);
                         return HASHINDEX_ER_ALREADY_EXIST;
