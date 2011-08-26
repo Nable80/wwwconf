@@ -143,7 +143,7 @@ int getAction(char* par)
                 {
                         sprintf(buf, "%s=", szActions[i]);
                         st = strget(par, buf, MAX_STRING, '&');
-                        if(st)
+                        if(st && *st)
                                 break;
                 }
         }
