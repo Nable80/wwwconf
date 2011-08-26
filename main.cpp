@@ -5124,8 +5124,9 @@ print2log("incor pass %s", par);
                         ULogin.pui->persmescnt - ULogin.pui->readpersmescnt);
                 else printf(MESSAGEMAIN_privatemsg_nonewmsg ", ");
                 printf(MESSAGEMAIN_privatemsg_allmsgcnt " %d, " MESSAGEMAIN_privatemsg_allmsgcnt1 " %d<BR>"
-                        "<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg
-                        "</A></CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
+		       "<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg "</A><BR>"
+		       "<A HREF=\"" MY_CGI_URL "?persmsg=all\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_showall  "</A>"
+		       "</CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
 
                 char tostr[1000], newm[100];
                 char *ss;

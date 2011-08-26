@@ -334,6 +334,8 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define MESSAGEMAIN_privatemsg_fromuser                "От пользователя:"
 #define MESSAGEMAIN_privatemsg_touser                "Пользователю:"
 
+#define MESSAGEMAIN_privatemsg_showall     "Просмотреть все сообщения"
+
 /***************** favourites system *****************/
 #define MESSAGEMAIN_favourites_denyunreg        "Данная возможность недоступна незарегистрированным пользователям !<BR>"
 #define MESSAGEMAIN_favourites_denyunreg2        "Для того, чтобы иметь возможность хранить ссылки на избранные сообщения, Вы должны зарегистрироваться и войти в конференцию !<BR><BR>"
