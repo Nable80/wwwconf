@@ -52,7 +52,7 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
 
 CAltNamesParser::~CAltNamesParser()
 {
-        std::unordered_map<DWORD, char*>::iterator it;
+        std::tr1::unordered_map<DWORD, char*>::iterator it;
         for(it = nmap.begin(); it != nmap.end(); it++) {
                 free(it->second);
         }
@@ -121,7 +121,7 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
 int CAltNamesParser::DeleteAltName(DWORD uid)
 {
         if(classinit) {
-                std::unordered_map<DWORD, char*>::iterator it;
+                std::tr1::unordered_map<DWORD, char*>::iterator it;
                 if(nmap.find(uid) != nmap.end()) {
                         AltNamesStruct ns;
                         DWORD pos, rd, fn = 0;

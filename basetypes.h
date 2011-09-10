@@ -160,7 +160,7 @@
 #define        CONFIGURE_SETTING_DEFAULT_tc                        100
 #define        CONFIGURE_SETTING_DEFAULT_ss                        SHOW_MESSAGE_STYLE_HRON_FORWARD
 #define CONFIGURE_SETTING_DEFAULT_dsm                        CONFIGURE_plu
-#define CONFIGURE_SETTING_DEFAULT_topics                0xFFFFFFFF
+#define CONFIGURE_SETTING_DEFAULT_topics                0x7FFFF
 #define CONFIGURE_SETTING_DEFAULT_toverride                0                        // own settings
 
 #define CONFIGURE_SETTING_MAX_tc        10000

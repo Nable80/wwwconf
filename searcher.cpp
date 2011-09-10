@@ -8,6 +8,7 @@
 
 #include "basetypes.h"
 #include "searcher.h"
+#include <algorithm>
 
 #define SEARCHER_REALLOC_ALLSUBSTRINGS_MULTI 10
 #define SEARCHER_MAX_WORD_LENGTH 20
@@ -41,13 +42,6 @@ char* toupperstr(char *s)
  */
 #define QSORT_MAXSTACK (sizeof(DWORD)*200)
 
-void inline swap(DWORD *a, DWORD *b)
-{
-        register DWORD t=*a;
-        *a=*b;
-        *b = t;
-}
-
 int inline compar(const void *a, const void *b) { return *(DWORD *)a - *(DWORD *)b; }
 
 void inline mqsort(void *base, size_t nmemb) {
@@ -66,7 +60,7 @@ void inline mqsort(void *base, size_t nmemb) {
         while (lb < ub) {
             offset = DWORD((ub - lb) >> 1);
             P = lb + offset - offset % sizeof(DWORD);
-            swap( (DWORD*)lb, (DWORD*)P);
+	    std::swap(lb, P);
 
             i = lb + sizeof(DWORD);
             j = ub;
@@ -74,12 +68,12 @@ void inline mqsort(void *base, size_t nmemb) {
                                 while (i < j && compar(lb, i) > 0) i += sizeof(DWORD);
                 while (j >= i && compar(j, lb) > 0) j -= sizeof(DWORD);
                 if (i >= j) break;
-                swap((DWORD*)i, (DWORD*)j);
+		std::swap(i, j);
                 j -= sizeof(DWORD);
                 i += sizeof(DWORD);
             }
 
-            swap((DWORD*)lb, (DWORD*)j);
+	    std::swap(lb, j);
             m = j;
 
             if (m - lb <= ub - m) {

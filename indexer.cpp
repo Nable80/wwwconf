@@ -287,7 +287,7 @@ DWORD CIndexFile::TestIndexWord(char *iword)
 {
         for(DWORD i = 0; i < strlen(iword); i++)
         {
-                if(((unsigned char)iword[i]) > INDEXFILE_MAX_CHARTABLE || symtable[(unsigned char)iword[i]] == INDEXFILE_MAX_CHARTABLE)
+                if(symtable[(unsigned char)iword[i]] == INDEXFILE_MAX_CHARTABLE)
                 {
                         return 0;
                 }

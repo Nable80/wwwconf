@@ -942,7 +942,7 @@ extern char DESIGN_break[10];
         "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
-#define HTML_TOPBANNER_HEADER "\0"
+#define HTML_TOPBANNER_HEADER ""
 
 #define HTML_STYLE_HEADER "</head><body>\n" DESIGN_SCRIPT_POPUP
 

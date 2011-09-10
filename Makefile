@@ -5,9 +5,9 @@
 
 CC=g++
 ifeq ($(MAKECMDGOALS), debug)
-CFLAGS=-g -O0 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
+CFLAGS=-g -O0 -fno-exceptions -Wall -Werror -Wfatal-errors
 else
-CFLAGS=-O3 -fno-exceptions -Wall -Werror -Wfatal-errors -std=c++0x -Wno-format-contains-nul
+CFLAGS=-O3 -fno-exceptions -Wall -Werror -Wfatal-errors
 endif
 .SUFFIXES: .cpp .o
 .cpp.o:

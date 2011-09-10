@@ -706,7 +706,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         // print header of board
 #if USE_HTML_TOPBANNER
         // print constant expressions
-        printf(HTML_TOPBANNER_HEADER);
+        printf("%s", HTML_TOPBANNER_HEADER);
         
         if(curind == MAINPAGE_INDEX && (currentdsm & CONFIGURE_dup) == 0) printf(HTML_TOPBANNER_MAP);
 #else
@@ -2061,6 +2061,9 @@ void ParseCookie()
                         // read lsel (show type selection)
                         if((t = strget(ss, "lsel=", 3, '|', 0))) {
                                 tmp = strtol(t, &st, 10);
+				char fff[30];
+				sprintf(fff, "errno = %d", errno);
+				print2log(fff);
                                 if(( (*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 2 && tmp >= 1)
                                 {
                                         cookie_lsel = tmp;
@@ -2094,7 +2097,7 @@ void ParseCookie()
                         // read tv (time value)
                         if((t  = strget(ss, "tv=", 12, '|', 0))) {
                                 tmp = strtol(t, &st, 10);
-                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
+				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         cookie_tv = tmp;
                                 }
@@ -2192,9 +2195,12 @@ void ParseCookie()
                                 tmp = strtol(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp >= 0)
                                 {
-                                currentlann = tmp;
-                                ReadLastAnnounceNumber(&tmp);
-                                if(currentlann > tmp) currentlann = tmp;
+					currentlann = tmp;
+					ReadLastAnnounceNumber(&tmp);
+					char fff[30];
+					sprintf(fff, "last = %lu", tmp);
+					print2log(fff);
+					if(currentlann > tmp) currentlann = tmp;
                                 }
                                 free(t);
                         }
@@ -5170,7 +5176,7 @@ print2log("incor pass %s", par);
 
                         ss = ConvertFullTime(pmsg->Date);
 
-                        if(received && i <= (ULogin.pui->persmescnt - ULogin.pui->readpersmescnt))
+                        if(received && i + ULogin.pui->persmescnt <= ULogin.pui->readpersmescnt)
                                 strcpy(newm, MESSAGEMAIN_privatemsg_newmark);
                         else strcpy(newm, "");
 

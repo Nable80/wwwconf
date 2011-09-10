@@ -7,16 +7,10 @@
  ***************************************************************************/
 
 #include "activitylog.h"
+#include <algorithm>
 
 #define ACTIVITY_CONTROL_TIME        10*60        // 10min
 #define BLOCKREADCOUNT        1000
-
-void inline swap(DWORD *a, DWORD *b)
-{
-        register DWORD t=*a;
-        *a=*b;
-        *b = t;
-}
 
 int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
 {
@@ -67,9 +61,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         // find file for displaying (it will be f1)
         if(crtime - 2*ACTIVITY_CONTROL_TIME <= tm  && tm < crtime - ACTIVITY_CONTROL_TIME )
         {
-                swap((DWORD*)(&f), (DWORD*)(&f1));
-                swap(&tm, &tm1);
-                swap(&fin, &fin1);
+		std::swap(f, f1);
+		std::swap(tm, tm1);
+		std::swap(fin, fin1);
 
                 // to know path to the file
                 swapdone = !swapdone;
@@ -88,9 +82,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         }
         if(crtime - ACTIVITY_CONTROL_TIME <= tm1 && tm1 < crtime)
         {
-                swap((DWORD*)(&f), (DWORD*)(&f1));
-                swap(&tm, &tm1);
-                swap(&fin, &fin1);
+		std::swap(f, f1);
+		std::swap(tm, tm1);
+		std::swap(fin, fin1);
 
                 // to know path to the file
                 swapdone = !swapdone;
