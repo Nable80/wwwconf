@@ -234,10 +234,11 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
                 str = FilterBiDi(str);
                 str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
                 sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" title=\"Информация о Пользователе\" target=\"_blank\">%s</a>", MY_CGI_URL, str1, str1, str);
-                free(str);
-        }
-        else
-                sprintf(tostr, DESIGN_MESSAGE_UNREG, name);
+        } else {
+		str = FilterBiDi(name);
+                sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
+	}
+	free(str);
 }
 
 /* this function could not print more than 32000 messages at once */
@@ -2490,14 +2491,18 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
         //        Print body
         if(msg->msize > 0) {
-                printf(DESIGN_VIEW_THREAD_BODY, pb);
+		char *pb_f = FilterBiDi(pb);
+                printf(DESIGN_VIEW_THREAD_BODY, pb_f);
+		free(pb_f);
         }
         else printf(DESIGN_VIEW_THREAD_BODY, "");
 
         //        Print signature
         if(ps) {
                 if((currentdsm & CONFIGURE_dsig) == 0) {
-                        printf(DESIGN_VIEW_THREAD_SIGN, ps);
+			char *ps_f = FilterBiDi(ps);
+                        printf(DESIGN_VIEW_THREAD_SIGN, ps_f);
+			free(ps_f);
                 }
                 else {
                         printf(DESIGN_VIEW_THREAD_SIGN, MESSAGEMAIN_viewthread_sigdisabled);

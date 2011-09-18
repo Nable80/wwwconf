@@ -16,32 +16,32 @@
  */
 STagConvert TagConvTable[BoardTagCount] = {
         /* text output tags */
-        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 2},
-        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 2},
-        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 2},
-        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 0},
-        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 2},
+        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 10},
+        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 10},
+        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 10},
+        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 10},
+        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 10},
         /* Colour tags */
-        {"RED", "<span class=\"btc\" style=\"color:#FF0000\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 0},
-        {"COLOR", "<span class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 0},
-        {"C", "<span  class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 0},
+        {"RED", "<span class=\"btc\" style=\"color:#FF0000\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 10},
+        {"COLOR", "<span class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 10},
+        {"C", "<span  class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 10},
         /* URL, Picture, Mail */
         {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 10},
         {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 10},
         {"MAIL", "<A HREF=\"mailto:%s\" STYLE=\"text-decoration:underline;\">", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 10},
         /* HR SIZE=1 */
-        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 2},
+        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 10},
         /* quotation */
         {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>", 
-        WC_TAG_TYPE_1, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_1, 2},
+        WC_TAG_TYPE_1, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_1, 10},
         /* Center */
         {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 10},
         /* Pre */
         {"PRE", "<PRE STYLE=\"margin-left:25px\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 10},
-        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 2},
-        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 2},
-        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 2},
-        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 2}
+        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 10},
+        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 10},
+        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 10},
+        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 10}
 };
 
 /* define there smile-like codes
@@ -63,7 +63,7 @@ SPicConvert PicConvTable[BoardPicCount] = {
         {":\\",                "smirk.gif",                9},
         {":o",                "redface.gif",                9},
         {":MAD",        "mad.gif",                        9},
-        {":STOP",        "stop.gif",                        0},        // admin only
+        {":STOP",        "stop.gif",                        9},
         {":APPL",        "appl.gif",                        9},
         {":BAN",        "ban.gif",                        9},
         {":BEE",        "bee.gif",                        9},

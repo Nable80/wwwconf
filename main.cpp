@@ -2061,9 +2061,6 @@ void ParseCookie()
                         // read lsel (show type selection)
                         if((t = strget(ss, "lsel=", 3, '|', 0))) {
                                 tmp = strtol(t, &st, 10);
-				char fff[30];
-				sprintf(fff, "errno = %d", errno);
-				print2log(fff);
                                 if(( (*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 2 && tmp >= 1)
                                 {
                                         cookie_lsel = tmp;
@@ -2197,9 +2194,6 @@ void ParseCookie()
                                 {
 					currentlann = tmp;
 					ReadLastAnnounceNumber(&tmp);
-					char fff[30];
-					sprintf(fff, "last = %lu", tmp);
-					print2log(fff);
 					if(currentlann > tmp) currentlann = tmp;
                                 }
                                 free(t);
@@ -2801,10 +2795,8 @@ int main()
                                         char *an;
                                         DWORD xtmp;
                                         if(FilterBoardTags(mes.MessageHeader, &an, mes.SecHeader,
-                                                MAX_PARAMETERS_STRING, MESSAGE_ENABLED_TAGS | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
-                                        {
+							   MAX_PARAMETERS_STRING, MESSAGE_ENABLED_TAGS | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                                 an = mes.MessageHeader;
-                                        }
 
                                         char *an_f = FilterBiDi(an);
                                         if (mes.Topics < TOPICS_COUNT && mes.Topics  != 0 ){
@@ -3082,9 +3074,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                 c_host = strget(par,"host=", HOST_NAME_LENGTH - 1, '&');
 
                 // read msg body
-                char *mesb_tmp = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
-                mesb = FilterBiDi(mesb_tmp);
-                free(mesb_tmp);
+                mesb = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
                 
                 // read dct (disable WWWConf Tags)
                 st = strget(par,"dct=", 10, '&');

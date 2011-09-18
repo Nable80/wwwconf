@@ -204,16 +204,26 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  * All about bidirectional text in Unicode read
  * http://www.iamcal.com/understanding-bidirectional-text/
  *
- * Don't remember that all Unicode symbols are stored in decimal base NCR
+ * Don't forget that all Unicode symbols are stored in decimal base NCR
  * format.
  */
 char *FilterBiDi(const char *s)
 {
         size_t level = 0;
         char *os, *ss;
-        if (!(ss = (char*) malloc(strlen(s)+1)))
+
+	if (!s)
+		return NULL;
+
+        if (!(os = (char*) malloc(strlen(s)+1)))
                 printhtmlerrormes("malloc");
-        os = ss;
+
+	if (!(*s)) {
+		*os = '\0';
+		return os;
+	}
+
+        ss = os;
 
         while (*s != '\0')
                 // detect a BiDi symbol
@@ -222,7 +232,9 @@ char *FilterBiDi(const char *s)
                     *(s+5) >= '4' && *(s+5) <= '8'   &&
                     *(s+6) == ';') {
                         if (*(s+5) == '6') {   // PDF
-                                if (level) {   // the non-empty stack
+				// if the stack isn't empty
+				// don't copy unnecessary PDF
+                                if (level) {
                                         strncpy(ss, s, 7);
                                         --level;
                                         ss += 7;
@@ -240,22 +252,17 @@ char *FilterBiDi(const char *s)
                 }
         *ss = '\0';
 
-        // +7 for LRM
-        if (!(os = (char*) realloc(os, strlen(os) + level*7 + 7 + 1)))
-                printhtmlerrormes("realloc");
-
-        if (level) {
-                size_t i;
-                for (i = 0; i < level; ++i)
-                        strcat(os, "&#8236;");
-        }
-        
-        // if the string is empty, notning is to add.
-        // !! don't try to return just `s' in this case,
-        // !! 'coz returned value must be freed, so it must
-        // !! be mallocced in this function.
-        if (*os != '\0')
-                strcat(os, "&#8206;");
+	// +7 for LRM
+	if (!(os = (char*) realloc(os, strlen(os) + level*7 + 7 + 1)))
+		printhtmlerrormes("realloc");
+	
+	if (level) {
+		size_t i;
+		for (i = 0; i < level; ++i)
+			strcat(os, "&#8236;");
+	}
+	
+	strcat(os, "&#8206;");
 
         return os;
 }
