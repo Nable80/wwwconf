@@ -309,7 +309,7 @@ void FilterMessageForPreview(char *s, char **dd)
         *dd = (char*)realloc(*dd, d - (*dd) + 2);
 }
 
-int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags)
+int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags)
 {
         DWORD tmp;
         char *st;
@@ -331,7 +331,7 @@ int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags)
         if(!st) return 0;
 
         if((SPELLER_PARSE_TAGS & spfl) != 0) {
-                if(FilterBoardTags(st, res, security, MAX_PARAMETERS_STRING, flags, &tmp) == 0)
+                if(FilterBoardTags(st, res, index, MAX_PARAMETERS_STRING, flags, &tmp) == 0)
                 {
                         if(!memalloc) {
                                 *res = (char*)malloc(strlen(st) + 1);
@@ -363,16 +363,25 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         char ip[MAX_STRING];
         char *reason = NULL;
         char c, t;
+        bool tags_in_header = false;
+        bool ignore_tags = false;
 
         char *st;
-        DWORD flg = 0;
-        if(FilterBoardTags(mes->MessageHeader, &st, mes->Security, MESSAGE_HEADER_LENGTH, BOARDTAGS_TAG_PREPARSE, RetFlags) == 0) {
+        DWORD flg = MESSAGE_ENABLED_TAGS | BOARDTAGS_TAG_PREPARSE;
+        if(CFlags & MSG_CHK_DISABLE_WWWCONF_TAGS) {
+                flg = flg & (~MESSAGE_ENABLED_TAGS);
+        }
+
+        if(FilterBoardTags(mes->MessageHeader, &st, 1, MESSAGE_HEADER_LENGTH, flg, RetFlags) == 0) {
                 return MSG_CHK_ERROR_NOMSGHEADER;
         }
         else {
                 strcpy(mes->MessageHeader, st);
                 free(st);
         }
+
+        if (*RetFlags & MESSAGE_ENABLED_TAGS)
+                tags_in_header = true;
 
         if(strlen(mes->MessageHeader) == 0 || strcmp(mes->MessageHeader, " ") == 0) return MSG_CHK_ERROR_NOMSGHEADER;
         
@@ -460,14 +469,19 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         }
 
         /* parse body */
-        if(FilterBoardTags(*body, &st, mes->Security, MAX_PARAMETERS_STRING, flg | BOARDTAGS_TAG_PREPARSE, RetFlags) == 0) {
+        if(FilterBoardTags(*body, &st, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_TAG_PREPARSE, RetFlags) == 0) {
                 /* if to long - ignore tags */
-                *RetFlags = 0;
+                ignore_tags = true;
         }
         else {
                 free(*body);
                 if(strcmp(st, " ") == 0) *st = 0;
                 *body = st;
+        }
+
+        if (!ignore_tags && tags_in_header) {
+                print2log("dsfdfsd");
+                *RetFlags |= MESSAGE_ENABLED_TAGS;
         }
 
         return MSG_CHK_ERROR_PASSED;

@@ -58,14 +58,7 @@
 // enable IP to DNS name reslove Host Addresses
 #define IP_TO_HOSTNAME_RESOLVE 1
 
-/* date&time output style
-        Possible values:
-         1 - standart ctime output
-         2 - MM/DD/YY
-         3 - DD/MM/YY             */
-#define DATETIME_STYLE 3
-
-#define DATETIME_DEFAULT_TIMEZONE 3
+#define DATETIME_DEFAULT_TIMEZONE 4
 
 // show or not host names in messages
 #define SHOW_HOST_NAME 1
@@ -154,17 +147,17 @@
 
 /******************** default "own settings" *********************/
 // which will be used too if browser does not support cookie
-#define CONFIGURE_SETTING_DEFAULT_lsel                        2                        // 1 - by time
-#define CONFIGURE_SETTING_DEFAULT_tv                        8                        // 12 hours
-#define        CONFIGURE_SETTING_DEFAULT_tt                         1                        // hours
-#define        CONFIGURE_SETTING_DEFAULT_tc                        100
-#define        CONFIGURE_SETTING_DEFAULT_ss                        SHOW_MESSAGE_STYLE_HRON_FORWARD
-#define CONFIGURE_SETTING_DEFAULT_dsm                        CONFIGURE_plu
-#define CONFIGURE_SETTING_DEFAULT_topics                0x7FFFF
-#define CONFIGURE_SETTING_DEFAULT_toverride                0                        // own settings
+#define CONFIGURE_SETTING_DEFAULT_lsel       2  // 1 - by time
+#define CONFIGURE_SETTING_DEFAULT_tv         8  // 12 hours
+#define CONFIGURE_SETTING_DEFAULT_tt         1  // hours
+#define CONFIGURE_SETTING_DEFAULT_tc         100
+#define CONFIGURE_SETTING_DEFAULT_ss         SHOW_MESSAGE_STYLE_HRON_FORWARD
+#define CONFIGURE_SETTING_DEFAULT_dsm        CONFIGURE_plu | CONFIGURE_clr
+#define CONFIGURE_SETTING_DEFAULT_topics     0x7FFFF
+#define CONFIGURE_SETTING_DEFAULT_toverride  0  // own settings
 
-#define CONFIGURE_SETTING_MAX_tc        10000
-#define CONFIGURE_SETTING_MAX_hours        1440u
+#define CONFIGURE_SETTING_MAX_tc     10000
+#define CONFIGURE_SETTING_MAX_hours  1440u
 /********************** common params **********************/
 #define MY_CGI_URL        ""
 #define MY_HOST_URL        ""
@@ -331,14 +324,6 @@ typedef unsigned char BYTE;
 /*---------------------- LOG FILE -------------------------*/
 #define LOG_FILE                DIR_MAINDATA "wwwconf.log"                // log file
 
-/*------------- BANNERS&HELP (should be placed with index of forum) -------------*/
-#define F_TOPBANNER                "topbanner.html"        // top banner of wwwconf
-#define F_BOTTOMBANNER        "bottombanner.html"        // bottom banner of wwwconf
-#define F_FAQ_HELP                "faq-help.html"                // information about using tags and smiles of wwwconf
-#define F_RULES                        "rules-help.html"        // infromation about rules of board
-#define F_AUTHORS                "authors-help.html" // authors info
-#define F_CHANGELOG     "changelog.html"        // changelog file
-
 #define COOKIE_MAX_LENGTH                        400
 
 #define MAX_STRING 255
@@ -358,16 +343,19 @@ typedef unsigned char BYTE;
 /********** bit masks **********/
 /********** Message flags ****************/
 #define MESSAGE_HAVE_PICTURE                0x0001
-#define MESSAGE_HAVE_URL                        0x0002
-#define MESSAGE_HAVE_BODY                        0x0004
-#define MESSAGE_IS_CLOSED                        0x0008
+#define MESSAGE_HAVE_URL                    0x0002
+#define MESSAGE_HAVE_BODY                   0x0004
+#define MESSAGE_IS_CLOSED                   0x0008
 #define MESSAGE_IS_INVISIBLE                0x0010
 #define MESSAGE_ENABLED_TAGS                0x0020
-#define MESSAGE_ENABLED_SMILES                0x0040        // affects only to HEADER of msg
-#define MESSAGE_MAIL_NOTIFIATION        0x0080
-#define MESSAGE_COLLAPSED_THREAD        0x0100        // collapsed thread
-#define MESSAGE_WAS_SIGNED                        0x0200        // message have signature
+#define MESSAGE_ENABLED_SMILES              0x0040        // affects only to HEADER of msg
+#define MESSAGE_MAIL_NOTIFIATION            0x0080
+#define MESSAGE_COLLAPSED_THREAD            0x0100        // collapsed thread
+#define MESSAGE_WAS_SIGNED                  0x0200        // message have signature
 #define MESSAGE_ENABLED_HTML                0x0400        // message in html format
+#define MESSAGE_HAVE_TEX                    0x0800
+#define MESSAGE_HAVE_TUB                    0x1000
+
 
 /* for printhtmlmessage_in_index proc */
 #define MESSAGE_INDEX_PRINT_ITS_URL                0x0001
@@ -394,16 +382,15 @@ typedef unsigned char BYTE;
 #define USERRIGHT_ALT_DISPLAY_NAME                0x2000        // alternative display name
 
 
-/* configure view*/
+/* configure view */
 #define CONFIGURE_dsm        0x000001
-#define CONFIGURE_dup        0x000002
-#define CONFIGURE_dul        0x000004
+#define CONFIGURE_clr        0x000002
 #define CONFIGURE_onh        0x000008
 #define CONFIGURE_plu        0x000010
-#define CONFIGURE_host        0x000020
-#define CONFIGURE_nalt        0x000040
-#define CONFIGURE_dsig        0x000080
-#define CONFIGURE_shrp        0x000100
+#define CONFIGURE_host       0x000020
+#define CONFIGURE_nalt       0x000040
+#define CONFIGURE_dsig       0x000080
+#define CONFIGURE_shrp       0x000100
 
 /* for virtual indexes */
 #define NO_MESSAGE_CODE        0xFFFFFFFF

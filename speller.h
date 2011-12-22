@@ -74,7 +74,7 @@ char* FilterBiDi(const char *s);
 char* FilterWhitespaces(char *s);
 
 /* prepare every text in this board to be printed to browser */
-int PrepareTextForPrint(char *msg, char **res, BYTE security, int flags);
+int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags);
 
 /* check message for correct and check HTML Tags, bad words list, and banned user */
 int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason, 

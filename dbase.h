@@ -74,8 +74,8 @@ extern CAltNamesParser AltNames;
  * ------------------------
  */
 DWORD Fsize(const char *s);
-int ConvertTime(time_t tt, char *s);
-char *ConvertFullTime(time_t tt);
+char *ConvertTime(time_t t);
+char *ConvertFullTime(time_t t);
 int ReadDBMessage(DWORD midx, SMessage *mes);
 int ReadDBMessageBody(char *buf, DWORD index, DWORD size);
 int WriteDBMessage(DWORD midx, SMessage *mes);

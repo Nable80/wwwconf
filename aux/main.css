@@ -13,9 +13,16 @@ DD DL{margin-left:-15px;}
 /***********************************
 /* other  */
 
-body {  background-color: #f0f0f0; color: #000000;}
-img, table, body, form {margin: 0;padding:0;border: 0;}
+body {
+    background-color: #f0f0f0;
+    color: #000000;
+}
 
+img, table, body, form {
+    margin: 0;
+    padding:0;
+    border: 0;
+}
 
 div.menu
 {
@@ -75,7 +82,7 @@ div.right_info
 
 div.g div, div.w div
 {
-	padding: 1px 0 1px 25px;
+	padding: 0px 0 0px 25px;
 }
 
 
@@ -97,6 +104,10 @@ div.g a, div.w a
 	font-size: 133%;
 }
 
+div.g a.enter, div.w a.enter {
+        font-size: 100%;
+        color: black;
+}
 
 div.an
 {
@@ -174,6 +185,10 @@ span.own {
 	font-weight: bold;
 }
 
+span.own a, span.reg a, span.unr a {
+        font-size: 100%;
+}
+
 span.sel {
 	color: #FF9900;
 	font-size: 133%;
@@ -200,24 +215,28 @@ div.pr_info{
 	margin-left: 20px;
 }
 
-/* new msg */
-div.smilestable {
+div.smiles {
 	display: none;
 	position: absolute;
 	right: 10%;
 	padding: 3px;
 }
-		
-table.smilestable td {
-	padding:2px;
+
+table.smiles td {
+        padding: 2px;
 }
 
-input.qe_button {
-	border:0;
+button.style {
+	border: 0;
 	background-color: #ddd;
 	color: #222;
 	font-size: 70%;
 	font-weight: normal;
 }
 
-
+button.smile {
+        border: 0;
+        padding: 0;
+        background: transparent;
+        width: 26px;
+}

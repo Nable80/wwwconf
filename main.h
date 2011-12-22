@@ -15,7 +15,6 @@
 #define HEADERSTRING_RETURN_TO_MAIN_PAGE         0x000004
 #define HEADERSTRING_REFRESH_TO_MAIN_PAGE        0x000008
 #define HEADERSTRING_WELCOME_INFO                        0x000010
-#define HEADERSTRING_DISABLE_FAQHELP                0x000020
 #define HEADERSTRING_DISABLE_LOGOFF                        0x000040
 #define HEADERSTRING_DISABLE_SEARCH                        0x000080
 #define HEADERSTRING_DISABLE_REGISTER                0x000100
@@ -31,7 +30,6 @@
 #define HEADERSTRING_DISABLE_FAVOURITES                0x040000
 #define HEADERSTRING_DISABLE_END_TABLE                0x080000
 #define HEADERSTRING_ENABLE_REPLY_LINK                0x100000
-#define HEADERSTRING_NAVIGATION                                0x200000
 
 
 

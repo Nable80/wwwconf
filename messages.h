@@ -22,7 +22,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 
 #define MESSAGEHEAD_configure                                 "Настройки"
 #define MESSAGEHEAD_resetnew                                "Сбросить +"
-#define        MESSAGEHEAD_post_new_message                 "Новое сообщение"
+#define MESSAGEHEAD_post_new_message                 "Новое сообщение"
 #define MESSAGEHEAD_return_to_main_page                "На главную страницу"
 #define MESSAGEHEAD_logoff                                        "Выход"
 #define MESSAGEHEAD_help_showhelp                        "Правила"
@@ -482,6 +482,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define MESSAGEHEAD_configure_showaltnames        "Отключить отображение альтернативных имен"
 #define MESSAGEHEAD_configure_showsign                "Отключить отображение подписей пользователей"
 #define MESSAGEHEAD_configure_plus_is_href        "\" " TAG_NEW_MSG_MARK "\" является ссылкой на следующее новое сообщение"
+#define MESSAGEHEAD_configure_disablecolor        "Отключить отображение цветов в индексе"
 #define MESSAGEHEAD_configure_showreplyform        "Не отображать форму ответа"
 #define MESSAGEHEAD_configure_applysettings        "Сохранить настройки"
 
@@ -500,7 +501,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define MESSAGEHEAD_configure_showhrononlyheaders        "По сообщениям в хронологическом виде, только заголовки"
 
 
-#define WWWCONF_FULL_NAME "Форум-ФРТК-МФТИ"
+#define WWWCONF_FULL_NAME "просто форум"
 
 // for STABLE_TITLE = 1
 #if STABLE_TITLE == 1
@@ -519,7 +520,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 /**************************** title messages *****************************/
 // for STABLE_TITLE = 0
 // board name prefix
-#define TITLE_WWWConfBegining                "Форум-ФРТК-МФТИ"
+#define TITLE_WWWConfBegining                "просто форум"
 #define TITLE_divider                                " : "
 // forms name
 #define TITLE_WWWConfIndex                        " "
@@ -538,7 +539,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define TITLE_DeletingMessage                "Удалить сообщения"
 #define TITLE_ChangingMessage                "Изменить сообщение - "
 #define TITLE_RollMessage                        "Развернуть сообщение"
-#define TITLE_HelpPage                                "Справка"
 #define TITLE_Registration                        "Регистрация / изменить профиль"
 #define TITLE_Search                                "Поиск сообщений"
 #define TITLE_ProfileInfo                        "Информация о пользователе"
@@ -554,10 +554,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define TITLE_FavouritesPageDel                "Удаление темы из Избранного"
 #define TITLE_BanSave                "Сохранение списка забаненных айпи"
 #define TITLE_ClSession                        "Закрытие сессии"
-#define TITLE_Rules                                        "Правила конференции"
-#define TITLE_Authors                 "Авторы и модераторы концеренции"
-#define TITLE_Changelog               "Изменения в работе форума"
-
 
 /***************************** welcome messages **************************/
 #define WELCOME_CONFERENCE_HEADER        "<B>Вход:</B> "
@@ -587,7 +583,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_HELLOREG                "Вы вошли в конференцию как "
 #define MESSAGEMAIN_WELCOME_SELECTTOPIC                "Выберите тему:"
 
-#define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT                "новых потоков(сообщений): <a name=n0 href=\"#n1\" "\
+#define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT                "новых потоков(сообщений): <a href=\"#n0\" "\
         "style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %ld"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
                                 
@@ -723,9 +719,12 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 // from design.h
 /*=====================================================================*/
-#define TAG_MSG_HAVE_NO_BODY        "(-)"
+#define TAG_MSG_HAVE_NO_BODY            "(-)"
+#define TAG_MSG_HAVE_BODY               "(+)"
 #define TAG_MSG_HAVE_PIC                "(pic)"
 #define TAG_MSG_HAVE_URL                "(url)"
+#define TAG_MSG_HAVE_TEX                "(tex)"
+#define TAG_MSG_HAVE_TUB                "(tub)"
 #define TAG_MSG_CLOSED_THREAD        "<span class=\"close\" id=c%ld>(закрыто) </span>"
 #define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
 #define TAG_MSG_ROLLED_THREAD_MARKNEW        "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>" \
@@ -860,24 +859,52 @@ extern char DESIGN_break[10];
 
 #define DESIGN_SCRIPT_POPUP "<script language=\"JavaScript\" type=\"text/javascript\">function popup(action, value, w, h){wnd=window.open(\"" MY_CGI_URL "?\"+action+\"=\"+value,\"popup\",\"resizable=no,menubars=no,scrollbars=yes,width=\"+w+\",height=\"+h); }</script>"
 
-#define DESIGN_SCRIPT_NAVIGATE "<script language=\"JavaScript\" type=\"text/javascript\" "\
-        "src=\"/nav.js\"></script>"\
-        "<script language=\"JavaScript\" type=\"text/javascript\" "\
-        "src=\"/request.js\"></script>"
-
 #define DESIGN_SCRIPT_SELFCLOSE "<script language=\"JavaScript\" type=\"text/javascript\">window.close()</script>"
-
-
-#define DESIGN_SCRIPT_IMAGERESIZE "<script language=\"JavaScript\" type=\"text/javascript\" src=\"/imageresize.js\"></script>"
 
 /******************* new msg **************************/
 
-#define DESIGN_FORM_MESSAGE_QEDITINPUT        "<input type=\"button\" class=\"qe_button\" accesskey=\"%s\" name=\"style%s\" "\
-"value=\"%s\" style=\"width: %dpx\" onclick=\"setstyle(%d)\" title=\"%s\" tabindex=\"%d\" />&nbsp;"
+#define DESIGN_STYLE_BUTTONS_BEGIN()                            \
+        printf("<tr><td colspan=\"2\" align=\"center\">"
+
+#define DESIGN_STYLE_BUTTONS_END()              \
+        "</td></tr>")
+
+#define DESIGN_STYLE_BUTTONS_NEWLINE() "<br />"
+
+#define DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, name, title, callback, argumentlist) \
+	"<button type=\"button\" class=\"style\" name=\"" name "\"accesskey=\"" accesskey "\" style=\"width: " width "\" title=\"" title "\"" \
+        "onclick=\"" callback "(" argumentlist ");\" tabindex=\"5\"><center>" label "</center></button>&nbsp;"
+
+#define DESIGN_STYLE_BUTTONS_ADD_WRAP(accesskey, width, label, title, opentag, closetag, allowsubj) \
+	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "wrap", "'" opentag "', '" closetag "', " #allowsubj)
+
+#define DESIGN_STYLE_BUTTONS_ADD_INSERT(accesskey, width, label, title, tag, allowsubj) \
+	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "insert", "'" tag "', " #allowsubj)
+
+#define DESIGN_STYLE_BUTTONS_ADD_SHOWSMILE()				\
+	DESIGN_STYLE_BUTTONS_ADD("0", "55px", "smile", "smile", "таблица смайлов (alt+0)", "show", "")
+
+#define DESIGN_STYLE_SMILES_BEGIN()                                     \
+        "<div class=\"smiles\" id=\"smiles\"><table class=\"smiles\"><tr>"
+
+#define DESIGN_STYLE_SMILES_END()               \
+        "</tr></table></div>"
+
+#define DESIGN_STYLE_SMILES_NEWLINE() "</tr><tr>"
+
+#define DESIGN_STYLE_SMILES_ADD(pic, smile)                             \
+	"<td><button type\"button\" class=\"smile\" onclick=\"insert(' " smile " ', 0)\" title=\"" smile "\">" \
+	       "<center><img src=\"" BOARD_PIC_URL pic "\" /></center></button></td>"
+
+#define DESIGN_FORM_MESSAGE_QEDITWRAP "<button type=\"button\" class=\"qe\" accesskey=\"%s\" style=\"width: %dpx\" " \
+	"onclick=\"wrap(%d);\" tabindex=\"%d\">%s</button>&nbsp;"
+
+#define DESIGN_FORM_MESSAGE_QEDITSHOW "<button type=\"button\" class=\"qe\" accesskey=\"0\" style=\"width: 55px\" " \
+	"onclick=\"show();\" tabindex=\"%d\">smile</button>&nbsp;"
 
 #define DESIGN_FORM_MESSAGE_QEDITSMILES "<div class=\"smilestable\" id=\"smilestable\">" \
 "<table class=\"smilestable\"><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :) '); return false;\"><img src=\"" BOARD_PIC_URL "smile.gif\" /></a></td>" \
+"<td><a href=\"#\" onclick=\"insert(' :) '); return false;\"><img src=\"" BOARD_PIC_URL "smile.gif\" /></a></td>" \
 "<td><a href=\"#\" onclick=\"insert_smile(' :)) '); return false;\"><img src=\"" BOARD_PIC_URL "bigsmile.gif\" /></a></td>" \
 "<td><a href=\"#\" onclick=\"insert_smile(' :( '); return false;\"><img src=\"" BOARD_PIC_URL "frown.gif\" /></a></td>" \
 "</tr><tr>" \
@@ -902,17 +929,13 @@ extern char DESIGN_break[10];
 "<td><a href=\"#\" onclick=\"insert_smile(' :CIQ '); return false;\"><img src=\"" BOARD_PIC_URL "iq.gif\" /></a></td>" \
 "</table></div>" 
 
-
-#define DESIGN_FORM_MESSAGE_BODY        "<textarea cols=\"75\" rows=\"12\" name=\"body\" class=\"post\" wrap=\"virtual\" "\
-"onselect=\"storeCaret(this);\" onclick=\"storeCaret(this);\" onkeyup=\"storeCaret(this);\">"\
-"%s</textarea></td></tr>"
+#define DESIGN_FORM_MESSAGE_BODY        "<textarea cols=\"75\" rows=\"12\" name=\"body\" class=\"post\" wrap=\"virtual\" " \
+"onfocus=\"last = document.postform.body;\" \">%s</textarea></td></tr>"
 
 #define DESIGN_FORM_MESSAGE_CHECKBOX "<tr><td colspan=\"2\" align=\"right\" class=\"cl\">%s"\
 "<input type=\"checkbox\" name=\"%s\" class=\"cl\" %s /></td></tr>"
 
-
 #define DESIGN_FORM_MESSAGE_BUTTON        "<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
-
 
 #define SCRIPT_FORM_MESSAGE_QEDIT "<script language=\"JavaScript\" type=\"text/javascript\" "\
 "src=\"/qecode2.js\"></script>"
@@ -942,61 +965,10 @@ extern char DESIGN_break[10];
         "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
-#define HTML_TOPBANNER_HEADER ""
-
 #define HTML_STYLE_HEADER "</head><body>\n" DESIGN_SCRIPT_POPUP
 
-#define HTML_TOPBANNER_MAP "<map name=\"topnav1\">" \
-"<area shape=rect coords=\"654,8,738,30\" href=\"http://www.rt.mipt.ru/\">" \
-"</map>" \
-"<map name=\"topnav2\">" \
-"<area shape=rect coords=\"140,0,229,14\" href=\"http://www.rt.mipt.ru/cgi-bin/people/index.cgi\" alt=\"Пользователи\">" \
-"<area shape=rect coords=\"233,0,264,14\" href=\"http://www.rt.mipt.ru/net.shtml\" alt=\"Сеть\">" \
-"<area shape=rect coords=\"269,0,324,14\" href=\"http://www.rt.mipt.ru/res.html\" alt=\"Ресурсы\">" \
-"<area shape=rect coords=\"327,0,406,14\" href=\"/\" alt=\"Конференция\">" \
-"<area shape=rect coords=\"409,0,449,14\" href=\"http://www.rt.mipt.ru/study.html\" alt=\"Учеба\">" \
-"<area shape=rect coords=\"452,0,493,14\" href=\"http://games.mipt.ru/\" alt=\"Игры\">" \
-"<area shape=rect coords=\"497,0,550,14\" href=\"http://www.rt.mipt.ru/~dean/news/\" alt=\"Деканат\">" \
-"<area shape=rect coords=\"555,0,604,14\" href=\"http://www.rt.mipt.ru/links.html\" alt=\"Ссылки\">" \
-"</map>" \
-"<map name=\"botnav1\">" \
-"<area shape=rect coords=\"29,0,48,18\" href=\"http://www.rt.mipt.ru/\" alt=\"Home\">" \
-"<area shape=rect coords=\"59,0,82,18\" href=\"http://train.mipt.ru/\">" \
-"<area shape=rect coords=\"91,0,110,18\" href=\"http://www.rt.mipt.ru/smap.html\">" \
-"<area shape=rect coords=\"118,0,140,18\" href=\"http://www.rt.mipt.ru/metro.html\">" \
-"<area shape=rect coords=\"195,3,264,16\" href=\"http://www.rt.mipt.ru/cgi-bin/people/index.cgi\" alt=\"Пользователи\">" \
-"<area shape=rect coords=\"268,3,293,16\" href=\"http://www.rt.mipt.ru/net.shtml\" alt=\"Сеть\">" \
-"<area shape=rect coords=\"296,3,340,16\" href=\"http://www.rt.mipt.ru/res.html\" alt=\"Ресурсы\">" \
-"<area shape=rect coords=\"343,3,403,16\" href=\"/\" alt=\"Конференция\">" \
-"<area shape=rect coords=\"407,3,437,16\" href=\"http://www.rt.mipt.ru/study.html\" alt=\"Учеба\">" \
-"<area shape=rect coords=\"441,3,472,16\" href=\"http://games.mipt.ru/\" alt=\"Игры\">" \
-"<area shape=rect coords=\"476,3,517,16\" href=\"http://www.rt.mipt.ru/~dean/news/\" alt=\"Деканат\">" \
-"<area shape=rect coords=\"520,3,560,16\" href=\"http://www.rt.mipt.ru/links.html\" alt=\"Ссылки\">" \
-"<area shape=rect coords=\"626,0,719,18\" href=\"mailto:bbsadmin@rt.mipt.ru\">" \
-"</map>\n" \
-"<center>" \
-"<img src=\"/images/1board.gif\" border=0 width=750 height=35 usemap=#topnav1><br>" \
-"<img src=\"/images/subline.gif\" border=0 width=750 height=20 usemap=#topnav2><br>" \
-"</center>\n" \
-"<!-- END Header -->\n" 
-
-#define HTML_BOTTOMBANNER "\n<!-- Footer -->\n" \
+#define HTML_BOTTOMBANNER                                               \
         "<div style=\"font-size: 7pt; text-align: center;margin:10px;\">" \
-        "<img src=\"/images/botnav.gif\" border=0 width=750 height=23 usemap=\"#botnav1\"><br>\n" \
-        "Конференция основана на движке <A STYLE=\"text-decoration:underline;\" href=\"http://2ka.mipt.ru/~www/\" TARGET=\"_blank\">WWWConf " VERSION \
-        "</A>, поддерживается и модерируется группой <a STYLE=\"text-decoration:underline;\" href=\"" MY_CGI_URL "?authors\">энтузиастов</a>.\n" \
-        "</div>" \
-        "<!-- END Footer -->"
-
-#define HTML_BOTTOMBANNER_SHORT "\n<!-- Footer -->\n" \
-    "<div style=\"font-size: 7pt; text-align: center;margin: 10px;\">" \
-        "Конференция основана на движке <A STYLE=\"text-decoration:underline;\" href=\"http://2ka.mipt.ru/~www/\" TARGET=\"_blank\">WWWConf " VERSION \
-        "</A>, поддерживается и модерируется группой <a STYLE=\"text-decoration:underline;\" href=\"" MY_CGI_URL "?authors\">энтузиастов</a>.\n" \
-        "</div>" \
-        "<!-- END Footer -->"
-                
-
-
-
+        "Конференция основана на движке <A STYLE=\"text-decoration:underline;\" href=\"http://code.google.com/p/wwwconf/\" TARGET=\"_blank\">wwwconf.</div>"
 
 #endif

@@ -131,25 +131,13 @@ int IP2HostName(DWORD IP, char *hostname, int maxlen)
 {
         struct hostent *he;
 #if IP_TO_HOSTNAME_RESOLVE
-        //
-        //        Resolve IP to DNS names
-        //
         if((he = gethostbyaddr((char*)(&IP), 4, AF_INET)) != NULL) {
-                // prevent saving bad hostname
-                if(strlen(he->h_name) > 0) {
+                if(strlen(he->h_name) > 0)
                         strncpy(hostname, he->h_name, maxlen);
-
-                        if(!strcmp(he->h_name, "h195-91-253-34.ln.rinet.ru"))
-                                strcpy(hostname, "work.box");
-
-                 if(!strcmp(he->h_name, "lynz.8ka.mipt.ru"))
-                                strcpy(hostname, "jelt.8ka.mipt.ru");
-
-                                                                                        
-                }
-                else return 0;
-        }
-        else return 0;
+                else
+                        return 0;
+        } else
+                return 0;
 #else
         strcpy(hostname, inet_ntoa(IP), maxlen);
 #endif
@@ -157,41 +145,18 @@ int IP2HostName(DWORD IP, char *hostname, int maxlen)
         return 1;
 }
 
-int ConvertTime(time_t tt, char *s)
+char* ConvertTime(time_t t)
 {
-        tt = tt + 3600*(currenttz - DATETIME_DEFAULT_TIMEZONE);
+        static char s[100];
+        tm *tt;
 
-#if DATETIME_STYLE == 1
-        char *c = ctime(&tt);
-        strcpy(s,c);
-        s[strlen(s)-1] = 0;
-#endif
-#if DATETIME_STYLE == 2
-        tm *x;
-        x = localtime(&tt);
-        if(x->tm_min < 10)
-                sprintf(s, "%d/%d/%d %d:0%d", x->tm_mon + 1, x->tm_mday, x->tm_year + 1900,
-                x->tm_hour, x->tm_min);
-        else
-                sprintf(s, "%d/%d/%d %d:%d", x->tm_mon + 1, x->tm_mday, x->tm_year + 1900,
-                x->tm_hour, x->tm_min);
-#endif
-#if DATETIME_STYLE == 3
-        tm *x;
-        x = localtime(&tt);
-        if(x) {
-                if(x->tm_min < 10)
-                        sprintf(s, "%d/%d/%d %d:0%d",x->tm_mday, x->tm_mon + 1, x->tm_year + 1900,
-                                x->tm_hour, x->tm_min);
-                else
-                        sprintf(s, "%d/%d/%d %d:%d",x->tm_mday, x->tm_mon + 1, x->tm_year + 1900,
-                                x->tm_hour, x->tm_min);        
-        }
-#endif
-        return 1;
+        t += 3600*currenttz;
+        tt = gmtime(&t);
+        sprintf(s, "%d/%d/%d %d:%02d", tt->tm_mday, tt->tm_mon + 1, tt->tm_year + 1900, tt->tm_hour, tt->tm_min);
+        return s;
 }
 
-char* ConvertFullTime(time_t tt)
+char* ConvertFullTime(time_t t)
 {
         const char *days[7] = {
                 MESSAGEMAIN_DATETIME_DAY_SUN,
@@ -216,12 +181,12 @@ char* ConvertFullTime(time_t tt)
                 MESSAGEMAIN_DATETIME_NOV,
                 MESSAGEMAIN_DATETIME_DEC
         };
-        static char s[1000];
-        tm *x;
+        static char s[100];
+        tm *tt;
 
-        x = localtime(&tt);
-        sprintf(s, "%s, %s %d %d:%02d:%02d %d", days[x->tm_wday], months[x->tm_mon], x->tm_mday, x->tm_hour, x->tm_min, x->tm_sec, x->tm_year + 1900);
-
+        t += 3600*currenttz;
+        tt = gmtime(&t);
+        sprintf(s, "%s, %s %d %d:%02d:%02d %d", days[tt->tm_wday], months[tt->tm_mon], tt->tm_mday, tt->tm_hour, tt->tm_min, tt->tm_sec, tt->tm_year + 1900);
         return s;
 }
 
@@ -831,9 +796,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         // *******************************
         // BUG BUG with aname
         //////////////////////////////////
-        char *mp = NULL, aname[1000], tm[200];
+        char *mp = NULL, aname[1000], *tm;
         DWORD ff;
-        DWORD flg;
         
         printf("<span id=m%lu>", mes->ViIndex);
 
@@ -850,30 +814,23 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
 #endif
 
-        ConvertTime(mes->Date, tm);
+        tm = ConvertTime(mes->Date);
 
-        // check whether smiles have been disabled globally
-        if((currentdsm & CONFIGURE_dsm) == 0) flg = MESSAGE_ENABLED_TAGS | MESSAGE_ENABLED_SMILES;
-        else flg = MESSAGE_ENABLED_TAGS;
-        if(FilterBoardTags(mes->MessageHeader, &mp, mes->SecHeader, MAX_PARAMETERS_STRING,
-                flg, &ff) != 0) {
-        }
-        else mp = mes->MessageHeader;
+        if(!FilterBoardTags(mes->MessageHeader, &mp, 1, MAX_PARAMETERS_STRING, mes->Flag, &ff))
+                mp = mes->MessageHeader;
 
         // does this message posted by registred user ?
-        if(mes->UniqUserID == 0) sprintf(aname, DESIGN_UNREGISTRED_NICK, mes->AuthorName);
+        if(mes->UniqUserID == 0)
+                sprintf(aname, DESIGN_UNREGISTRED_NICK, mes->AuthorName);
         else {
                 char altnick[1000];
 
-                if((currentdsm & CONFIGURE_nalt) == 0) {
-                        //
-                        //        first of all translate to to alt nick if requred
-                        //
-                        if(!AltNames.NameToAltName(mes->UniqUserID, altnick)) {
-                                strcpy(altnick, mes->AuthorName);
-                        }
-                }
-                else strcpy(altnick, mes->AuthorName);
+                if((currentdsm & CONFIGURE_nalt) == 0 && AltNames.NameToAltName(mes->UniqUserID, altnick)) {
+                        char *st;
+                        if(PrepareTextForPrint(altnick, &st, 1, MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE))
+                                strcpy(altnick, st);
+                } else
+                        strcpy(altnick, mes->AuthorName);
 
                 // if this, is does this user view this message ;-) ?
                 if( ((currentdsm & CONFIGURE_onh) == 0) && ULogin.LU.ID[0] !=0 && mes->UniqUserID == ULogin.LU.UniqID ) {
@@ -905,8 +862,10 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 printf(" HREF=\"%s?read=%ld\"",MY_CGI_URL, mes->ViIndex);
         if(MESSAGE_INDEX_PRINT_BLANK_URL & style)
                 printf(" TARGET=\"_blank\"");
-        if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0) printf("><B>");
-        else printf(">");
+        if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
+                printf("><B>");
+        else
+                printf(">");
 #if        TOPICS_SYSTEM_SUPPORT
         if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0) {
                 printf(DESIGN_TOPIC_TAG_OPEN "%s" DESIGN_TOPIC_TAG_CLOSE DESIGN_TOPIC_DIVIDER,Topics_List[mes->Topics]);
@@ -916,33 +875,35 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         char *aheader = FilterBiDi(mp);
         printf("%s", aheader);
         free(aheader);
-        if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0) printf("</B> ");
+        if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
+                printf("</B> ");
         printf("</A> ");
                 
 
-        if((mes->Flag & MESSAGE_HAVE_URL) == MESSAGE_HAVE_URL)
+        if(mes->Flag & MESSAGE_HAVE_URL)
                 printf(TAG_MSG_HAVE_URL);
-        if((mes->Flag & MESSAGE_HAVE_BODY) != MESSAGE_HAVE_BODY)
-                printf(TAG_MSG_HAVE_NO_BODY);
-        if((mes->Flag & MESSAGE_HAVE_PICTURE) == MESSAGE_HAVE_PICTURE)
+        if(mes->Flag & MESSAGE_HAVE_PICTURE)
                 printf(TAG_MSG_HAVE_PIC);
+        if(mes->Flag & MESSAGE_HAVE_TEX)
+                printf(TAG_MSG_HAVE_TEX);
+        if(mes->Flag & MESSAGE_HAVE_TUB)
+                printf(TAG_MSG_HAVE_TUB);
+        printf(" ");
+        if(mes->Flag & MESSAGE_HAVE_BODY)
+                printf(TAG_MSG_HAVE_BODY);
+	else
+		printf(TAG_MSG_HAVE_NO_BODY);
 
-
-
-        if(mes->Readed) printf(" (%d)", mes->Readed);
-
-
-//#        if((mes->Flag & MESSAGE_HAVE_BODY) == MESSAGE_HAVE_BODY) {
-//#                printf(" <a href=\"?read=%d\" onclick=\"show_body('%d'); return false;\">+</a>", mes->ViIndex, mes->ViIndex, aname);
-//#        }
-//#        else printf(" -");
-printf(" -");
+        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
+                printf(" <a class=\"enter\" href=\"?read=%ld\">(%d)</a> &mdash; ", mes->ViIndex, mes->Readed);
+        else
+                printf(" (%d) &mdash; ", mes->Readed);
 
         char *aname_fbidi = FilterBiDi(aname);
-        printf(" %s", aname_fbidi);
+        printf("%s", aname_fbidi);
         free(aname_fbidi);
         if((currentdsm & CONFIGURE_host) == 0)printf(" (%s)", mes->HostName);
-        printf(" - %s", tm);
+        printf(" &mdash; %s", tm);
 
         if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
                 printf("</strike>");
@@ -958,15 +919,12 @@ printf(" -");
                         else {
                                 char altnick[1000];
 
-                                if((currentdsm & CONFIGURE_nalt) == 0) {
-                                        //
-                                        //        first of all translate to to alt nick if requred
-                                        //
-                                        if(!AltNames.NameToAltName(lastmes.UniqUserID, altnick)) {
-                                                strcpy(altnick, lastmes.AuthorName);
-                                        }
-                                }
-                                else strcpy(altnick, lastmes.AuthorName);
+                                if((currentdsm & CONFIGURE_nalt) == 0 && AltNames.NameToAltName(lastmes.UniqUserID, altnick)) {
+                                        char *st;
+                                        if(PrepareTextForPrint(altnick, &st, 1, MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE))
+                                                strcpy(altnick, st);
+                                } else
+                                        strcpy(altnick, lastmes.AuthorName);
 
                                 // if this, is does this user view this message ;-) ?
                                 if( ((currentdsm & CONFIGURE_onh) == 0) && ULogin.LU.ID[0] !=0 && lastmes.UniqUserID == ULogin.LU.UniqID ) {
@@ -983,7 +941,7 @@ printf(" -");
                                         }
                                 }
                         }
-                        ConvertTime(lastmes.Date, tm);
+                        tm = ConvertTime(lastmes.Date);
                         char *aname_fbidi = FilterBiDi(aname);
                         printf(TAG_MSG_ROLLED_THREAD_MARKNEW, mes->ViIndex, skipped, newmessmark, MY_CGI_URL, lastmes.ViIndex, aname_fbidi, tm);
                         free(aname_fbidi);
@@ -1005,14 +963,11 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
         char *mp = NULL, *pb;
         DWORD ff;
 
+        if (!FilterBoardTags(mes->MessageHeader, &mp, 1, MAX_PARAMETERS_STRING, mes->Flag & MESSAGE_ENABLED_TAGS, &ff))
+                mp = mes->MessageHeader;
 
-        if(FilterBoardTags(mes->MessageHeader, &mp, mes->SecHeader, MAX_PARAMETERS_STRING,
-                MESSAGE_ENABLED_TAGS, &ff) != 0) {
-        }
-        else mp = mes->MessageHeader;
-        
-
-        char *pubdate = ctime(&mes->Date);
+        time_t t = mes->Date + 3600*DATETIME_DEFAULT_TIMEZONE;
+        char *pubdate = asctime(gmtime(&t));
         pubdate[strlen(pubdate)-1]=0;
         
 //=========================
@@ -1045,10 +1000,10 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, i
             *(ss-1) = *ss;
         }
         if(xml_body_length > 0) {
-                mes->Flag &= ~MESSAGE_ENABLED_TAGS;
+                //mes->Flag &= ~MESSAGE_ENABLED_TAGS;
 
                 //printf("Flag %ld", mes->Flag);
-                if(FilterBoardTags(body, &pb, mes->Security, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_EXPAND_XMLEN , &tmp) == 0)
+                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_EXPAND_XMLEN , &tmp) == 0)
                         pb = body;
         
         }
@@ -1377,6 +1332,7 @@ DB_Base::DB_Base()
         fb = NULL;
         fm = NULL;
         fv = NULL;
+        maxm_counter = 0;
 }
 
 DB_Base::~DB_Base()
@@ -1442,7 +1398,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                         UI.UniqID = 0;
 
                         //        check user name length ;-)
-                        if(FilterBoardTags(mes->AuthorName, &st, 255, AUTHOR_NAME_LENGTH - 1, BOARDTAGS_TAG_PREPARSE, &fp) == 0) {
+                        if(FilterBoardTags(mes->AuthorName, &st, 1, AUTHOR_NAME_LENGTH - 1, BOARDTAGS_TAG_PREPARSE, &fp) == 0) {
                                 return MSG_CHK_ERROR_NONAME;
                         }
                         else {
@@ -1459,9 +1415,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 #endif
                 }
         }
-
-if( (strcmp(Cip, "77.246.224.2")==0) && (strcmp(mes->AuthorName, "out of the box")==0) ) strcpy(mes->HostName, "work.box");
-if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) strcpy(mes->HostName, "supawork.ru");
 
 // Check security rights for logged users
                 if( 
@@ -1514,10 +1467,10 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
         if(uprof != NULL) delete uprof;
 
 
-        if(*body != NULL && **body != 0) msize = (WORD)(strlen(*body) + 1);
-        else {
+        if(*body != NULL && **body != 0)
+                msize = (WORD)(strlen(*body) + 1);
+        else
                 msize = 0;
-        }
 
         // tuning some columns of the message stucture
         mes->Readed = 0;
@@ -1534,7 +1487,8 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
         if(msigned && (CFlags & MSG_CHK_DISABLE_SIGNATURE) == 0)
                 mes->Flag |= MESSAGE_WAS_SIGNED;
         
-        if(msize > 0) mes->Flag |= MESSAGE_HAVE_BODY;
+        if (msize > 0)
+                mes->Flag |= MESSAGE_HAVE_BODY;
 
         if((CFlags & MSG_CHK_ENABLE_EMAIL_ACKNL) && Uind != 0xFFFFFFFF)
                 mes->Flag |= MESSAGE_MAIL_NOTIFIATION;
@@ -1594,9 +1548,7 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                                 char *pb, *pb1, *pb2;
                                 char *pb_f, *pb1_f;
 
-                                DWORD flags = MESSAGE_ENABLED_TAGS;
-
-                                if(!PrepareTextForPrint(mes->MessageHeader, &pb, mes->SecHeader, flags | BOARDTAGS_CUT_TAGS)) {
+                                if(!PrepareTextForPrint(mes->MessageHeader, &pb, 1, (mes->Flag & MESSAGE_ENABLED_TAGS) | BOARDTAGS_CUT_TAGS)) {
                                         pb = (char*)malloc(strlen(mes->MessageHeader) + 1);
                                         strcpy(pb, mes->MessageHeader);
                                 }
@@ -1606,15 +1558,15 @@ if( (strcmp(Cip, "193.47.148.33")==0) && (strcmp(mes->AuthorName, "poh")==0) ) s
                                 free(pb);
                                 free(pb_f);
 
-                                if(!PrepareTextForPrint(mes->MessageHeader, &pb, mes->SecHeader, flags | mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
+                                if(!PrepareTextForPrint(mes->MessageHeader, &pb, 1, mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
                                         pb = (char*)malloc(strlen(mes->MessageHeader) + 1);
                                         strcpy(pb, mes->MessageHeader);
                                 }
-                                if(!PrepareTextForPrint(msg->MessageHeader, &pb1, mes->SecHeader, flags | mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
+                                if(!PrepareTextForPrint(msg->MessageHeader, &pb1, 1, mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
                                         pb1 = (char*)malloc(strlen(msg->MessageHeader) + 1);
                                         strcpy(pb1, msg->MessageHeader);
                                 }
-                                if(!PrepareTextForPrint(*body, &pb2, mes->Security, flags | mes->Flag | BOARDTAGS_EXPAND_ENTER | BOARDTAGS_PURL_ENABLE)) {
+                                if(!PrepareTextForPrint(*body, &pb2, 0, mes->Flag | BOARDTAGS_EXPAND_ENTER | BOARDTAGS_PURL_ENABLE)) {
                                         pb2 = (char*)malloc(strlen(*body) + 1);
                                         strcpy(pb2, *body);
                                 }
@@ -2341,22 +2293,17 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         int showhost = 0;
 #endif
 
-        if((currentdsm & CONFIGURE_dsm) == 0) flg = MESSAGE_ENABLED_TAGS | MESSAGE_ENABLED_SMILES;
-        else flg = MESSAGE_ENABLED_TAGS;
+        flg = msg->Flag;
+        if((currentdsm & CONFIGURE_dsm) == 0)
+                flg |= MESSAGE_ENABLED_SMILES;
 
-        if(FilterBoardTags(msg->MessageHeader, &an, msg->SecHeader,
-                MAX_PARAMETERS_STRING, flg, &tmp) == 1) {
+        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, flg, &tmp))
+                an = msg->MessageHeader;
 
-        }
-        else an = msg->MessageHeader;
-
-        if(msg->msize > 0) {
-                DWORD flg = msg->Flag | MESSAGE_ENABLED_SMILES | BOARDTAGS_PURL_ENABLE;
-                if((currentdsm & CONFIGURE_dsm) != 0) flg = flg & (~MESSAGE_ENABLED_SMILES);
-                
-                if(FilterBoardTags(body, &pb, msg->Security, MAX_PARAMETERS_STRING, flg | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+        if(msg->msize > 0)
+                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
                         pb = body;
-        }
+
         if(msg->Flag & MESSAGE_WAS_SIGNED) {
                 SProfile_UserInfo ui;
                 SProfile_FullUserInfo fui;
@@ -2367,8 +2314,8 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                                 // first of all - let's filter HTML !
                                 char *st = FilterHTMLTags(fui.Signature, MAX_PARAMETERS_STRING);
                                 if(st) {
-                                        if(FilterBoardTags(st, &ps, msg->Security, MAX_PARAMETERS_STRING,
-                                                flg | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+                                        if(FilterBoardTags(st, &ps, 0, MAX_PARAMETERS_STRING,
+                                                flg | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
                                         {
                                                 ps = (char*)malloc(strlen(st) + 1);
                                                 strcpy(ps, st);
@@ -2510,7 +2457,6 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                 free(ps);
         }
 
-        if(msg->Flag & MESSAGE_HAVE_PICTURE) printf(DESIGN_SCRIPT_IMAGERESIZE);
         printf("<BR><BR>");
 
 

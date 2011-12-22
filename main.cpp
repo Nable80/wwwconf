@@ -203,14 +203,18 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 
         if(!(code & ACTION_BUTTON_EDIT)) {
                 if(ULogin.LU.ID[0] == 0) {
+                        int ti = msg->AuthorName[0] ? 2 : 1;
                         // print name/password form
                         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>"\
-                                "<INPUT TYPE=TEXT NAME=\"name\" SIZE=22 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\">",
-                                MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1, msg->AuthorName);
+                               "<INPUT TYPE=TEXT NAME=\"name\" SIZE=22 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"%d\">",
+                               MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1, msg->AuthorName, ti);
                         // print password
-                        printf("&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=PASSWORD NAME=\"pswd\" SIZE=22 MAXLENGTH=%d VALUE=\"\" tabindex=\"1\">"\
-                                "&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=CHECKBOX NAME=\"lmi\" tabindex=\"1\"></TD></TR>\n",
-                                MESSAGEMAIN_post_your_password, PROFILES_MAX_PASSWORD_LENGTH - 1, MESSAGEMAIN_post_login_me);
+                        printf("&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=PASSWORD NAME=\"pswd\" SIZE=22 MAXLENGTH=%d VALUE=\"\" tabindex=\"%d\">"\
+                               "&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=CHECKBOX NAME=\"lmi\" tabindex=\"%d\"></TD></TR>\n",
+                               MESSAGEMAIN_post_your_password, ti, PROFILES_MAX_PASSWORD_LENGTH - 1, MESSAGEMAIN_post_login_me, ti);
+                        // print captcha
+                        printf("<tr><td align=center>captcha:&nbsp;88</td><td align=left>" \
+                               "<input type=text name=\"cp\" size=\"5\" maxlength=\"5\" tabindex=\"1\"></td></tr>");
                 }
                 else {
                         // print name
@@ -254,32 +258,86 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 printf("</SELECT>");
         }
 
-        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=%d MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\"></TD></TR>\n",
-                s? 88: 62, MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
-
+        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=%d MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
+	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", s ? 88 : 62, MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #else
-        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\"></TD></TR>\n",
-                MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
+        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
+	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #endif                         
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "b", "0",  "b",       30, 0,  "жирный текст: [b]текст[/b] (alt+b)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "i", "2",  "i",       30, 2,  "наклонный текст: [i]текст[/i] (alt+i)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "u", "4",  "u",       30, 4,  "подчёркнутый текст: [u]текст[/u] (alt+u)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "q", "6",  "q",       30, 6,  "цитата: [q]текст[/q] (alt+q)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "p", "8",  "pic",     40, 8,  "картинка: [pic]http://ссылка[/pic] (alt+p)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "w", "10", "url",     40, 10, "ссылка: [url=http://ссылка]название[/url] (alt+w)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "h", "12", "h",       30, 12, "заголовок: [h]текст[/h] (alt+h)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "s", "14", "s",       30, 14, "мелкий текст: [s]текст[/s] (alt+s)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "6", "16", "sup",     40, 16, "верхний индекс: [sup]текст[/sup] (alt+6)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "-", "18", "sub",     40, 18, "нижний индекс: [sub]текст[/sub] (alt+-)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "=", "20", "strike",  55, 20, "перечеркнутый текст: [strike]текст[/strike] (alt+=)", 5);
+	// printf("<br />");
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "3", "22", "color",   55, 22, "цветной текст: [color=#цвет]текст[/color] (alt+3)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "r", "24", "red",     40, 24, "красный текст: [red]текст[/red] (alt+r)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "f", "26", "pre",     40, 26, "преформатированный текст: [pre]текст[/pre] (alt+f)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "c", "28", "center",  60, 28, "центрированный текст: [center]текст[/center] (alt+c)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "t", "30", "tex",     40, 30, "TEX-формула: [tex]текст[/tex] (alt+t)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "y", "32", "tub",     40, 32, "YouTube-видео: [tub]идентификатор видео[/tub] (alt+y)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, ".", "34", "spoiler", 65, 34, "спойлер: [spoiler]текст[/spoiler] (alt+.)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITSHOW,  "0", "s",  "smile",   55,     "таблица смайлов (alt+0)", 5);
+        // printf(DESIGN_FORM_MESSAGE_QEDITSMILES);
 
-        printf("<TR><TD COLSPAN=2 ALIGN=CENTER>");
+        DESIGN_STYLE_BUTTONS_BEGIN()
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("b", "30px", "b", "жирный текст: [b]текст[/b] (alt+b)", "[b]", "[/b]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("i", "30px", "i", "курсивный текст: [i]текст[/i] (alt+i)", "[i]", "[/i]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("u", "30px", "u", "подчеркнутый текст: [u]текст[/u] (alt+u)", "[u]", "[/u]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("q", "30px", "q", "цитата: [q]текст[/q] (alt+q)", "[q]", "[/q]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("p", "40px", "pic", "изображение: [pic]http://ссылка[/pic] (alt+p)", "[pic]", "[/pic]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("w", "40px", "url", "ссылка: [url=http://ссылка]название[/url] (alt+w)", "[url=", "]ссылка[/url]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("h", "30px", "h", "заголовок: [h]текст[/h] (alt+h)", "[h]", "[/h]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("s", "30px", "s", "мелкий текст: [s]текст[/s] (alt+s)", "[s]", "[/s]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("6", "40px", "sup", "верхний индекс: [sup]текст[/sup] (alt+6)", "[sup]", "[/sup]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("-", "40px", "sub", "нижний индекс: [sub]текст[/sub] (alt+-)", "[sub]", "[/sub]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("=", "55px", "strike", "перечеркнутый текст: [strike]текст[/strike] (alt+=)", "[strike]", "[/strike]", 1)
+                DESIGN_STYLE_BUTTONS_NEWLINE()
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("3", "55px", "color", "цветной текст: [color=#цвет]текст[/color] (alt+3)", "[color=#00FF00]", "[/color]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("r", "40px", "red", "красный текст: [red]текст[/red] (alt+r)", "[red]", "[/red]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("f", "40px", "pre", "преформатированный текст: [pre]текст[/pre] (alt+f)", "[pre]", "[/pre]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("c", "60px", "center", "центрированный текст: [center]текст[/center] (alt+c)", "[center]", "[/center]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("t", "40px", "tex", "TEX-формула: [tex]текст[/tex] (alt+t)", "[tex]", "[/tex]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("y", "40px", "tub", "YouTube-видео: [tub]идентификатор видео[/tub] (alt+y)", "[tub]", "[/tub]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("q", "65px", "spoiler", "спойлер: [spoiler]текст[/spoiler] (alt+.)", "[spoiler]", "[/spoiler]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_INSERT("l", "35px", "hr", "горизонтальная линия: [hr] (alt+l)", "[hr]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_SHOWSMILE()
+                DESIGN_STYLE_SMILES_BEGIN()
+                        DESIGN_STYLE_SMILES_ADD("smile.gif", ":)")
+                        DESIGN_STYLE_SMILES_ADD("bigsmile.gif", ":))")
+                        DESIGN_STYLE_SMILES_ADD("frown.gif", ":(")
+                        DESIGN_STYLE_SMILES_NEWLINE()
+                        DESIGN_STYLE_SMILES_ADD("wink.gif", ";)")
+                        DESIGN_STYLE_SMILES_ADD("lol.gif", ":!!")
+                        DESIGN_STYLE_SMILES_ADD("smirk.gif", ":\\\\")
+                        DESIGN_STYLE_SMILES_NEWLINE()
+                        DESIGN_STYLE_SMILES_ADD("smoke.gif", ":SMOKE")
+                        DESIGN_STYLE_SMILES_ADD("no.gif", ":NO")
+                        DESIGN_STYLE_SMILES_ADD("yes.gif", ":YES")
+                        DESIGN_STYLE_SMILES_NEWLINE()
+                        DESIGN_STYLE_SMILES_ADD("bored.gif", ":BORED")
+                        DESIGN_STYLE_SMILES_ADD("crazy.gif", ":CRAZY")
+                        DESIGN_STYLE_SMILES_ADD("mad.gif", ":MAD")
+                        DESIGN_STYLE_SMILES_NEWLINE()
+                        DESIGN_STYLE_SMILES_ADD("draznit.gif", ":DRAZNIT")
+                        DESIGN_STYLE_SMILES_ADD("redface.gif", ":o")
+                        DESIGN_STYLE_SMILES_ADD("rolleyes.gif", ":ROLLEYES")
+                        DESIGN_STYLE_SMILES_NEWLINE()
+                        DESIGN_STYLE_SMILES_ADD("figa.gif", ":FIGA")
+                        DESIGN_STYLE_SMILES_ADD("devil.gif", ":DEVIL")
+                        DESIGN_STYLE_SMILES_ADD("iq.gif", ":CIQ")
+                DESIGN_STYLE_SMILES_END()
+        DESIGN_STYLE_BUTTONS_END();
+        
 
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "b", "0", "b", 30, 0, "жирный текст: [b]текст[/b] (alt+b)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "i", "2", "i", 30, 2, "наклонный текст: [i]текст[/i] (alt+i)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "u", "4", "u", 30, 4, "подчёркнутый текст: [u]текст[/u] (alt+u)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "q", "6", "q", 30, 6,  "цитата: [q]текст[/q] (alt+q)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "p", "8", "pic", 40, 8, "картинка: [pic]http://ссылка[/pic]  (alt+p)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "w", "10", "url", 40, 10, "ссылка: [url=http://ссылка]название[/url] (alt+w)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "c", "c", "close", 55, -1, "закрыть все открытые теги (alt+c)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "s", "s", "smile", 55, -2, "таблица смайлов  (alt+s)", 5);
-        printf(DESIGN_FORM_MESSAGE_QEDITSMILES);
-
-        printf("<br />");
-
-        printf("</TD></TR><TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "\
-            "CLASS=\"post\" onselect=\"storeCaret(this);\" onclick=\"storeCaret(this);\" "\
-                "onkeyup=\"storeCaret(this);\" tabindex=\"2\">%s</TEXTAREA></TD></TR>",
-                body);
+        printf("<TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "
+	       "CLASS=\"post\" tabindex=\"2\" onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", body);
 
         tstr[0][0] = tstr[1][0] = 0;
         if(flags & MSG_CHK_DISABLE_SMILE_CODES) strcpy(tstr[0], RADIO_CHECKED);
@@ -481,10 +539,6 @@ static void PrintConfig()
 
         if((currentdsm & CONFIGURE_dsm) != 0) strcpy(str3, RADIO_CHECKED);
         else str3[0] = 0;
-        if((currentdsm & CONFIGURE_dup) != 0) strcpy(str4, RADIO_CHECKED);
-        else str4[0] = 0;
-        if((currentdsm & CONFIGURE_dul) != 0) strcpy(str5, RADIO_CHECKED);
-        else str5[0] = 0;
         if((currentdsm & CONFIGURE_onh) != 0) strcpy(str2, RADIO_CHECKED);
         else str2[0] = 0;
         if((currentdsm & CONFIGURE_plu) != 0) strcpy(str1, RADIO_CHECKED);
@@ -497,13 +551,11 @@ static void PrintConfig()
         else str8[0] = 0;
         if((currentdsm & CONFIGURE_shrp) != 0) strcpy(str9, RADIO_CHECKED);
         else str9[0] = 0;
+        if((currentdsm & CONFIGURE_clr) != 0) strcpy(str4, RADIO_CHECKED);
+        else str4[0] = 0;
 
         printf("<TABLE><TR><TD ALIGN=RIGHT>%s<INPUT TYPE=CHECKBOX NAME=\"dsm\" VALUE=1 %s>",
                 MESSAGEHEAD_configure_disablesmiles, str3);
-        printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"dup\" VALUE=1 %s>",
-                MESSAGEHEAD_configure_disableuppic, str4);
-        printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"dul\" VALUE=1 %s>",
-                MESSAGEHEAD_configure_disable2links, str5);
         printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"onh\" VALUE=1 %s>",
                 MESSAGEHEAD_configure_ownpostshighlight, str2);
         printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"host\" VALUE=1 %s>",
@@ -518,6 +570,8 @@ static void PrintConfig()
         printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"plu\" VALUE=1 %s>",
                 MESSAGEHEAD_configure_plus_is_href, str1);
 #endif
+        printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"clr\" VALUE=1 %s>",
+                MESSAGEHEAD_configure_disablecolor, str4);        
         printf("</TD></TR></TABLE>");
 
         if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS) )
@@ -562,10 +616,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         }
 
         if((c & HEADERSTRING_DISABLE_SEARCH) == 0) {
-        //        printf("<a HREF=\"http://boards.alexzam.ru\">%s</A>", MESSAGEHEAD_search);
-//                printf("<a HREF=\"http://xonix.info/boards/search\">%s</A>", MESSAGEHEAD_search);
-                 printf("<a HREF=\"/xonix/search\">%s</A>", MESSAGEHEAD_search);
-                //printf("<A HREF=\"%s?search=form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_search);
+                 printf("<a HREF=\"http://zlo.rt.mipt.ru:7500/search?site=9\">%s</a>", MESSAGEHEAD_search);
         }
         
         if(c & HEADERSTRING_CONFIGURE) {
@@ -594,10 +645,6 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
                 printf("<A HREF=\"%s?login=form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_login);
         }
 
-        if((c & HEADERSTRING_DISABLE_FAQHELP) == 0) {
-                printf("<A HREF=\"%s?rules\">%s</A>", MY_CGI_URL, MESSAGEHEAD_help_showhelp);
-        }
-
 #if USER_FAVOURITES_SUPPORT
         if(ULogin.LU.ID[0] != 0 && (c & HEADERSTRING_DISABLE_FAVOURITES) == 0) {
                 printf("<A HREF=\"%s?favs\">%s</A>",
@@ -622,33 +669,6 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         }
 
         printf(DESIGN_COMMAND_TABLE_END);
-}
-
-void PrintTopStaticLinks(DWORD c)
-{
-        //print stable links on index page
-        if ((c & HEADERSTRING_REG_USER_LIST) != 0 && (currentdsm & CONFIGURE_dul) == 0) {
-
-                printf(DESIGN_COMMAND_TABLE_BEGIN);
-        
-                printf("<A HREF=\"/dev/\" target=_blank>%s</A>", "Programming Board");
-                printf("<A HREF=\"http://linux.7ka.mipt.ru\" target=_blank>%s</A>","7ka Tech Library");
-                printf("<A HREF=\"http://www.javagu.ru\" target=_blank>%s</A>","Java");
-                printf("<A HREF=\"http://velo.mipt.ru/cgi/forum/\" target=_blank>%s</A>","velo");
-                printf("<A HREF=\"http://rtfm.alexzam.ru\" target=_blank>%s</A>", "RTFM");
-                printf("<A HREF=\"http://landex.mipt.ru\" target=_blank>%s</A>", "Landex/Allter");
-                //printf("<A HREF=\"http://tv.mipt.ru\" target=_blank>%s</A>", "Magnitka-TV");
-                //printf("<A HREF=\"http://umedia.disorder.ru\" target=_blank>%s</A>", "Multicast-TV");
-                printf("<A HREF=\"http://www.3ka.mipt.ru/vlib/index.html\" target=_blank>%s</A>", "Vektor VLib");
-                printf("<A HREF=\"http://lib.mipt.ru\" target=_blank>%s</A>", "lib.mipt.ru");
-                printf("<A HREF=\"http://votalka.ru\" target=_blank>%s</A>", "Votalka");
-                //printf("<A HREF=\"http://www.mosgird.ru\" target=_blank>%s</A>", "МЛГИРД");
-                printf("<A HREF=\"http://profkom.fizteh.ru\" target=_blank>%s</A>", "Профком");
-                printf("<A HREF=\"http://music.mipt.ru\" target=_blank>%s</A>", "music.mipt.ru");
-                  
-
-                printf(DESIGN_COMMAND_TABLE_END);
-        }
 }
 
 /* print HTML header of file, header placed in topbanner.html */
@@ -696,75 +716,20 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         printf("<title>%s</title>", TITLE_StaticTitle);
 #endif
 
-
         printf(HTML_STYLE_HEADER);
 
-        if(code & HEADERSTRING_NAVIGATION){
-                printf(DESIGN_SCRIPT_NAVIGATE);
-        }
-        
-        // print header of board
-#if USE_HTML_TOPBANNER
-        // print constant expressions
-        printf("%s", HTML_TOPBANNER_HEADER);
-        
-        if(curind == MAINPAGE_INDEX && (currentdsm & CONFIGURE_dup) == 0) printf(HTML_TOPBANNER_MAP);
-#else
-        // print from TOPBANNER file
-        {
-                FILE *f;
-                DWORD readed;
-                void *buf = malloc(MAX_HTML_FILE_SIZE);
-                if((f = fopen(F_TOPBANNER,FILE_ACCESS_MODES_R)) == NULL)
-                        printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_TOPBANNER);
-                if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0)
-                        printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_TOPBANNER);
-                if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-                free(buf);
-                fclose(f);
-        }
-#endif
-
-        if((HEADERSTRING_DISABLE_ALL & code) == 0) {
-                /* print top string (navigation) */
+        /* print top string (navigation) */
+        if((HEADERSTRING_DISABLE_ALL & code) == 0)
                 PrintTopString(code, curind, retind);
-                PrintTopStaticLinks (code);
-        }
 }
 
 /* print bottom lines from file (banners, etc.) */
 void PrintBottomLines(DWORD code, DWORD curind, DWORD retind = 0)
 {
-
-/*        if(((HEADERSTRING_DISABLE_ALL & code) == 0) ) {
-                PrintTopString(code, curind, retind);
-        }*/
-
-
 #if USE_HTML_BOTTOMBANNER
-        if(curind == MAINPAGE_INDEX && (currentdsm & CONFIGURE_dup) == 0) 
-                printf(HTML_BOTTOMBANNER);
-        else 
-                printf(HTML_BOTTOMBANNER_SHORT);
-#else
-        {
-                FILE *f;
-                void *buf;
-                DWORD readed;
-                if((buf = malloc(MAX_HTML_FILE_SIZE)) == NULL)
-                        printhtmlerrorat(LOG_FATAL_NOMEMORY, MAX_HTML_FILE_SIZE);
-                if((f = fopen(F_BOTTOMBANNER,FILE_ACCESS_MODES_R)) == NULL)
-                        printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_BOTTOMBANNER);
-                if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0)
-                        printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_BOTTOMBANNER);
-                if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-                fclose(f);
-                free(buf);
-        }
+        printf(HTML_BOTTOMBANNER);
 #endif
-
         printf (HTML_END);
-
 }
 
 /* print moderation toolbar and keys
@@ -876,79 +841,6 @@ int PrintAdminToolbar(DWORD root, int mflag, DWORD UID)
         return 0;
 }
 
-/* print FAQ-Help page */
-void PrintFAQForm()
-{
-        size_t readed;
-        char *buf;
-        FILE *f;
-
-        /* print faq file */
-        if((buf = (char*)malloc(MAX_HTML_FILE_SIZE)) == NULL) printhtmlerror();
-        
-        if((f = fopen(F_FAQ_HELP, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-        if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
-        if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-        fclose(f);
-
-        free(buf);
-}
-
-/* print Rules page */
-void PrintRules()
-{
-        DWORD readed;
-        char *buf;
-        FILE *f;
-
-        /* print rules file */
-        if((buf = (char*)malloc(MAX_HTML_FILE_SIZE)) == NULL) printhtmlerror();
-                
-        if((f = fopen(F_RULES, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-        if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
-        if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-        fclose(f);
-
-        free(buf);
-}
-
-/* print Authors page */
-void PrintAuthors()
-{
-    DWORD readed;
-        char *buf;
-        FILE *f;
-
-        /* print authors file */
-        if((buf = (char*)malloc(MAX_HTML_FILE_SIZE)) == NULL) printhtmlerror();
-
-        if((f = fopen(F_AUTHORS, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-        if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
-        if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-    fclose(f);
-
-        free(buf);
-}
-                        
-/* print Authors page */
-void PrintChangelog()
-{
-    DWORD readed;
-        char *buf;
-        FILE *f;
-
-        /* print authors file */
-        if((buf = (char*)malloc(MAX_HTML_FILE_SIZE)) == NULL) printhtmlerror();
-
-        if((f = fopen(F_CHANGELOG, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-        if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
-        if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
-        fclose(f);
-
-        free(buf);
-}
-                                                                                
-
 void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
 {
         printf("<FORM METHOD=POST ACTION=\"%s?search=action\">",
@@ -968,8 +860,8 @@ void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
                 if(LastMsg != 0) {
                         SMessage mes;
                         if(ReadDBMessage(db->TranslateMsgIndex(LastMsg), &mes)) {
-                                char s[200];
-                                ConvertTime(mes.Date, s);
+                                char *s;
+                                s = ConvertTime(mes.Date);
                                 sprintf(LastMsgStr, "%lu (%s)", LastMsg, s);
                         }
                         else strcpy(LastMsgStr, MESSAGEMAIN_search_indexerror);
@@ -1157,8 +1049,10 @@ void PrintSessionsList(DWORD Uid)
                                 userid = *((DWORD*)(buf[i]+16));
                                 time_t seqtime = *((DWORD*)(buf[i]));
                                 char *seqdate;
-                                if( seqtime > time(NULL)) seqdate = (char*)ConvertFullTime(seqtime-USER_SESSION_LIVE_TIME);
-                                else seqdate = (char*)ConvertFullTime(seqtime);
+                                if (seqtime > time(NULL))
+                                        seqdate = (char*)ConvertFullTime(seqtime-USER_SESSION_LIVE_TIME);
+                                else
+                                        seqdate = (char*)ConvertFullTime(seqtime);
 
                                 printf("<TR><TD ALIGN=RIGHT>%ld. "MESSAGEMAIN_session_ip"</TD><TD"
                                         " ALIGN=LEFT><STRONG>%u.%u.%u.%u</STRONG> %s</TD></TR>",
@@ -1206,18 +1100,18 @@ int PrintAboutUserInfo(char *name)
         if(mprf->GetUserByName(name, &ui, &fui, NULL) != PROFILE_RETURN_ALLOK)
         {
                 delete mprf;
-                printf(MESSAGEMAIN_profview_no_user, nickname);
-
+                char *nickname_f = FilterBiDi(nickname);
+                printf(MESSAGEMAIN_profview_no_user, nickname_f);
+                free(nickname_f);
                 return 1;
         }
 
         printf("<P></P>" DESIGN_BEGIN_USERINFO_INTRO_OPEN
-                "<TR><TD COLSPAN=2><BIG>%s %s</BIG></TD></TR>", MESSAGEMAIN_profview_intro, nickname);
-        
+               "<TR><TD COLSPAN=2><BIG>%s %s</BIG></TD></TR>", MESSAGEMAIN_profview_intro, nickname);
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TR>");
-
-        printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG><SMALL>", MESSAGEMAIN_profview_login, nickname );
-        
+        char *nickname_f = FilterBiDi(nickname);
+        printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG><SMALL>", MESSAGEMAIN_profview_login, nickname_f);
+        free(nickname_f);
 
         if(ULogin.LU.UniqID == ui.UniqID){
                 printf(" <A HREF=\"%s?register=form\">(%s)</A>", MY_CGI_URL, MESSAGEMAIN_profview_editinfo);
@@ -1231,9 +1125,7 @@ int PrintAboutUserInfo(char *name)
 
         if((ui.Flags & PROFILES_FLAG_ALT_DISPLAY_NAME) != 0) {
                 char *st;
-                if(!PrepareTextForPrint(ui.altdisplayname, &st, ui.secheader/*security*/,
-                        MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE))
-                {
+                if(!PrepareTextForPrint(ui.altdisplayname, &st, 1, MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE)) {
                         st = (char*)malloc(1000);
                         strcpy(st, ui.altdisplayname);
                 }
@@ -1312,8 +1204,11 @@ int PrintAboutUserInfo(char *name)
                 DWORD tmp;
                 char *st = FilterHTMLTags(fui.AboutUser, MAX_PARAMETERS_STRING);
                 if(st) {
-                        if(FilterBoardTags(st, &about, ui.secur, MAX_PARAMETERS_STRING,
-                                        MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
+                        DWORD enabled_smiles = 0;
+                        if((currentdsm & CONFIGURE_dsm) == 0)
+                                enabled_smiles = MESSAGE_ENABLED_SMILES;
+                        if(FilterBoardTags(st, &about, 0, MAX_PARAMETERS_STRING,
+                                        enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                         BOARDTAGS_EXPAND_ENTER, &tmp) == 0) {
                                 about = (char*)malloc(strlen(st) + 1);
                                 strcpy(about, st);
@@ -1693,20 +1588,10 @@ cleanup_and_parseerror:
                         // Do post user creation/modificaton job
 #if USER_ALT_NICK_SPELLING_SUPPORT
                         if(op == 1 || (op == 2 && needregisteraltnick)) {
-                                if(ui->altdisplayname[0] != 0) {
-                                        char *st;
-
-                                        // parse tags
-                                        if(!PrepareTextForPrint(ui->altdisplayname, &st, ui->secheader/*security*/,
-                                                        MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE)) {
-                                                st = (char*)malloc(1000);
-                                                strcpy(st, ui->altdisplayname);
-                                        }
-
-                                        AltNames.AddAltName(ui->UniqID, ui->username, st);
-                                        free(st);
-                                }
-                                else AltNames.DeleteAltName(ui->UniqID);
+                                if(ui->altdisplayname[0] != 0)
+                                        AltNames.AddAltName(ui->UniqID, ui->username, ui->altdisplayname);
+                                else
+                                        AltNames.DeleteAltName(ui->UniqID);
                         }
                         else if(op == 3 && needregisteraltnick) {
                                 AltNames.DeleteAltName(ui->UniqID);
@@ -2233,36 +2118,6 @@ void ParseCookie()
         }
 }
 
-/*
-// calculate time limit for printing messages
-void calc_print_time()
-{
-        if(currentlsel == 1) {
-                // calculate time limit
-                //current_minprntime = time(NULL);
-                current_minprntime = time(NULL) - 3600*currenttv*LENGTH_timetypes_hours[currenttt-1];
-                
-                switch(currenttt) {
-                case 1:
-                        // hours
-                        current_minprntime = current_minprntime - 3600*currenttv;
-                        break;
-                case 2:
-                        // days
-                        current_minprntime = current_minprntime - 3600*24*currenttv;
-                        break;
-                case 3:
-                        // weeks
-                        current_minprntime = current_minprntime - 3600*24*7*currenttv;
-                        break;
-                case 4:
-                        // months
-                        current_minprntime = current_minprntime - 3600*24*31*currenttv;
-                        break;
-                }
-        }
-}*/
-
 static void PrepareActionResult(int action, const char **c_par1, const char **c_par2)
 {
         switch(action) {
@@ -2328,7 +2183,7 @@ int main()
         char *tmp;
         int initok = 0;
         DB_Base DB;
-        SMessage mes;
+        SMessage mes = {{0}};  // init by zeros
 
         if(!isEnoughSpace()) {
                 printf("Content-type: text/html\n\n"
@@ -2505,7 +2360,6 @@ int main()
         }
 
         // calculate minimal message print time
-        //        calc_print_time();
         if(currentlsel == 1) current_minprntime = time(NULL) - 3600*currenttv*LENGTH_timetypes_hours[currenttt-1];
 
 
@@ -2606,7 +2460,7 @@ int main()
                 if(!is_xml){
                 PrintHTMLHeader(HEADERSTRING_REG_USER_LIST | HEADERSTRING_POST_NEW_MESSAGE |
                         HEADERSTRING_CONFIGURE | HEADERSTRING_WELCOME_INFO |
-                        HEADERSTRING_ENABLE_RESETNEW | HEADERSTRING_DISABLE_END_TABLE | HEADERSTRING_NAVIGATION, MAINPAGE_INDEX);
+                        HEADERSTRING_ENABLE_RESETNEW | HEADERSTRING_DISABLE_END_TABLE, MAINPAGE_INDEX);
 
                 //        Prepare information about new message count and dispaly mode */
                 char displaymode[500];                // display message mode
@@ -2654,8 +2508,6 @@ int main()
                 }
 #endif
 
-                // moved to PrintTopStaticLinks //printf("<TR><TD class=cl>&nbsp;</TD></TR>");
-                
                 // print info about personal messages
                 if(ULogin.LU.ID[0] != 0 && ULogin.pui->persmescnt - ULogin.pui->readpersmescnt > 0) {
                         sprintf( privmesinfo, ", <A HREF=\"" MY_CGI_URL "?persmsg\" STYLE=\"text-decoration:underline;\"><FONT COLOR=RED>" MESSAGEMAIN_privatemsg_newmsgann " %d " \
@@ -2687,7 +2539,7 @@ int main()
                         DWORD cnt, i;
                         if(ReadGlobalAnnounces(0, &ga, &cnt) != ANNOUNCES_RETURN_OK) printhtmlerror();
                         if(cnt) {
-                                char uname[1000], del[1000], date[100];
+                                char uname[1000], del[1000], *date;
                                 int something_printed = 0;
                                 for(i = 0; i < cnt; i++) {
                                         if(ga[i].Number > currentlann) {
@@ -2696,8 +2548,11 @@ int main()
                                                 char *st = FilterHTMLTags(ga[i].Announce, MAX_PARAMETERS_STRING - 1);
                                                 char *st1 = NULL;
                                                 DWORD retflg;
+                                                DWORD enabled_smiles = 0;
+                                                if((currentdsm & CONFIGURE_dsm) == 0)
+                                                        enabled_smiles = MESSAGE_ENABLED_SMILES;
                                                 if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
-                                                        MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
+                                                        enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                                         BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                                                 {
                                                         st1 = st;
@@ -2715,7 +2570,7 @@ int main()
                                         }        
                                                 else del[0] = 0;
 
-                                                ConvertTime(ga[i].Date, date);
+                                                date = ConvertTime(ga[i].Date);
 
                                                 printf(DESIGN_GLOBALANN_FRAME, st1, MESSAGEMAIN_globann_postedby, uname, date, del);
                                                                                                         
@@ -2794,25 +2649,23 @@ int main()
                                         // change title
                                         char *an;
                                         DWORD xtmp;
-                                        if(FilterBoardTags(mes.MessageHeader, &an, mes.SecHeader,
-							   MAX_PARAMETERS_STRING, MESSAGE_ENABLED_TAGS | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
+                                        if(FilterBoardTags(mes.MessageHeader, &an, 1,
+							   MAX_PARAMETERS_STRING, mes.Flag | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                                 an = mes.MessageHeader;
 
-                                        char *an_f = FilterBiDi(an);
                                         if (mes.Topics < TOPICS_COUNT && mes.Topics  != 0 ){
                                                 char *t;
-                                                t = (char*)malloc(strlen(an_f) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
+                                                t = (char*)malloc(strlen(an) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
                                                 *t = 0;
                                                 strcat(t, Topics_List[mes.Topics]);
                                                 strcat(t, TITLE_divider);
-                                                strcat(t, an_f);
+                                                strcat(t, an);
                                                 Tittle_cat(t);
                                                 free(t);
                                         } else 
-                                                Tittle_cat(an_f);
+                                                Tittle_cat(an);
 
                                         if(an != mes.MessageHeader) free(an);
-                                        free(an_f);
 #endif
                                         // tmpxx contains vindex of parent message if thread is rolled.
                                         // if some sub-thread is rolled, tmpxx contains vindex of MAIN parent of thread
@@ -3052,10 +2905,6 @@ int main()
                         free(st);
                 }
         
-
-if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the box") == 0 ) ) strcpy(mes.HostName, "newip");
-
-
                 // read password
                 passw = strget(par,"pswd=", PROFILES_MAX_PASSWORD_LENGTH - 1, '&');
 
@@ -3113,6 +2962,17 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                         free(st);
                 }
 
+                // read captcha
+                st = strget(par,"cp=", 5, '&');
+                if(st != NULL) {
+                        if (strncmp(st, "88", 2)) {
+                                free(st);
+                                printaccessdenied(deal);
+                                goto End_part;
+                        }
+                        free(st);
+                }
+
                 mes.Topics = 0;
 #if TOPICS_SYSTEM_SUPPORT
                 {
@@ -3162,7 +3022,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
 
                                 // do not allow posts to old threads
                                 if ( ROOT > 0 && ((DB.VIndexCountInDB() - ROOT) > MAX_DELTA_POST_MESSAGE) ) {
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(MESSAGEMAIN_add_closed, MESSAGEMAIN_add_closed2, 0);
                                         PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                         if(passw) free(passw);
@@ -3177,7 +3037,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                 {
                                         const char *c_ActionResult1, *c_ActionResult2;
                                         PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
 
                                         if(cr == MSG_CHK_ERROR_BANNED && banreason) {
@@ -3222,7 +3082,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                         }
                                         else tmpxx = mes.ViIndex;
 
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
                                                 tmpxx, ROOT);
                                         if(LogMeIn) {
                                                 // if we have logged in also
@@ -3230,7 +3090,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                         }
                                         else PrintBoardError(MESSAGEMAIN_add_ok, MESSAGEMAIN_add_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
 
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, tmpxx, ROOT);
+                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmpxx, ROOT);
 
                                         if(passw != NULL) free(passw);
 
@@ -3277,7 +3137,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                 {
                                         const char *c_ActionResult1, *c_ActionResult2;
                                         PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
 
                                         if(cr == MSG_CHK_ERROR_BANNED && banreason) {
@@ -3360,7 +3220,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                 {
                                         const char *c_ActionResult1, *c_ActionResult2;
                                         PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(c_ActionResult1, c_ActionResult2, 0);
 
                                         if(cr == MSG_CHK_ERROR_BANNED && banreason) {
@@ -3373,8 +3233,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                         cookie_name = (char*)realloc(cookie_name, AUTHOR_NAME_LENGTH);
                                         strcpy(cookie_name, mes.AuthorName);
                                         
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                                ROOT);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(MESSAGEMAIN_add_ok, MESSAGEMAIN_add_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                 }
                         }
@@ -3391,7 +3250,7 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                 }// switch(action)
                 if(passw) free(passw);
 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, ROOT);
+                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                 goto End_part;
         }
 
@@ -3415,26 +3274,17 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                 if(par != NULL) {
                                         char *st, *ss;
 
-#define READ_PARAM_MASK(param, var, mask) {                \
-        char *ss = strget(par, param, 20, '&');        \
-        if(ss != NULL) {                                                \
-                if(strcmp(ss, "1") == 0) {                        \
-                        var |= mask;                                        \
-                }                                                                        \
-                else {                                                                \
-                        var &= (~mask);                                        \
-                }                                                                        \
-                free(ss);                                                        \
-        }                                                                                \
-        else var &= (~mask);                                        \
+#define READ_PARAM_MASK(param, var, mask) {                             \
+        char *ss = strget(par, param, 20, '&');                         \
+        if(ss && !strcmp(ss, "1"))                                      \
+                var |= mask;                                            \
+        else                                                            \
+                var &= (~mask);                                         \
+        free(ss);                                                       \
 }
 
                                         // read disable smiles
                                         READ_PARAM_MASK("dsm=", currentdsm, CONFIGURE_dsm);
-                                        // read dup (disable upper picture)
-                                        READ_PARAM_MASK("dup=", currentdsm, CONFIGURE_dup);
-                                        // read dul (disable second link bar)
-                                        READ_PARAM_MASK("dul=", currentdsm, CONFIGURE_dul);
                                         // read onh (disable own nick highlighing)
                                         READ_PARAM_MASK("onh=", currentdsm, CONFIGURE_onh);
                                         // read plu (enable + acting like an href)
@@ -3447,21 +3297,19 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                         READ_PARAM_MASK("dsig=", currentdsm, CONFIGURE_dsig);
                                         // read show reply form
                                         READ_PARAM_MASK("shrp=", currentdsm, CONFIGURE_shrp);
+                                        // read disable colors
+                                        READ_PARAM_MASK("clr=", currentdsm, CONFIGURE_clr);
 
-#define READ_PARAM_NUM(param, var, vardefault) {\
-        char *ss = strget(par, param, 20, '&');                \
-        if(ss != NULL) {                                                        \
-                DWORD tmp = strtol(ss, &st, 10);                \
-                if(((!(*ss != '\0' && *st == '\0'))                \
-                        || errno == ERANGE)) {                                \
-                        var = vardefault;                                        \
-                }                                                                                \
-                else {                                                                        \
-                        var = tmp;                                                        \
-                }                                                                                \
-                free(ss);                                                                \
-        }                                                                                        \
-        else var = vardefault;                                                \
+#define READ_PARAM_NUM(param, var, vardefault) {                        \
+       char *ss = strget(par, param, 20, '&');                          \
+       errno = 0;                                                       \
+       var = vardefault;                                                \
+       if (ss && *ss) {                                                 \
+               DWORD tmp = strtol(ss, &st, 10);                         \
+               if (!*st || !errno)                                      \
+                       var = tmp;                                       \
+       }                                                                \
+       free(ss);                                                        \
 }
 
                                         // read lsel (show type selection)
@@ -3613,11 +3461,11 @@ if( (strcmp(Cip, "77.246.224.2") == 0) && (strcmp(mes.AuthorName, "out of the bo
                                                                 MESSAGEMAIN_login_hellomor
                                                         };
                                                         int cur = 2;
-                                                        time_t tt = time(NULL);
-                                                        tm *x = localtime(&tt);
-                                                        if(x->tm_hour >= 6 && x->tm_hour < 10) cur = 3;
-                                                        if(x->tm_hour >= 10 && x->tm_hour < 18) cur = 0;
-                                                        if(x->tm_hour >= 18 && x->tm_hour < 22) cur = 1;
+                                                        time_t t = time(NULL) + 3600*currenttz;
+                                                        tm *tt = gmtime(&t);
+                                                        if(tt->tm_hour >= 6  && tt->tm_hour < 10) cur = 3;
+                                                        if(tt->tm_hour >= 10 && tt->tm_hour < 18) cur = 0;
+                                                        if(tt->tm_hour >= 18 && tt->tm_hour < 22) cur = 1;
                                                         sprintf(boardgreet, MESSAGEMAIN_login_ok, greetnames[cur], FilterHTMLTags(ULogin.pui->username, PROFILES_MAX_USERNAME_LENGTH, 0));
 
 
@@ -3784,12 +3632,9 @@ print2log("incor pass %s", par);
 
                                         DB.DB_ChangeCloseThread(tmp, 1);
                                         print2log("Message %d (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                                tmp);
-                                        PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2,
-                                                HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                                tmp);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                        PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
+                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 }
                                 else printaccessdenied(deal);
                         }
@@ -3822,12 +3667,10 @@ print2log("incor pass %s", par);
 
                                 Tittle_cat(TITLE_HidingMessage);
 
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                        tmp);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                        tmp);
+                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                         }
                         free(st);
                 }
@@ -3857,12 +3700,10 @@ print2log("incor pass %s", par);
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 0);
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %d (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                        tmp);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                        tmp);
+                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                         }
                         free(st);
                 }
@@ -3898,12 +3739,10 @@ print2log("incor pass %s", par);
                                         DB.DB_ChangeCloseThread(tmp, 0);
                                         if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                         print2log("Message %d (%s (by %s)) was opened by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                                tmp);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2,
                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE |
-                                                HEADERSTRING_DISABLE_FAQHELP, tmp);
+                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 }
                                 else printaccessdenied(deal);
                         }
@@ -3973,11 +3812,9 @@ print2log("incor pass %s", par);
                                 print2log("Message %d (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 DB.DB_DeleteMessages(tmp);
                                 
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, tmp);
-                                PrintBoardError(MESSAGEMAIN_threaddeleted, MESSAGEMAIN_threaddeleted2,
-                                        HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP,
-                                        tmp);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                PrintBoardError(MESSAGEMAIN_threaddeleted, MESSAGEMAIN_threaddeleted2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
+                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                         }
                         free(st);
                 }
@@ -4024,10 +3861,9 @@ print2log("incor pass %s", par);
 #if STABLE_TITLE == 0
                                         // set title - change title to change message
                                         char *aheader = FilterBiDi(mes.MessageHeader);
-                                        ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(TITLE_ChangingMessage) + strlen(aheader) + 6);
+                                        ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(TITLE_ChangingMessage) + strlen(mes.MessageHeader) + 6);
                                         strcat(ConfTitle, TITLE_divider);
                                         strcat(ConfTitle, TITLE_ChangingMessage);
-                                        strcat(ConfTitle, " - ");
                                         strcat(ConfTitle, aheader);
                                         free(aheader);
 #endif
@@ -4056,44 +3892,6 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
-        if(strncmp(deal, "help", 4) == 0) {
-
-                Tittle_cat(TITLE_HelpPage);
-
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                
-                PrintFAQForm();
-                
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                goto End_part;
-        }
-
-        if(strncmp(deal, "rules", 5) == 0) {
-                Tittle_cat(TITLE_Rules);
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                PrintRules();
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                goto End_part;
-        }
-
-        if(strncmp(deal, "authors", 7) == 0) {
-                Tittle_cat(TITLE_Authors);
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                PrintAuthors();
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                goto End_part;
-        }
-
-        if(strncmp(deal, "changelog", 7) == 0) {
-                Tittle_cat(TITLE_Changelog);
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                PrintChangelog();
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, MAINPAGE_INDEX);
-                goto End_part;
-        }                        
-                                                                                                
-                                                                                                        
 
         if(strncmp(deal, "uinfo", 5) == 0) {
                 char *name;
@@ -4773,9 +4571,11 @@ print2log("incor pass %s", par);
                                         DWORD oldTopic = mes.Topics;
                                         mes.Topics = Topic;
                                         if(WriteDBMessage(MsgNum, &mes)) {
-                                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, mes.ViIndex, mes.ViIndex);
-                                                PrintBoardError(MESSAGEMAIN_messagechanged, MESSAGEMAIN_messagechanged2, HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAQHELP, mes.ViIndex);
+                                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
+                                                                mes.ViIndex, mes.ViIndex);
+                                                PrintBoardError(MESSAGEMAIN_messagechanged, MESSAGEMAIN_messagechanged2,
+                                                                HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
+                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, mes.ViIndex);
                                                 print2log("Topic of message %d (%s (by %s)) was changed from [%s] to [%s] by %s", tmp, mes.MessageHeader, mes.AuthorName,
                                                         Topics_List[oldTopic], Topics_List[Topic], ULogin.pui->username);
                                                 goto End_part;
@@ -4900,8 +4700,11 @@ print2log("incor pass %s", par);
                         }
                         if(body && strlen(body) > 0) {
                                 DWORD retflg;
+                                DWORD enabled_smiles = 0;
+                                if((currentdsm & CONFIGURE_dsm) == 0)
+                                        enabled_smiles = MESSAGE_ENABLED_SMILES;
                                 if(FilterBoardTags(body, &fbody, 0, MAX_PARAMETERS_STRING - 1,
-                                        MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS | BOARDTAGS_TAG_PREPARSE, &retflg) == 0) {
+                                        enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_TAG_PREPARSE, &retflg) == 0) {
                                         /* if to long - ignore tags */
                                         
                                 }
@@ -4930,8 +4733,11 @@ print2log("incor pass %s", par);
                                         char *st = FilterHTMLTags(body, MAX_PARAMETERS_STRING - 1);
                                         char *st1 = NULL;
                                         DWORD retflg;
+                                        DWORD enabled_smiles = 0;
+                                        if((currentdsm & CONFIGURE_dsm) == 0)
+                                                enabled_smiles = MESSAGE_ENABLED_SMILES;
                                         if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
-                                                MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
+                                                enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                                 BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                                         {
                                                 st1 = st;
@@ -4963,7 +4769,7 @@ print2log("incor pass %s", par);
 
                                                 sprintf(subj, MAILACKN_PRIVATEMSG_SUBJECT, ULogin.pui->username);
 
-                                                if(!PrepareTextForPrint(body, &pb2, 0/*security*/, MESSAGE_ENABLED_TAGS | BOARDTAGS_EXPAND_ENTER | BOARDTAGS_PURL_ENABLE)) {
+                                                if(!PrepareTextForPrint(body, &pb2, 0, MESSAGE_ENABLED_TAGS | BOARDTAGS_EXPAND_ENTER | BOARDTAGS_PURL_ENABLE)) {
                                                         pb2 = (char*)malloc(strlen(body) + 1);
                                                         strcpy(pb2, body);
                                                 }
@@ -5174,8 +4980,11 @@ print2log("incor pass %s", par);
                         char *st = FilterHTMLTags(pmsg->Msg, MAX_PARAMETERS_STRING - 1);
                         char *st1 = NULL;
                         DWORD retflg;
+                        DWORD enabled_smiles = 0;
+                        if((currentdsm & CONFIGURE_dsm) == 0)
+                                enabled_smiles = MESSAGE_ENABLED_SMILES;
                         if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
-                                MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
+                                enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                 BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                         {
                                 st1 = st;
@@ -5313,12 +5122,14 @@ print2log("incor pass %s", par);
                                                 if(preview) {
                                                         char uname[1000];
                                                         char *st;
-                                                        char date[1000];
+                                                        char *date;
+                                                        DWORD enabled_smiles = 0;
+                                                        if((currentdsm & CONFIGURE_dsm) == 0)
+                                                                enabled_smiles = MESSAGE_ENABLED_SMILES;
 
-                                                        DB.Profile_UserName(ULogin.pui->username, uname, 1);
-                                                        PrepareTextForPrint(body, &st, 0, MESSAGE_ENABLED_SMILES | MESSAGE_ENABLED_TAGS |
+                                                        DB.Profile_UserName(ULogin.pui->username, uname, 1);                                                                                                         PrepareTextForPrint(body, &st, 0, enabled_smiles | MESSAGE_ENABLED_TAGS |
                                                                 BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER);
-                                                        ConvertTime(time(NULL), date);
+                                                        date = ConvertTime(time(NULL));
 
                                                         Tittle_cat(TITLE_PostGlobalAnnounce);
 
@@ -5657,35 +5468,32 @@ print2log("incor pass %s", par);
                 CUserLogin ULogin;
                 CProfiles uprof;
                 Tittle_cat(TITLE_UserList);
-        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
 
                 printf("<BR><BR><center>");
-                printf(
-                        "<font color=\"red\">%s</font><br>\n",
-                        fDelete ?
-                        "Следующие пользователи были успешно удалены:" : 
-                "Список пользователей подлежащих удалению:"
-                );
+                printf("<font color=\"red\">%s</font><br>\n",
+                       fDelete ?
+                       "Следующие пользователи были успешно удалены:" : 
+                       "Список пользователей подлежащих удалению:"
+                       );
+
                 if(!uprof.GenerateUserList(&buf, &uc)) {
                         printf("error generating list");
                 } else {
                         qsort((void*)buf, uc, sizeof(char*), cmp_name);
                         for(i = 0; i < uc; i++) {
-                                    DWORD 
-                                        PostCount = *((DWORD*)(buf[i] + 4)),
-                                        RefreshCount = *((DWORD*)(buf[i] + 12)),
-                                        LoginDate = *((DWORD*)(buf[i] + 8)),
-                                        activity = PostCount + RefreshCount;
+                                DWORD PostCount = *((DWORD*)(buf[i] + 4));
+                                DWORD LoginDate = *((DWORD*)(buf[i] + 8));
+                                DWORD RefreshCount = *((DWORD*)(buf[i] + 12));
+                                DWORD activity = PostCount + RefreshCount;
                                 char *username = buf[i] + 20;
-                                int
-                                        idletime = tn - LoginDate;
-                                bool
-                                        fAged1 = idletime > 3 * YEAR,
-                                         fAged2 = idletime > 2 * YEAR && activity < 1000,
-                                        fAged3 = idletime > YEAR && activity < 100,
-                                        fAged4 = idletime > YEAR / 2 && activity < 10,
-                                        fAged5 = idletime > DAY && activity == 0;
-                                if(fAged1 || fAged2 || fAged3 || fAged4 || fAged5) {        
+                                int idletime = tn - LoginDate;
+                                bool fAged1 = idletime > 3 * YEAR;
+                                bool fAged2 = idletime > 2 * YEAR && activity < 1000;
+                                bool fAged3 = idletime > YEAR && activity < 100;
+                                bool fAged4 = idletime > YEAR / 2 && activity < 10;
+                                bool fAged5 = idletime > DAY && activity == 0;
+                                if (fAged1 || fAged2 || fAged3 || fAged4 || fAged5) {        
                                         if((ii % 10) != 0) printf(" | ");
                                         if(((ii % 10) == 0) && ii != 0) printf("<br>");
                                         DB.Profile_UserName(buf[i] + 20, name, 1, 1);
@@ -5700,29 +5508,20 @@ print2log("incor pass %s", par);
                                                 }
                                         }
                                         ii++;
-                                }// if(!fSuperuser && (fAged1 || fAged2 || fAged3)
+                                }
                                 free(buf[i]);
-                        } //for(;i<uc;)
-                        if(fDelete) {
-                                printf(
-                                        "<br /> <b>удалено %lu из %lu пользователей</b> \n", 
-                                        ii, 
-                                        uc);
-                        } else {
-                                printf(
-                                        "<br /> <b>Будет удалено <fonc color=red>%lu</font> из %lu пользователей</b> \n",
-                                        ii, 
-                                        uc);
-                                printf(
-                                        "<br /><a href=\"" MY_CGI_URL "?cluserlist=yes\">"
-                                        "<font color=\"red\">Продолжить ?</font></a>");
                         }
-                }//if(generate_list(..))
+                        
+                        if(fDelete)
+                                printf("<br /><b>удалено %lu из %lu пользователей</b> \n", ii, uc);
+                        else
+                                printf("<br /><b>Будет удалено <fonc color=red>%lu</font> из %lu пользователей</b>"
+                                       "<br /><a href=\"" MY_CGI_URL "?cluserlist=yes\"><font color=\"red\">Продолжить ?</font></a>", ii, uc);
+                }
                 PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                 goto End_part;
-        }//if(strcmp(deal,"cluserlist"))         
-#endif //CLEANUP_IDLE_USERS
-
+        }
+#endif
 
         if(strncmp(deal, "banlist", 7) == 0) {
                 

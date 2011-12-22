@@ -117,7 +117,8 @@ void print2log(const char *s, ...)
         char *p;
         if((f = fopen(LOG_FILE, "a")) != NULL) {
                 t = time(NULL);
-                p = ctime(&t);
+                t += 3600*DATETIME_DEFAULT_TIMEZONE;
+                p = asctime(gmtime(&t));
                 p[strlen(p) - 1] = 0;
                 fprintf(f, "%s : %s\n", p, ss);
                 fclose(f);

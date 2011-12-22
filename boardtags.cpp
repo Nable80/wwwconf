@@ -9,98 +9,79 @@
 #include "basetypes.h"
 #include "boardtags.h"
 #include "error.h"
+#include "dbase.h"
 
-/* following define WWWConf Board Tags, and
- * it's translation into standart HTML tags,
- * and security level of each tag
- */
 STagConvert TagConvTable[BoardTagCount] = {
-        /* text output tags */
-        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 10},
-        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 10},
-        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 10},
-        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 10},
-        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 10},
-        /* Colour tags */
-        {"RED", "<span class=\"btc\" style=\"color:#FF0000\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 10},
-        {"COLOR", "<span class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 10},
-        {"C", "<span  class=\"btc\" style=\"color:#%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 10},
-        /* URL, Picture, Mail */
-        {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 10},
-        {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 10},
-        {"MAIL", "<A HREF=\"mailto:%s\" STYLE=\"text-decoration:underline;\">", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 10},
-        /* HR SIZE=1 */
-        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 10},
-        /* quotation */
+        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 1},
+        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 1},
+        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 1},
+        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 0},
+        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 1},
+        {"RED", "<span style=\"color:red\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1},
+        {"COLOR", "<span style=\"color:%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 1},
+        {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 0},
+        {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0},
+        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 0},
         {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>", 
-        WC_TAG_TYPE_1, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_1, 10},
-        /* Center */
-        {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 10},
-        /* Pre */
-        {"PRE", "<PRE STYLE=\"margin-left:25px\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 10},
-        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 10},
-        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 10},
-        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 10},
-        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 10}
+	 WC_TAG_TYPE_1, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_1, 0},
+        {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 0},
+        {"PRE", "<PRE style=\"display:inline\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 0},
+        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 1},
+        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 0},
+        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 0},
+        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0},
+	{"TUB", "<iframe class=\"youtube-player\" type=\"text/html\" width=\"640\" height=\"390\" src=\"http://www.youtube.com/embed/",
+	 WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0},
+	{"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1}
 };
 
-/* define there smile-like codes
- * and it's translation to HTML
- * first character in tag must be ':' or ';'
- */
 SPicConvert PicConvTable[BoardPicCount] = {
-        {":))",                "bigsmile.gif",                9},
-        {":-))",        "bigsmile.gif",                9},
-        {":-)",                "smile.gif",                9},
-        {":)",                "smile.gif",                9},
-        {":(",                "frown.gif",                9},
-        {":-(",                "frown.gif",                9},
-        {";)",                "wink.gif",                        9},
-        {";-)",                "wink.gif",                        9},
-        {":LOL",        "lol.gif",                        9},
-        {":!!",                "lol.gif",                        9},
-        {":-\\",        "smirk.gif",                9},
-        {":\\",                "smirk.gif",                9},
-        {":o",                "redface.gif",                9},
-        {":MAD",        "mad.gif",                        9},
-        {":STOP",        "stop.gif",                        9},
-        {":APPL",        "appl.gif",                        9},
-        {":BAN",        "ban.gif",                        9},
-        {":BEE",        "bee.gif",                        9},
-        {":BIS",        "bis.gif",                        9},
-        {":ZLOBA",        "blya.gif",                        9},
-        {":BORED",        "bored.gif",                9},
-        {":BOTAT",        "botat.gif",                9},
-        {":COMP",        "comp.gif",                        9},
-        {":CRAZY",        "crazy.gif",                9},
-        {":DEVIL",        "devil.gif",                9},
-        {":DOWN",        "down.gif",                        9},
-        {":FIGA",        "figa.gif",                        9},
-        {":GIT",        "git.gif",                        9},
-        {":GYGY",        "gy.gif",                        9},
-        {":HEH",        "heh.gif",                        9},
-        {":CIQ",        "iq.gif",                        9},
-        {":KURIT",        "kos.gif",                        9},
-        {":LAM",        "lam.gif",                        9},
-        {":MNC",        "mnc.gif",                        9},
-        {":NO",                "no.gif",                        9},
-        {":SMOKE",        "smoke.gif",                9},
-        {":SORRY",        "sorry.gif",                9},
-        {":SUPER",        "super.gif",                9},
-        {":UP",                "up.gif",                        9},
-        {":YES2",        "yes2.gif",                        9},
-        {":YES",        "yes.gif",                        9},
-        {":BASH",        "bash.gif",                        9},
-        {":CLAPPY",        "clappy.gif",                9},
-        {":EWW",        "eww.gif",                        9},
-        {":ROTFL",        "roflol.gif",                9},
-        {":SPOTMAN","spotman.gif",                9},
-        {":WAVE",        "wave.gif",                        9},
-        {":COWARD",        "coward.gif",                9},
-        {":DRAZNIT","draznit.gif",                9},
-        {":ROLLEYES","rolleyes.gif",        9},
-        {":PLOHO",        "blevalyanaeto.gif",9},
-        {":}",                "icqbig.gif",                9},
+        {":))",       "bigsmile.gif"     },
+        {":)",        "smile.gif"        },
+        {":(",        "frown.gif"        },
+        {";)",        "wink.gif"         },
+        {":!!",       "lol.gif"          },
+        {":\\",       "smirk.gif"        },
+        {":o",        "redface.gif"      },
+        {":MAD",      "mad.gif"          },
+        {":STOP",     "stop.gif"         },
+        {":APPL",     "appl.gif"         },
+        {":BAN",      "ban.gif"          },
+        {":BEE",      "bee.gif"          },
+        {":BIS",      "bis.gif"          },
+        {":ZLOBA",    "blya.gif"         },
+        {":BORED",    "bored.gif"        },
+        {":BOTAT",    "botat.gif"        },
+        {":COMP",     "comp.gif"         },
+        {":CRAZY",    "crazy.gif"        },
+        {":DEVIL",    "devil.gif"        },
+        {":DOWN",     "down.gif"         },
+        {":FIGA",     "figa.gif"         },
+        {":GIT",      "git.gif"          },
+        {":GYGY",     "gy.gif"           },
+        {":HEH",      "heh.gif"          },
+        {":CIQ",      "iq.gif"           },
+        {":KURIT",    "kos.gif"          },
+        {":LAM",      "lam.gif"          },
+        {":MNC",      "mnc.gif"          },
+        {":NO",       "no.gif"           },
+        {":SMOKE",    "smoke.gif"        },
+        {":SORRY",    "sorry.gif"        },
+        {":SUPER",    "super.gif"        },
+        {":UP",       "up.gif"           },
+        {":YES2",     "yes2.gif"         },
+        {":YES",      "yes.gif"          },
+        {":BASH",     "bash.gif"         },
+        {":CLAPPY",   "clappy.gif"       },
+        {":EWW",      "eww.gif"          },
+        {":ROTFL",    "roflol.gif"       },
+        {":SPOTMAN",  "spotman.gif"      },
+        {":WAVE",     "wave.gif"         },
+        {":COWARD",   "coward.gif"       },
+        {":DRAZNIT",  "draznit.gif"      },
+        {":ROLLEYES", "rolleyes.gif"     },
+        {":PLOHO",    "blevalyanaeto.gif"},
+        {":}",        "icqbig.gif"       },
 };
 
 /* parse string to nearest ';' or ':' */
@@ -109,9 +90,11 @@ int inline ParseToOpenSmileTagorHttp(char *s)
         register unsigned int i = 0;
 #if TRY_AUTO_URL_PREPARSE
         // find smile, ftp or http start
-        while(s[i] != 0 && s[i] != ':' && s[i] != ';' && s[i] != 'h' && s[i] != 'f') i++;
+        while (s[i] != 0 && s[i] != ':' && s[i] != ';' && s[i] != 'h' && s[i] != 'f')
+                ++i;
 #else
-        while(s[i] != 0 && s[i] != ':' && s[i] != ';') i++;
+        while(s[i] != 0 && s[i] != ':' && s[i] != ';')
+                ++i;
 #endif
         return i;
 }
@@ -237,16 +220,16 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
 /* function for concatenation string s to d
  * with converting smile-codes to images
  */
-int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE sec, DWORD status, DWORD *flg)
+int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, DWORD *flg)
 {
         register char *dd = d + strlen(d);
         register char *ss = s;
         unsigned int i = 0, fstat;
         int wassmile = 0;
         *flg = 0;
-        while(*ss != 0) {
+        while (*ss) {
                 i = ParseToOpenSmileTagorHttp(ss);
-                if(i) {
+                if (i) {
                         char si = ss[i];
                         ss[i] = 0;
                         dd += smartstrcat(dd, ss, status, flg);
@@ -261,7 +244,7 @@ int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE sec, DWORD status, DWO
 #endif
 
                 for(register unsigned int j = 0; j < BoardPicCount; j++) {
-                        if(strlen(PicConvTable[j].tag) <= strlen(ss) && PicConvTable[j].security >= sec &&
+                        if(strlen(PicConvTable[j].tag) <= strlen(ss) && !index &&
                                 strncmp(ss, PicConvTable[j].tag, strlen(PicConvTable[j].tag)) == 0 && ((status & 1) == 0) ) {
                                 wassmile = 1;
                                 strcat(dd, "<IMG BORDER=0 SRC=\"" BOARD_PIC_URL);
@@ -321,7 +304,8 @@ int inline ParseRegExp(char *s)
 int inline ParseToOpenWC_TAG(char *s)
 {
         register int i = 0;
-        while(s[i] != 0 && s[i] != WC_TAG_OPEN) i++;
+        while (s[i] && s[i] != WC_TAG_OPEN)
+                ++i;
         return i;
 }
 
@@ -391,7 +375,7 @@ ParseBoardTag_Faild:
  * return value: function return 1 if successfull, overwise 0
  * tagtype - tag type (index in TagConvTable) and taglen = 1, 2 
  */
-int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, BYTE security)
+int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, BYTE index)
 {
         int tagdirection = 0; /* open by default */
         
@@ -404,7 +388,7 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
         
         for(int i=0; i < BoardTagCount; i++) {
                 if(strcmp(tag1, TagConvTable[i].tag) == 0) {
-                        if(TagConvTable[i].security < security) {
+                        if(index && !TagConvTable[i].index) {
                                 return 0;
                         }
                         *tagnumber = i;
@@ -432,43 +416,38 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                                 *tagtype = WC_TAG_TYPE_2;
                                 /* check for valid param count
                                 */
-                                if(tag2 == NULL) return 0;
+                                if(tag2 == NULL)
+					return 0;
                                 if(!tagdirection) {
                                         /* opening */
-                                        char *parsedtag2;
+                                        char *parsedtag2 = NULL;
 
-                                        if(i == URL_TAG_TYPE) {
-                                                if(strncmp(tag2, "http:", 5) != 0 && strncmp(tag2, "ftp:", 4) != 0 &&
-                                                    strncmp(tag2, "file:", 5) != 0 && strncmp(tag2, "https:", 6) != 0 &&
-                                                        strncmp(tag2, "smb:", 4) != 0)
-                                                {
+                                        if (i == URL_TAG_TYPE) {
+                                                if(strncmp(tag2, "http:", 5) != 0 && strncmp(tag2, "ftp:",   4) != 0 &&
+						   strncmp(tag2, "file:", 5) != 0 && strncmp(tag2, "https:", 6) != 0 &&
+						   strncmp(tag2, "smb:",  4) != 0) {
                                                         parsedtag2 = (char*)malloc(strlen(tag2) + 10);
                                                         strcpy(parsedtag2, "http://");
                                                         strcat(parsedtag2, tag2);
-                                                }
-                                                else parsedtag2 = tag2;
-                                        }
-                                        else if(i == COLOR_TAG_TYPE) {
-                                                if(strncmp(tag2, "#", 1) == 0) tag2++;  
-                                                if(strlen(tag2) != 6) return 0;  // 6 symbols should be, format XXXXXX
-                                                for(int i=0; i<=5; i++) {        
-                                                        if( !( (tag2[i]>= 48 && tag2[i] <= 57) || (tag2[i]>= 65 && tag2[i] <= 70) 
-                                                                || (tag2[i]>= 97 && tag2[i] <= 102) )) return 0;  // 0-9,a-f,A-F are allowed
-                                                }
-                                                parsedtag2 = tag2;
-                                        }
-                                        else if(i == C_TAG_TYPE) {
-                                                if(strncmp(tag2, "#", 1) == 0) tag2++;  
-                                                if(strlen(tag2) != 6) return 0;  // 6 symbols should be, format XXXXXX
-                                                for(int i=0; i<=5; i++) {        
-                                                        if( !( (tag2[i]>= 48 && tag2[i] <= 57) || (tag2[i]>= 65 && tag2[i] <= 70) 
-                                                                || (tag2[i]>= 97 && tag2[i] <= 102) )) return 0;  // 0-9,a-f,A-F are allowed
-                                                }
-                                                parsedtag2 = tag2;
-                                        }
-                                        else parsedtag2 = tag2;
-
-                                        *restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
+						}
+					} else if (i == COLOR_TAG_TYPE) {
+						if (tag2[0] == '#') {
+							for (size_t i = 1; i < 7; ++i)
+								if (!((tag2[i] >= 48 && tag2[i] <= 57) ||
+								      (tag2[i] >= 65 && tag2[i] <= 70) ||
+								      (tag2[i] >= 97 && tag2[i] <= 102)))
+									return 0;  // only 0-9, a-f, A-F are allowed
+						} else {
+							for (size_t i = 0; i < strlen(tag2); ++i)
+								if (!((tag2[i] >= 65 && tag2[i] <= 90) || 
+								      (tag2[i] >= 97 && tag2[i] <= 122)))
+									return 0;  // only letters are allowed
+						}
+					}
+					
+					if (!parsedtag2)
+						parsedtag2 = tag2;
+					*restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
 
                                         /* use sprintf() to insert tag2 into result
                                          * (format of topentag as %s instead of tag2)
@@ -476,8 +455,7 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                                         sprintf(*restag, TagConvTable[i].topentag, parsedtag2);
                                         *restag = (char*)realloc(*restag, strlen(*restag) + 1);
                                         if(parsedtag2 != tag2) free(parsedtag2);
-                                }
-                                else {
+                                } else {
                                         /* closing - not currently supported */
                                         return 0;
                                 }
@@ -510,11 +488,12 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
         return 0;
 }
 
-/* filtering smile codes and board tags using current security level = security
+/* filtering smile codes and board tags taking into account index flag
  * and message flags MESSAGE_ENABLED_SMILES MESSAGE_ENABLED_TAGS
  * return value 1 if all successfull, or 0 if string was cutted, 
  * because of ml limitation
- * **** input : s - string, ml - max result string length, Flags - flags of message, security - sec.
+ * **** input : s - string, ml - max result string length, Flags - flags of message,
+ * index - whether text is a subject or an altname.
  * level of msg (for tags conversion)
  * **** output : r - resulting string
 
@@ -523,18 +502,17 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
  *                0x04 - url autopreparse
 
  */
-int FilterBoardTags(char *s, char **r, BYTE security, DWORD ml, DWORD Flags, DWORD *RF)
+int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD *RF)
 {
-        //
         int beforePreStatus;
-        //
         char *tag1 = NULL, *tag2 = NULL, *res = NULL, *st;
         DWORD opentag, reff, status = 0x04, urldisable = 0;        // http preparse
         int i, StringTooLong = 0;
         SSavedTag OldTag[MAX_NESTED_TAGS];
         
         // ignore starting newline
-        while(*s == 10 || *s == 13) s++;
+        while(*s == 10 || *s == 13)
+                ++s;
         
         // ignore ending newline
         {
@@ -564,30 +542,33 @@ int FilterBoardTags(char *s, char **r, BYTE security, DWORD ml, DWORD Flags, DWO
 
         /* alloc memory for resulting string */
         beforePreStatus = status;
-        if(ml < 32000) st = (char *)malloc(32000);
-        else st = (char *)malloc(3*ml);
+        if (ml < 32000)
+                st = (char*) malloc(32000);
+        else
+                st = (char*) malloc(3*ml);
 
         st[0] = 0;
         opentag = 0;
         for(;;) {
-                if(strlen(st) >= ml) {
+                if (strlen(st) >= ml) {
                         StringTooLong = 1;
                         break;
                 }
-                if(*s == 0) break;
+                if (*s == 0)
+                        break;
                 i = ParseToOpenWC_TAG(s);
-                if(i) {
+                if (i) {
                         char si = s[i];
                         s[i] = 0;
-                        if((Flags & MESSAGE_ENABLED_SMILES) && ((Flags & BOARDTAGS_TAG_PREPARSE) == 0)) {
-                                if(ParseSmiles_smartstrcat(st, s, security, status, &reff)) {
+                        if ((Flags & MESSAGE_ENABLED_SMILES) && ((Flags & BOARDTAGS_TAG_PREPARSE) == 0)) {
+                                if(ParseSmiles_smartstrcat(st, s, index, status, &reff))
                                         *RF = *RF | MESSAGE_ENABLED_SMILES;
-                                }
-                                if(reff && ((status & 0x80) == 0)) (*RF) |= MESSAGE_HAVE_URL;
-                        }
-                        else {
+                                if (reff && ((status & 0x80) == 0))
+                                        *RF |= MESSAGE_HAVE_URL;
+                        } else {
                                 smartstrcat(st, s, status, &reff);
-                                if(reff && ((status & 0x80) == 0)) (*RF) |= MESSAGE_HAVE_URL;
+                                if (reff && ((status & 0x80) == 0))
+                                        *RF |= MESSAGE_HAVE_URL;
                         }
                         s[i] = si;
                         s += i;
@@ -601,7 +582,7 @@ int FilterBoardTags(char *s, char **r, BYTE security, DWORD ml, DWORD Flags, DWO
                         int tt = 0, tl = 0;
 
                         /* we have tag, parse  it! */
-                        if(!ExpandTag(tag1, tag2, &res, &tt, &tl, security)) {
+                        if(!ExpandTag(tag1, tag2, &res, &tt, &tl, index)) {
                                 /* invalid tag */
                                 goto ignore_tag;
                         }
@@ -626,18 +607,36 @@ int FilterBoardTags(char *s, char **r, BYTE security, DWORD ml, DWORD Flags, DWO
                                                         goto ignore_tag;
                                                 }
 
-                                                if(tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE || tt == TEX_TAG_TYPE) // allow tag and space parsing again
+                                                if (tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE
+						 || tt == TEX_TAG_TYPE || tt == TUB_TAG_TYPE) // allow tag and space parsing again
                                                         status &= 0xFFFFFFFE;
                                                 if(tt == PRE_TAG_TYPE)
                                                         status = beforePreStatus;
                                                 /* set flags of message type */
-                                                if(tt == PIC_TAG_TYPE || tt == TEX_TAG_TYPE ) { /* there was a picture tag */
+                                                if (tt == PIC_TAG_TYPE) { /* there was a picture tag */
                                                         if(!urldisable) {
                                                                 status |= 0x04;        // allow http parsing
                                                         }
                                                         status &= (~0x80);
                                                         *RF = *RF | MESSAGE_HAVE_PICTURE;
                                                 }
+
+                                                if (tt == TEX_TAG_TYPE ) {
+                                                        if(!urldisable) {
+                                                                status |= 0x04;
+                                                        }
+                                                        status &= (~0x80);
+                                                        *RF = *RF | MESSAGE_HAVE_TEX;
+                                                }						
+
+                                                if (tt == TUB_TAG_TYPE ) {
+                                                        if(!urldisable) {
+                                                                status |= 0x04;
+                                                        }
+                                                        status &= (~0x80);
+                                                        *RF = *RF | MESSAGE_HAVE_TUB;
+                                                }						
+
                                                 if(tt == URL_TAG_TYPE) { /* there was a url tag */
                                                         if(!urldisable) {
                                                                 status |= 0x04;        // allow http parsing
@@ -658,7 +657,8 @@ int FilterBoardTags(char *s, char **r, BYTE security, DWORD ml, DWORD Flags, DWO
                                                 }
                                                 else {
                                                         // expand tags or ignore(cut) them
-                                                        if((Flags & BOARDTAGS_CUT_TAGS) == 0) {
+                                                        if((Flags & BOARDTAGS_CUT_TAGS) == 0 && 
+                                                           !(index && currentdsm & CONFIGURE_clr && (tt == RED_TAG_TYPE || tt == COLOR_TAG_TYPE))) {
                                                                 //
                                                                 //        PATCH for PIC tag
                                                                 //
