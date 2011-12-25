@@ -319,7 +319,8 @@ int DeleteStringFromHashedIndex(const char *s)
                 //
                 //        Search for string in loaded block
                 //
-                if((fs = mstrstr(buf + sizeof(HASHINDEX_BLOCKINFO), ps, bi.Used)) != NULL) {
+                if((fs = mstrstr(buf + sizeof(HASHINDEX_BLOCKINFO), ps,
+                                 bi.Used - sizeof(HASHINDEX_BLOCKINFO))) != NULL) {
                         DWORD len = strlen(s) + 2 + 4;
                         //
                         //        remove from block
