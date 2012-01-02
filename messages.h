@@ -581,7 +581,12 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
                                                                                                                                                                                                                 
 #define MESSAGEMAIN_WELCOME_HELLOREG                "Вы вошли в конференцию как "
-#define MESSAGEMAIN_WELCOME_SELECTTOPIC                "Выберите тему:"
+
+#if TOPICS_SYSTEM_SUPPORT
+#define MESSAGEMAIN_WELCOME_SELECTTOPIC  "Выберите тему:"
+#else
+#define MESSAGEMAIN_WELCOME_SELECTTOPIC  ""
+#endif
 
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT                "новых потоков(сообщений): <a href=\"#n0\" "\
         "style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %ld"

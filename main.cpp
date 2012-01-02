@@ -2050,7 +2050,6 @@ void ParseCookie()
                                 free(t);
                         }
                         
-#if        TOPICS_SYSTEM_SUPPORT
                         // read topics
                         if((t = strget(ss, "topics=", 20, '|', 0))) {
                                 tmp = strtol(t, &st, 10);
@@ -2070,7 +2069,6 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-#endif
 
                         // read lann (last hided announce)
                         if((t = strget(ss, "lann=", 12, '|', 0))) {
@@ -2398,16 +2396,16 @@ int main()
 
                 if((st = strget(deal,"index=", 16, '&')) != NULL)
                 {
+                        if(strcmp(st, "rss") == 0){
+                                is_xml = 1;
+                                currentss = 5;
+                        }
+#if TOPICS_SYSTEM_SUPPORT
                         int entok = 0;
                         if(strcmp(st, "all") == 0) {
                                 topicsoverride = TOPICS_COUNT + 50;
                                 entok = 1;
-                        }
-                        else if(strcmp(st, "rss") == 0){
-                                is_xml = 1;
-                                currentss = 5;
-                        }
-                        else {
+                        } else {
                                 errno = 0;
                                 char *ss;
                                 DWORD tmp = strtol(st, &ss, 10);
@@ -2424,18 +2422,16 @@ int main()
                                 PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS, MAINPAGE_INDEX);
                                 goto End_part;
                         }
-                
+#endif
                 }
 
-#if TOPIC_SYSTEM_SUPPORT
-#if STABLE_TITLE == 0
+#if TOPICS_SYSTEM_SUPPORT && STABLE_TITLE == 0
                 // add current topic to index title
                 if (topicsoverride > 0 && topicsoverride <= TOPICS_COUNT) {
                         Tittle_cat(Topics_List[topicsoverride-1]);
                 } else if (topicsoverride > (TOPICS_COUNT + 1)) {
                         Tittle_cat(MESSAGEMAIN_WELCOME_ALLTOPICS);
                 }
-#endif
 #endif
 
 
@@ -2597,15 +2593,19 @@ int main()
                         printf(RSS_START);
                 }
                 
-                
-                DWORD oldct = currenttopics;
-                
+#if TOPICS_SYSTEM_SUPPORT
+                DWORD oldct = currenttopics;                
                 if(topicsoverride) {
                         if(topicsoverride > TOPICS_COUNT) currenttopics = 0xffffffff;        // all
                         else currenttopics = (1<<(topicsoverride-1));
                 }
+#endif
+
                 DB.DB_PrintHtmlIndex(time(NULL), time(NULL), mtc);
+
+#if TOPICS_SYSTEM_SUPPORT
                 currenttopics = oldct;
+#endif
         
                 if(!is_xml)
                 PrintBottomLines(HEADERSTRING_REG_USER_LIST | HEADERSTRING_POST_NEW_MESSAGE | HEADERSTRING_CONFIGURE | HEADERSTRING_ENABLE_RESETNEW, MAINPAGE_INDEX);
@@ -2653,17 +2653,14 @@ int main()
 							   MAX_PARAMETERS_STRING, mes.Flag | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                                 an = mes.MessageHeader;
 
-                                        if (mes.Topics < TOPICS_COUNT && mes.Topics  != 0 ){
-                                                char *t;
-                                                t = (char*)malloc(strlen(an) + strlen(TITLE_divider) + strlen(Topics_List[mes.Topics]) + 4);
-                                                *t = 0;
-                                                strcat(t, Topics_List[mes.Topics]);
-                                                strcat(t, TITLE_divider);
-                                                strcat(t, an);
-                                                Tittle_cat(t);
-                                                free(t);
-                                        } else 
-                                                Tittle_cat(an);
+#if TOPICS_SYSTEM_SUPPORT
+                                        if (mes.Topics < TOPICS_COUNT && mes.Topics != 0) {
+                                                Tittle_cat(Topics_List[mes.Topics]);
+                                                Tittle_cat(TITLE_divider);
+                                        }
+#endif
+
+                                        Tittle_cat(an);                                        
 
                                         if(an != mes.MessageHeader) free(an);
 #endif
@@ -3272,7 +3269,6 @@ int main()
                                 currenttz = DATETIME_DEFAULT_TIMEZONE;
                                 
                                 if(par != NULL) {
-                                        char *st, *ss;
 
 #define READ_PARAM_MASK(param, var, mask) {                             \
         char *ss = strget(par, param, 20, '&');                         \
@@ -3301,7 +3297,7 @@ int main()
                                         READ_PARAM_MASK("clr=", currentdsm, CONFIGURE_clr);
 
 #define READ_PARAM_NUM(param, var, vardefault) {                        \
-       char *ss = strget(par, param, 20, '&');                          \
+       char *st, *ss = strget(par, param, 20, '&');                     \
        errno = 0;                                                       \
        var = vardefault;                                                \
        if (ss && *ss) {                                                 \
@@ -3351,6 +3347,7 @@ int main()
                                                 DWORD i;
                                                 for(i = 0; i < TOPICS_COUNT; i++)
                                                 {
+                                                        char *ss;
                                                         char st[30];
                                                         sprintf(st, "topic%lu=", i);
                                                         if((ss = strget(par, st,  3, '&')) != NULL)

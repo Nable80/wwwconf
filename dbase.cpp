@@ -772,8 +772,11 @@ int DB_Base::DB_PrintHtmlIndex(time_t time1, time_t time2, DWORD mtc)
 {
         curcolor = (mtc % 2);
 
-        //        if we have NULL topics - stop printing
-        if(currenttopics == 0) return 0;
+#if TOPICS_SYSTEM_SUPPORT
+        // if we have NULL topics - stop printing
+        if(currenttopics == 0)
+                return 0;
+#endif
 
         switch(currentss) {
         case 1:
@@ -2285,7 +2288,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 {
         char *an, *pb, *ps = NULL;
         DWORD tmp;
-        DWORD flg;
+        DWORD esm = 0;
         CProfiles prof;
 #if SHOW_HOST_NAME
         int showhost = 1;
@@ -2293,15 +2296,14 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         int showhost = 0;
 #endif
 
-        flg = msg->Flag;
         if((currentdsm & CONFIGURE_dsm) == 0)
-                flg |= MESSAGE_ENABLED_SMILES;
+                esm = MESSAGE_ENABLED_SMILES;
 
-        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, flg, &tmp))
+        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, msg->Flag, &tmp))
                 an = msg->MessageHeader;
 
         if(msg->msize > 0)
-                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, msg->Flag | esm | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
                         pb = body;
 
         if(msg->Flag & MESSAGE_WAS_SIGNED) {
@@ -2315,7 +2317,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                                 char *st = FilterHTMLTags(fui.Signature, MAX_PARAMETERS_STRING);
                                 if(st) {
                                         if(FilterBoardTags(st, &ps, 0, MAX_PARAMETERS_STRING,
-                                                flg | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+                                                esm | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
                                         {
                                                 ps = (char*)malloc(strlen(st) + 1);
                                                 strcpy(ps, st);
@@ -2328,53 +2330,46 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
         printf(DESIGN_VIEW_THREAD_MSG_HEADER);
 
-#if TOPICS_SYSTEM_SUPPORT
-        // print topic info
+#if TOPICS_SYSTEM_SUPPORT || USER_FAVOURITES_SUPPORT == 2
         SMessage parmes;
-        if(msg->ParentThread != 0 && msg->ParentThread != NO_MESSAGE_CODE) {
-                if(!ReadDBMessage(msg->ParentThread, &parmes)) {
-                        // database error - invalid parent thread
+        if (msg->ParentThread != 0 && msg->ParentThread != NO_MESSAGE_CODE) {
+                if(!ReadDBMessage(msg->ParentThread, &parmes))
                         printhtmlerror();
-                }
-        }
-        else {
+        } else
                 memcpy(&parmes, msg, sizeof(SMessage));
-        }
+#endif
 
-        if( parmes.Topics >= 0 && parmes.Topics < TOPICS_COUNT)
-                        printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[parmes.Topics]);
-        else printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[0]);
-
+#if TOPICS_SYSTEM_SUPPORT
+        if (parmes.Topics >= 0 && parmes.Topics < TOPICS_COUNT)
+                printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[parmes.Topics]);
+        else
+                printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[0]);
 #endif
 
         char *an_f = FilterBiDi(an);
         printf("<BIG>%s</BIG>", an_f);
         free(an_f);
 
-#ifdef USER_FAVOURITES_SUPPORT
-        {
-                
-                DWORD favtemp;
+#if USER_FAVOURITES_SUPPORT
+        DWORD favid;
 #if USER_FAVOURITES_SUPPORT == 2
-                favtemp = parmes.ViIndex;
+        favid = parmes.ViIndex;
 #else
-                favtemp = msg->ViIndex;
+        favid = msg->ViIndex;
 #endif
-                if (ULogin.LU.ID[0] != 0){
-                        DWORD result = prof.CheckandAddFavsList(ULogin.LU.SIndex, favtemp, 0);
-                        switch(result) {
-                                case PROFILE_RETURN_ALLOK:
-                                        printf("&nbsp;&nbsp;&nbsp;<A HREF=\"" MY_CGI_URL "?favadd=%ld\" target=_blank>"
-                                        DESIGN_FAVORITES_ADD_THREAD "</A>", favtemp);
-                                        break;
-                                case PROFILE_RETURN_ALREADY_EXIST:
-                                        printf("&nbsp;&nbsp;&nbsp;<A HREF=\"" MY_CGI_URL "?favdel=%ld\" target=_blank>"
-                                        DESIGN_FAVORITES_DEL_THREAD "</A>", favtemp);
-                                        break;
-                                case PROFILE_RETURN_UNKNOWN_ERROR:
-                                        //printf(DESIGN_VIEW_THREAD_MSG_FAVNO);
-                                        break;
-                        }
+        if (ULogin.LU.ID[0] != 0) {
+                DWORD result = prof.CheckandAddFavsList(ULogin.LU.SIndex, favid, 0);
+                switch (result) {
+                case PROFILE_RETURN_ALLOK:
+                        printf("&nbsp;&nbsp;&nbsp;<A HREF=\"" MY_CGI_URL "?favadd=%ld\" target=_blank>"
+                               DESIGN_FAVORITES_ADD_THREAD "</A>", favid);
+                        break;
+                case PROFILE_RETURN_ALREADY_EXIST:
+                        printf("&nbsp;&nbsp;&nbsp;<A HREF=\"" MY_CGI_URL "?favdel=%ld\" target=_blank>"
+                               DESIGN_FAVORITES_DEL_THREAD "</A>", favid);
+                        break;
+                case PROFILE_RETURN_UNKNOWN_ERROR:
+                        break;
                 }
         }
 #endif
