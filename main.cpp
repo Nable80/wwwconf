@@ -264,27 +264,6 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
 	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #endif                         
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "b", "0",  "b",       30, 0,  "жирный текст: [b]текст[/b] (alt+b)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "i", "2",  "i",       30, 2,  "наклонный текст: [i]текст[/i] (alt+i)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "u", "4",  "u",       30, 4,  "подчёркнутый текст: [u]текст[/u] (alt+u)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "q", "6",  "q",       30, 6,  "цитата: [q]текст[/q] (alt+q)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "p", "8",  "pic",     40, 8,  "картинка: [pic]http://ссылка[/pic] (alt+p)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "w", "10", "url",     40, 10, "ссылка: [url=http://ссылка]название[/url] (alt+w)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "h", "12", "h",       30, 12, "заголовок: [h]текст[/h] (alt+h)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "s", "14", "s",       30, 14, "мелкий текст: [s]текст[/s] (alt+s)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "6", "16", "sup",     40, 16, "верхний индекс: [sup]текст[/sup] (alt+6)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "-", "18", "sub",     40, 18, "нижний индекс: [sub]текст[/sub] (alt+-)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "=", "20", "strike",  55, 20, "перечеркнутый текст: [strike]текст[/strike] (alt+=)", 5);
-	// printf("<br />");
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "3", "22", "color",   55, 22, "цветной текст: [color=#цвет]текст[/color] (alt+3)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "r", "24", "red",     40, 24, "красный текст: [red]текст[/red] (alt+r)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "f", "26", "pre",     40, 26, "преформатированный текст: [pre]текст[/pre] (alt+f)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "c", "28", "center",  60, 28, "центрированный текст: [center]текст[/center] (alt+c)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "t", "30", "tex",     40, 30, "TEX-формула: [tex]текст[/tex] (alt+t)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, "y", "32", "tub",     40, 32, "YouTube-видео: [tub]идентификатор видео[/tub] (alt+y)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITINPUT, ".", "34", "spoiler", 65, 34, "спойлер: [spoiler]текст[/spoiler] (alt+.)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITSHOW,  "0", "s",  "smile",   55,     "таблица смайлов (alt+0)", 5);
-        // printf(DESIGN_FORM_MESSAGE_QEDITSMILES);
 
         DESIGN_STYLE_BUTTONS_BEGIN()
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("b", "30px", "b", "жирный текст: [b]текст[/b] (alt+b)", "[b]", "[/b]", 1)

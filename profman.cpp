@@ -10,49 +10,29 @@
 #include "profiles.h"
 #include "searcher.h"
 
-#define DIR_CREATION_MASK        511
-#define FILES_CREATION_MASK 511
+#define DIR_CREATION_MASK    511
+#define FILES_CREATION_MASK  511
 
 int HPrinted = 0;
 
 void printusage(char *iam)
 {
-        printf("Usage:\n\t %s -n              - create/renew database (create new messages and profiles database)\n" \
-                                   "\t %s -nu             - create/renew ONLY profiles database (delete all profiles)\n" \
-                                   "\t %s -nm             - create/renew ONLY messages database (delete all forum messages)\n" \
-                                   "\t %s -dcheck         - check database consistency and print database information\n" \
-                                   "\t %s -v user         - view user information for user 'username'\n" \
-                                   "\t %s -vp username    - view all private messages for user 'username'\n" \
-                                   "\t %s -aa user passwd - create admin (spec. username and password)\n" \
-                                   "\t %s -au user passwd - create user (spec. username and password)\n" \
-                                   "\t %s -d user         - delete user\n" \
-                                   "\t %s -np             - renew(delete) private messages database (in profiles)\n" \
-                                   "\t %s -r              - zero refresh count for all users\n" \
-                                   "\t %s -vs             - set default view settings for all users\n" \
-                                   "\t %s -sr [max_index] - create search index (up to max_index message, optional))\n" \
-                                   "\t %s -s [word]       - search for word using index\n",
-                                iam, iam, iam, iam, iam, iam, iam, iam, iam, iam, iam, iam, iam, iam);
-        exit(0);
+        printf("Usage:\n"
+               "\t %1$s -n              - create/renew database (create new messages and profiles database)\n"
+               "\t %1$s -nu             - create/renew ONLY profiles database (delete all profiles)\n"
+               "\t %1$s -nm             - create/renew ONLY messages database (delete all forum messages)\n"
+               "\t %1$s -v user         - view user information for user 'username'\n"
+               "\t %1$s -vp username    - view all private messages for user 'username'\n"
+               "\t %1$s -aa user passwd - create admin (spec. username and password)\n"
+               "\t %1$s -au user passwd - create user (spec. username and password)\n"
+               "\t %1$s -d user         - delete user\n"
+               "\t %1$s -np             - renew(delete) private messages database (in profiles)\n"
+               "\t %1$s -r              - zero refresh count for all users\n"
+               "\t %1$s -vs             - set default view settings for all users\n"
+               "\t %1$s -sr [max_index] - create search index (up to max_index message, optional))\n"
+               "\t %1$s -s [word]       - search for word using index\n",
+               iam);
 }
-
-/*
-int mmkdir(char *s)
-{
-        int r;
-        char *ss;
-        if((ss = strchr(s, '/')) || (ss = strchr(s, '\\'))) {
-                char os[1000];
-                if(strlen(ss) > 1) {
-                        strncpy(os, s, ss - s);
-                        os[ss - s] = 0;
-                        mkdir(os, DIR_CREATION_MASK);
-                }
-                if((r = mkdir(s, DIR_CREATION_MASK)strchr) != 0)
-                        return r;
-        }
-        return r;
-}
-*/
 
 void printuserrigth(DWORD r)
 {
@@ -629,18 +609,6 @@ int main(int argc, char *argv[])
                 if(!CreateMessagesDatabase())
                         goto go_stop;
                 printf("Operation completed successfully\n");
-                goto go_stop;
-        }
-
-        if(argc == 2 && strcmp(argv[1], "-dcheck") == 0) {
-                printf("Checking profiles database...\n");
-#if 0
-                printf("Operation completed successfully\n");
-                printf("Checking messages database...\n");
-                printf("Operation completed successfully\n");
-#else
-                printf("Function not yet implemented!\n");
-#endif
                 goto go_stop;
         }
 

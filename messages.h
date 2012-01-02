@@ -877,8 +877,8 @@ extern char DESIGN_break[10];
 #define DESIGN_STYLE_BUTTONS_NEWLINE() "<br />"
 
 #define DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, name, title, callback, argumentlist) \
-	"<button type=\"button\" class=\"style\" name=\"" name "\"accesskey=\"" accesskey "\" style=\"width: " width "\" title=\"" title "\"" \
-        "onclick=\"" callback "(" argumentlist ");\" tabindex=\"5\"><center>" label "</center></button>&nbsp;"
+        "<button type=\"button\" class=\"style\" name=\"" name "\" accesskey=\"" accesskey "\" style=\"width: " width "\" title=\"" title "\" " \
+        "onclick=\"" callback "(" argumentlist ");\" tabindex=\"5\">" label "</button>&nbsp;"
 
 #define DESIGN_STYLE_BUTTONS_ADD_WRAP(accesskey, width, label, title, opentag, closetag, allowsubj) \
 	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "wrap", "'" opentag "', '" closetag "', " #allowsubj)
@@ -898,41 +898,8 @@ extern char DESIGN_break[10];
 #define DESIGN_STYLE_SMILES_NEWLINE() "</tr><tr>"
 
 #define DESIGN_STYLE_SMILES_ADD(pic, smile)                             \
-	"<td><button type\"button\" class=\"smile\" onclick=\"insert(' " smile " ', 0)\" title=\"" smile "\">" \
-	       "<center><img src=\"" BOARD_PIC_URL pic "\" /></center></button></td>"
-
-#define DESIGN_FORM_MESSAGE_QEDITWRAP "<button type=\"button\" class=\"qe\" accesskey=\"%s\" style=\"width: %dpx\" " \
-	"onclick=\"wrap(%d);\" tabindex=\"%d\">%s</button>&nbsp;"
-
-#define DESIGN_FORM_MESSAGE_QEDITSHOW "<button type=\"button\" class=\"qe\" accesskey=\"0\" style=\"width: 55px\" " \
-	"onclick=\"show();\" tabindex=\"%d\">smile</button>&nbsp;"
-
-#define DESIGN_FORM_MESSAGE_QEDITSMILES "<div class=\"smilestable\" id=\"smilestable\">" \
-"<table class=\"smilestable\"><tr>" \
-"<td><a href=\"#\" onclick=\"insert(' :) '); return false;\"><img src=\"" BOARD_PIC_URL "smile.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :)) '); return false;\"><img src=\"" BOARD_PIC_URL "bigsmile.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :( '); return false;\"><img src=\"" BOARD_PIC_URL "frown.gif\" /></a></td>" \
-"</tr><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' ;) '); return false;\"><img src=\"" BOARD_PIC_URL "wink.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :LOL '); return false;\"><img src=\"" BOARD_PIC_URL "lol.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :\\\\ '); return false;\"><img src=\"" BOARD_PIC_URL "smirk.gif\" /></a></td>" \
-"</tr><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :SMOKE '); return false;\"><img src=\"" BOARD_PIC_URL "smoke.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :NO '); return false;\"><img src=\"" BOARD_PIC_URL "no.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :YES '); return false;\"><img src=\"" BOARD_PIC_URL "yes.gif\" /></a></td>" \
-"</tr><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :BORED '); return false;\"><img src=\"" BOARD_PIC_URL "bored.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :CRAZY '); return false;\"><img src=\"" BOARD_PIC_URL "crazy.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :MAD '); return false;\"><img src=\"" BOARD_PIC_URL "mad.gif\" /></a></td>" \
-"</tr><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :DRAZNIT '); return false;\"><img src=\"" BOARD_PIC_URL "draznit.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :o '); return false;\"><img src=\"" BOARD_PIC_URL "redface.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :ROLLEYES '); return false;\"><img src=\"" BOARD_PIC_URL "rolleyes.gif\" /></a></td>" \
-"</tr><tr>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :FIGA '); return false;\"><img src=\"" BOARD_PIC_URL "figa.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :DEVIL '); return false;\"><img src=\"" BOARD_PIC_URL "devil.gif\" /></a></td>" \
-"<td><a href=\"#\" onclick=\"insert_smile(' :CIQ '); return false;\"><img src=\"" BOARD_PIC_URL "iq.gif\" /></a></td>" \
-"</table></div>" 
+	"<td><button type=\"button\" class=\"smile\" onclick=\"insert(' " smile " ', 0)\" title=\"" smile "\">" \
+        "<img src=\"" BOARD_PIC_URL pic "\" /></button></td>"
 
 #define DESIGN_FORM_MESSAGE_BODY        "<textarea cols=\"75\" rows=\"12\" name=\"body\" class=\"post\" wrap=\"virtual\" " \
 "onfocus=\"last = document.postform.body;\" \">%s</textarea></td></tr>"
