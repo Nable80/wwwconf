@@ -1484,7 +1484,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 
         /************ set flags of message ************/
         /* tune [pic] [url] message flags and other message flags */
-        mes->Flag = mes->Flag | MFlags;
+        mes->Flag = MFlags;
 
         // set "signed" flag
         if(msigned && (CFlags & MSG_CHK_DISABLE_SIGNATURE) == 0)

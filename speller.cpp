@@ -480,7 +480,6 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         }
 
         if (!ignore_tags && tags_in_header) {
-                print2log("dsfdfsd");
                 *RetFlags |= MESSAGE_ENABLED_TAGS;
         }
 

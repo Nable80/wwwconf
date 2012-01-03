@@ -712,7 +712,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                                 if(tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE || tt == TEX_TAG_TYPE) // disable tag parsing
                                                         status |= 0x01;
                                                 // check if it was PIC tag
-                                                if(tt == PIC_TAG_TYPE || tt == TEX_TAG_TYPE) {// disable http parsing
+                                                if(tt == PIC_TAG_TYPE) {// disable http parsing
                                                         if(!urldisable)
                                                                 status &= (~0x04);
                                                         status |= 0x80;

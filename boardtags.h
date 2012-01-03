@@ -33,8 +33,8 @@
 #define URL_TAG_TYPE    7
 #define PIC_TAG_TYPE    8
 #define PRE_TAG_TYPE    12
-#define TEX_TAG_TYPE    18
-#define TUB_TAG_TYPE    19
+#define TEX_TAG_TYPE    16
+#define TUB_TAG_TYPE    17
 
 #define WC_TAG_TYPE_DISABLED  0
 #define WC_TAG_TYPE_1         1
