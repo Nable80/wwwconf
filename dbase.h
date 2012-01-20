@@ -53,7 +53,7 @@ extern DWORD cookie_tv;
 extern DWORD cookie_ss;
 extern DWORD cookie_dsm;
 extern DWORD cookie_topics;
-extern int cookie_tz;
+extern long cookie_tz;
 
 extern char *cookie_seq;
 extern char *cookie_name;
@@ -109,7 +109,7 @@ protected:
         int printhtmlindexhron_bythreads(DWORD mode);
         int printhtmlindexhron_wothreads();
         int printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped = 0xffffffff, int newmessmark = 0);
-        int printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped = 0xffffffff, int newmessmark = 0);
+        int printxmlmessage_in_index(SMessage *mes);
 
 
         int DB_ChangeInvisibilityFlag(DWORD root, int invf);
@@ -146,7 +146,7 @@ public:
         int DB_ChangeRollThreadFlag(DWORD tmp);
         int DB_ChangeCloseThread(DWORD root, int code);
         int DB_PrintMessageThread(DWORD root);
-        int DB_PrintHtmlIndex(time_t time1, time_t time2, DWORD mtc);
+        int DB_PrintHtmlIndex(DWORD mtc);
         int DB_PrintMessageBody(DWORD root, int is_xml = 0);
         void Profile_UserName(char *name, char *tostr, int reg, int doparsehtml = 1);
 	DWORD getparent(DWORD, const char**);

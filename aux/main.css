@@ -104,8 +104,8 @@ div.g a, div.w a
 	font-size: 133%;
 }
 
-div.g a.enter, div.w a.enter {
-        font-size: 100%;
+div.g a span.marker, div.w a span.marker {
+        font-size: 75%;
         color: black;
 }
 

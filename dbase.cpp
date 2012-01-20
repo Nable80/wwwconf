@@ -45,7 +45,7 @@ DWORD cookie_tv;
 DWORD cookie_ss;
 DWORD cookie_dsm;
 DWORD cookie_topics;
-int cookie_tz;
+long cookie_tz;
 
 char *cookie_seq;
 char *cookie_name;
@@ -196,11 +196,12 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
         if(reg) {
                 if(doparsehtml) str = FilterHTMLTags(name, AUTHOR_NAME_LENGTH*3+1, 0);
                 else str = name;
-                str = FilterBiDi(str);
+                str = FilterBiDi(str, true);
                 str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
-                sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" title=\"Информация о Пользователе\" target=\"_blank\">%s</a>", MY_CGI_URL, str1, str1, str);
+                sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" "
+                        "title=\"Информация о Пользователе\" target=\"_blank\">%s</a>&#8206;", MY_CGI_URL, str1, str1, str);
         } else {
-		str = FilterBiDi(name);
+		str = FilterBiDi(name, true);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
 	}
 	free(str);
@@ -520,7 +521,7 @@ L_BVisible1:
                                                 printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
                                                 printf("<div id=d%ld style=\"display: none;\">", pmes.ViIndex);
                                         }
-                                        else printxmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
+                                        else printxmlmessage_in_index(&pmes);
                                         
                                         newmessflag = 0;
                                         shouldprint = 0xFFFFFFFF;
@@ -555,7 +556,7 @@ L_BVisible1:
                                                 printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
                                                 printf("<div id=d%ld>", buf[i].ViIndex);
                                         }
-                                        else printxmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
+                                        else printxmlmessage_in_index(&buf[i]);
                                         
                                 }
                                 else {
@@ -717,7 +718,7 @@ L_BVisible2:
                                                 printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
                                                 printf("<div id=d%ld style=\"display: none;\">", pmes.ViIndex);
                                         }
-                                        else printxmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
+                                        else printxmlmessage_in_index(&pmes);
                                         
                                         newmessflag = 0;
                                         shouldprint = 0xFFFFFFFF;
@@ -752,7 +753,7 @@ L_BVisible2:
                                                 printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
                                                 printf("<div id=d%ld>", buf[i].ViIndex);
                                         }
-                                        else printxmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
+                                        else printxmlmessage_in_index(&buf[i]);
                                         
                                 }
                                 else {
@@ -768,7 +769,7 @@ L_BVisible2:
         return 1;
 }
 
-int DB_Base::DB_PrintHtmlIndex(time_t time1, time_t time2, DWORD mtc)
+int DB_Base::DB_PrintHtmlIndex(DWORD mtc)
 {
         curcolor = (mtc % 2);
 
@@ -878,29 +879,23 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         char *aheader = FilterBiDi(mp);
         printf("%s", aheader);
         free(aheader);
-        if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
-                printf("</B> ");
-        printf("</A> ");
-                
-
-        if(mes->Flag & MESSAGE_HAVE_URL)
+        if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
+                printf("</B>");
+        printf("<span class=\"marker\">");
+        if (mes->Flag | MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB)
+                printf(" ");
+        if (mes->Flag & MESSAGE_HAVE_URL)
                 printf(TAG_MSG_HAVE_URL);
-        if(mes->Flag & MESSAGE_HAVE_PICTURE)
+        if (mes->Flag & MESSAGE_HAVE_PICTURE)
                 printf(TAG_MSG_HAVE_PIC);
-        if(mes->Flag & MESSAGE_HAVE_TEX)
+        if (mes->Flag & MESSAGE_HAVE_TEX)
                 printf(TAG_MSG_HAVE_TEX);
-        if(mes->Flag & MESSAGE_HAVE_TUB)
+        if (mes->Flag & MESSAGE_HAVE_TUB)
                 printf(TAG_MSG_HAVE_TUB);
-        printf(" ");
-        if(mes->Flag & MESSAGE_HAVE_BODY)
+        printf(" (%d)</span></A> ", mes->Readed);
+        if (mes->Flag & MESSAGE_HAVE_BODY)
                 printf(TAG_MSG_HAVE_BODY);
-	else
-		printf(TAG_MSG_HAVE_NO_BODY);
-
-        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
-                printf(" <a class=\"enter\" href=\"?read=%ld\">(%d)</a> &mdash; ", mes->ViIndex, mes->Readed);
-        else
-                printf(" (%d) &mdash; ", mes->Readed);
+        printf(" &mdash; ");
 
         char *aname_fbidi = FilterBiDi(aname);
         printf("%s", aname_fbidi);
@@ -957,7 +952,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         return 1;
 }
 
-int DB_Base::printxmlmessage_in_index(SMessage *mes, int style, DWORD skipped, int newmessmark)
+int DB_Base::printxmlmessage_in_index(SMessage *mes)
 {
 
         // *******************************
@@ -1515,7 +1510,8 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                 wcfclose(fm);
 
                 // check whether post is allowed
-                if((UI.right & USERRIGHT_SUPERUSER) == 0 && (msg->Flag & MESSAGE_IS_CLOSED)) {
+                if((UI.right & USERRIGHT_SUPERUSER) == 0 &&
+                   (msg->Flag & (MESSAGE_IS_CLOSED | MESSAGE_IS_INVISIBLE))) {
                         free(msg);
                         return MSG_CHK_ERROR_CLOSED;
                 }
@@ -2340,7 +2336,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 #endif
 
 #if TOPICS_SYSTEM_SUPPORT
-        if (parmes.Topics >= 0 && parmes.Topics < TOPICS_COUNT)
+        if (parmes.Topics < TOPICS_COUNT)
                 printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[parmes.Topics]);
         else
                 printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[0]);
@@ -2493,8 +2489,8 @@ int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 	else
 		printf("<body></body>\n");
 
-        printf("<cdate>%ju</cdate>\n", (uintmax_t) msg->Date);
-        printf("<mdate>%ju</mdate>\n", (uintmax_t) msg->MDate);
+        printf("<cdate>%lu</cdate>\n", (unsigned long) msg->Date);
+        printf("<mdate>%lu</mdate>\n", (unsigned long) msg->MDate);
         printf("<bodysec>%u</bodysec>", msg->Security);
         printf("<headsec>%u</headsec>", msg->SecHeader);
         printf("<flag>%lx</flag>", msg->Flag);
@@ -3004,7 +3000,7 @@ PT_Found:
                                                 fmpos = fmpos + toread;
                                         }
                                         if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-                                        rr = (toread + 1)/ sizeof(SMessage);
+                                        rr = toread/sizeof(SMessage);
                                         
                                         DWORD j;
                                         for(j = 0; j < rr; j++) {
@@ -3042,13 +3038,15 @@ PT_Found:
                                         
                                         if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
                                         if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-                                        rr = (toread + 1)/ sizeof(SMessage) - 1;
+                                        rr = toread/sizeof(SMessage);
                                         
-                                        DWORD j;
-                                        for(j=rr; j >= 0; j--) {
+                                        DWORD jj;
+                                        for(jj=0; jj < rr; jj++) {
+                                                DWORD j = rr - 1 - jj;
                                                 if(viroot == msgs[j].ViIndex) {
                                                         reachviroot = 1;
                                                 }
+
                                                 if(msgs[j].Level <= EndLevel && viroot != msgs[j].ViIndex && reachviroot) {
                                                         goto PT_Finish;
                                                 }

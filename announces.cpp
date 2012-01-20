@@ -126,7 +126,7 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
         return ANNOUNCES_RETURN_OK;
 }
 
-int ReadGlobalAnnounces(time_t ct, SGlobalAnnounce **ga, DWORD *cnt)
+int ReadGlobalAnnounces(SGlobalAnnounce **ga, DWORD *cnt)
 {
         FILE *f;
         DWORD i = 0, rd;

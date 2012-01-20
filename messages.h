@@ -724,7 +724,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 // from design.h
 /*=====================================================================*/
-#define TAG_MSG_HAVE_NO_BODY            "(-)"
 #define TAG_MSG_HAVE_BODY               "(+)"
 #define TAG_MSG_HAVE_PIC                "(pic)"
 #define TAG_MSG_HAVE_URL                "(url)"
@@ -820,7 +819,7 @@ extern char DESIGN_break[10];
 #define DESIGN_BEGIN_REGISTER_OPEN                "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_REGISTER_CLOSE                "</TABLE></CENTER>"
 // nick in read_message
-#define DESIGN_MESSAGE_UNREG                        "<b>%s</b><SMALL> (unreg)</SMALL>"
+#define DESIGN_MESSAGE_UNREG                        "<b>%s</b>&#8206;<SMALL> (unreg)</SMALL>"
 
 #define DESIGN_BEGIN_USERINFO_INTRO_OPEN        "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_USERINFO_INTRO_CLOSE                "</TABLE></CENTER>"
@@ -932,7 +931,7 @@ extern char DESIGN_break[10];
 #define RSS_END "</channel></rss>"                                                           
 
 #define HTML_ENCODING_HEADER        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
-        "<link rel=\"shortcut icon\" href=\"/favicon.png\" />"\
+        "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
         "<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
         "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
@@ -941,6 +940,7 @@ extern char DESIGN_break[10];
 
 #define HTML_BOTTOMBANNER                                               \
         "<div style=\"font-size: 7pt; text-align: center;margin:10px;\">" \
-        "Конференция основана на движке <A STYLE=\"text-decoration:underline;\" href=\"http://code.google.com/p/wwwconf/\" TARGET=\"_blank\">wwwconf.</div>"
+        "Конференция основана на движке "                               \
+        "<A STYLE=\"text-decoration:underline;\" href=\"http://code.google.com/p/wwwconf/\" TARGET=\"_blank\">wwwconf</A>.</div>"
 
 #endif

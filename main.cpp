@@ -211,7 +211,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                         // print password
                         printf("&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=PASSWORD NAME=\"pswd\" SIZE=22 MAXLENGTH=%d VALUE=\"\" tabindex=\"%d\">"\
                                "&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=CHECKBOX NAME=\"lmi\" tabindex=\"%d\"></TD></TR>\n",
-                               MESSAGEMAIN_post_your_password, ti, PROFILES_MAX_PASSWORD_LENGTH - 1, MESSAGEMAIN_post_login_me, ti);
+                               MESSAGEMAIN_post_your_password, PROFILES_MAX_PASSWORD_LENGTH - 1, ti, MESSAGEMAIN_post_login_me, ti);
                         // print captcha
                         printf("<tr><td align=center>captcha:&nbsp;88</td><td align=left>" \
                                "<input type=text name=\"cp\" size=\"5\" maxlength=\"5\" tabindex=\"1\"></td></tr>");
@@ -284,7 +284,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("c", "60px", "center", "центрированный текст: [center]текст[/center] (alt+c)", "[center]", "[/center]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("t", "40px", "tex", "TEX-формула: [tex]текст[/tex] (alt+t)", "[tex]", "[/tex]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("y", "40px", "tub", "YouTube-видео: [tub]идентификатор видео[/tub] (alt+y)", "[tub]", "[/tub]", 0)
-                DESIGN_STYLE_BUTTONS_ADD_WRAP("q", "65px", "spoiler", "спойлер: [spoiler]текст[/spoiler] (alt+.)", "[spoiler]", "[/spoiler]", 1)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP(".", "65px", "spoiler", "спойлер: [spoiler]текст[/spoiler] (alt+.)", "[spoiler]", "[/spoiler]", 1)
                 DESIGN_STYLE_BUTTONS_ADD_INSERT("l", "35px", "hr", "горизонтальная линия: [hr] (alt+l)", "[hr]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_SHOWSMILE()
                 DESIGN_STYLE_SMILES_BEGIN()
@@ -316,15 +316,17 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         
 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "
-	       "CLASS=\"post\" tabindex=\"2\" onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", body);
+	       "CLASS=\"post\" tabindex=\"1\" onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", body);
 
         tstr[0][0] = tstr[1][0] = 0;
         if(flags & MSG_CHK_DISABLE_SMILE_CODES) strcpy(tstr[0], RADIO_CHECKED);
         if(flags & MSG_CHK_DISABLE_WWWCONF_TAGS) strcpy(tstr[1], RADIO_CHECKED);
 
-        printf("<TR><TD COLSPAN=2 ALIGN=RIGHT class=cl>%s <INPUT TYPE=CHECKBOX NAME=\"dct\"%s class=cl>"
-                "<BR>%s <INPUT TYPE=CHECKBOX NAME=\"dst\"%s class=cl>",
-                MESSAGEMAIN_post_disable_wwwconf_tags, tstr[1], MESSAGEMAIN_post_disable_smile_tags, tstr[0]);
+        printf("<TR><TD COLSPAN=2 ALIGN=RIGHT class=cl>"
+               "%s<INPUT TYPE=CHECKBOX NAME=\"dct\"%s class=cl><BR />"
+               "%s<INPUT TYPE=CHECKBOX NAME=\"dst\"%s class=cl>",
+               MESSAGEMAIN_post_disable_wwwconf_tags, tstr[1],
+               MESSAGEMAIN_post_disable_smile_tags, tstr[0]);
                                                   
         if(ULogin.LU.ID != 0) {
                 tstr[0][0] = 0;
@@ -662,7 +664,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         if((code & HEADERSTRING_NO_CACHE_THIS) != 0) printf("Cache-Control: no-cache\nPragma: no-cache\n");
 
         printf("Set-Cookie: " COOKIE_NAME_STRING "name=%s|lsel=%lu|tc=%lu|tt=%lu|tv=%lu|ss=%lu|" \
-                "lm=%ld|fm=%ld|lt=%ld|ft=%ld|dsm=%lu|seq=%08lx%08lx|topics=%lu|lann=%lu|tovr=%lu|tz=%d&;" \
+                "lm=%ld|fm=%ld|lt=%ld|ft=%ld|dsm=%lu|seq=%08lx%08lx|topics=%lu|lann=%lu|tovr=%lu|tz=%ld&;" \
                 " expires=" COOKIE_EXPIRATION_DATE "path=" COOKIE_SERVER_PATH
                 "\nSet-Cookie: " COOKIE_SESSION_NAME "on&; path=" COOKIE_SERVER_PATH "\n\n", 
                 CodeHttpString(cookie_name, 0), cookie_lsel, cookie_tc, cookie_tt, cookie_tv,
@@ -703,12 +705,12 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
 }
 
 /* print bottom lines from file (banners, etc.) */
-void PrintBottomLines(DWORD code, DWORD curind, DWORD retind = 0)
+void PrintBottomLines()
 {
 #if USE_HTML_BOTTOMBANNER
         printf(HTML_BOTTOMBANNER);
 #endif
-        printf (HTML_END);
+        printf(HTML_END);
 }
 
 /* print moderation toolbar and keys
@@ -1671,8 +1673,7 @@ void DoCheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, 
                         }
                 }
 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
-                        MAINPAGE_INDEX);
+                PrintBottomLines();
                 break;
         case PROFILE_CHK_ERROR_ALREADY_EXIST:
                 PrintBoardError(MESSAGEMAIN_register_already_exit, MESSAGEMAIN_register_already_exit2, 0);
@@ -1710,10 +1711,10 @@ void DoCheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, 
         }
 
         if(err != PROFILE_CHK_ERROR_ALLOK)
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintBottomLines();
 }
 
-void printaccessdenied(char *deal)
+void printaccessdenied(UNUSED(char *deal))
 {
         Tittle_cat(TITLE_Error);
         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
@@ -1721,10 +1722,10 @@ void printaccessdenied(char *deal)
         print2log(LOG_UNKNOWN_URL, Cip, deal);
 #endif
         PrintBoardError(MESSAGEMAIN_access_denied, MESSAGEMAIN_access_denied2, 0);
-        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+        PrintBottomLines();
 }
 
-void printpassworderror(char *deal)
+void printpassworderror(UNUSED(char *deal))
 {
         /* incorrect username or password */
 #if ENABLE_LOG > 1
@@ -1736,10 +1737,10 @@ void printpassworderror(char *deal)
         /* incorrect login and/or password */
         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
         PrintBoardError(MESSAGEMAIN_incorrectpwd, MESSAGEMAIN_incorrectpwd2, 0);
-        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+        PrintBottomLines();
 }
 
-void printnomessage(char *deal)
+void printnomessage(UNUSED(char *deal))
 {
         Tittle_cat(TITLE_Error);
 #if ENABLE_LOG > 2
@@ -1747,10 +1748,10 @@ void printnomessage(char *deal)
 #endif
         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
         PrintBoardError(MESSAGEMAIN_nonexistingmsg, MESSAGEMAIN_nonexistingmsg2, 0);
-        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+        PrintBottomLines();
 }
 
-void printbadurl(char *deal)
+void printbadurl(UNUSED(char *deal))
 {
         Tittle_cat(TITLE_Error);
 
@@ -1759,7 +1760,7 @@ void printbadurl(char *deal)
 #endif
         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
         PrintBoardError(MESSAGEMAIN_requesterror, MESSAGEMAIN_requesterror2, 0);
-        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+        PrintBottomLines();
 }
 
 /* print message thread */
@@ -1875,7 +1876,7 @@ void ParseCookie()
 {
         char *c, *s, *ss, *t, *st;
         DWORD tmp;
-        int tmp_int;
+        long tmp_signed;
         
         GlobalNewSession = 1;
         currentft = 1;
@@ -1924,7 +1925,7 @@ void ParseCookie()
 
                         // read lsel (show type selection)
                         if((t = strget(ss, "lsel=", 3, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(( (*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 2 && tmp >= 1)
                                 {
                                         cookie_lsel = tmp;
@@ -1934,7 +1935,7 @@ void ParseCookie()
                 
                         // read tc (thread count)
                         if((t = strget(ss, "tc=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         cookie_tc = tmp;
@@ -1947,7 +1948,7 @@ void ParseCookie()
 
                         // read tt (time type)
                         if((t = strget(ss, "tt=", 3, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp <= 4 && tmp > 0)
                                 {
                                         cookie_tt = tmp;
@@ -1957,7 +1958,7 @@ void ParseCookie()
 
                         // read tv (time value)
                         if((t  = strget(ss, "tv=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
 				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         cookie_tv = tmp;
@@ -1970,7 +1971,7 @@ void ParseCookie()
 
                         // read ss (style string)
                         if((t = strget(ss, "ss=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0 && tmp <= 4)
                                 {
                                         cookie_ss = tmp;
@@ -1981,7 +1982,7 @@ void ParseCookie()
 
                         // read lt (last thread)
                         if((t = strget(ss, "lt=", 12, '|', 0))){
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         currentlt = tmp;
@@ -1991,7 +1992,7 @@ void ParseCookie()
                                         
                         // read fm (first message)
                         if((t = strget(ss, "ft=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         currentft = tmp;
@@ -2001,7 +2002,7 @@ void ParseCookie()
                                 
                         // read lm (last message)
                         if((t = strget(ss, "lm=", 12, '|', 0))){
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         currentlm = tmp;
@@ -2011,7 +2012,7 @@ void ParseCookie()
                         
                         // read fm (first message)
                         if((t = strget(ss, "fm=", 12, '|', 0))){
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         currentfm = tmp;
@@ -2021,7 +2022,7 @@ void ParseCookie()
                         
                         // read dsm (globally disable smiles, picture, and 2-d link bar)
                         if((t = strget(ss, "dsm=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                 cookie_dsm = tmp;
@@ -2031,7 +2032,7 @@ void ParseCookie()
                         
                         // read topics
                         if((t = strget(ss, "topics=", 20, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
                                 {
                                 cookie_topics = tmp;
@@ -2041,7 +2042,7 @@ void ParseCookie()
 
                         // read topics override
                         if((t = strget(ss, "tovr=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
+                                tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
                                 {
                                 topicsoverride = tmp;
@@ -2051,8 +2052,8 @@ void ParseCookie()
 
                         // read lann (last hided announce)
                         if((t = strget(ss, "lann=", 12, '|', 0))) {
-                                tmp = strtol(t, &st, 10);
-                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp >= 0)
+                                tmp = strtoul(t, &st, 10);
+                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
                                 {
 					currentlann = tmp;
 					ReadLastAnnounceNumber(&tmp);
@@ -2063,10 +2064,10 @@ void ParseCookie()
                         
                         // read timezone
                         if((t = strget(ss, "tz=", 12, '|', 0))) {
-                                tmp_int = strtol(t, &st, 10);
-                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp_int >= -12 && tmp_int <= 12)
+                                tmp_signed = strtol(t, &st, 10);
+                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp_signed >= -12 && tmp_signed <= 12)
                                 {
-                                        cookie_tz = tmp_int;
+                                        cookie_tz = tmp_signed;
                                 }
                                 free(t);
                         }
@@ -2160,7 +2161,7 @@ int main()
         char *tmp;
         int initok = 0;
         DB_Base DB;
-        SMessage mes = {{0}};  // init by zeros
+        SMessage mes;
 
         if(!isEnoughSpace()) {
                 printf("Content-type: text/html\n\n"
@@ -2448,7 +2449,7 @@ int main()
                 activityloginfo[0] = 0;
 
                 DWORD a = currentfm - currentlm;
-                DWORD t = ((currentft - currentlt) >= 0) ? (currentft - currentlt) : 0;
+                DWORD t = currentft >= currentlt ? currentft - currentlt : 0;
                 DWORD totalcount = DB.MessageCountInDB();
                 if(a) sprintf(displaynewmsg, MESSAGEMAIN_WELCOME_NEWTHREADS, t, a, totalcount);
                 else sprintf(displaynewmsg, MESSAGEMAIN_WELCOME_NONEWTHREADS, totalcount);
@@ -2512,7 +2513,7 @@ int main()
                 {
                         SGlobalAnnounce *ga;
                         DWORD cnt, i;
-                        if(ReadGlobalAnnounces(0, &ga, &cnt) != ANNOUNCES_RETURN_OK) printhtmlerror();
+                        if(ReadGlobalAnnounces(&ga, &cnt) != ANNOUNCES_RETURN_OK) printhtmlerror();
                         if(cnt) {
                                 char uname[1000], del[1000], *date;
                                 int something_printed = 0;
@@ -2580,15 +2581,16 @@ int main()
                 }
 #endif
 
-                DB.DB_PrintHtmlIndex(time(NULL), time(NULL), mtc);
+                DB.DB_PrintHtmlIndex(mtc);
 
 #if TOPICS_SYSTEM_SUPPORT
                 currenttopics = oldct;
 #endif
         
-                if(!is_xml)
-                PrintBottomLines(HEADERSTRING_REG_USER_LIST | HEADERSTRING_POST_NEW_MESSAGE | HEADERSTRING_CONFIGURE | HEADERSTRING_ENABLE_RESETNEW, MAINPAGE_INDEX);
-                else printf(RSS_END);
+                if (!is_xml)
+                        PrintBottomLines();
+                else
+                        printf(RSS_END);
                         
                 goto End_part;
         }
@@ -2633,10 +2635,8 @@ int main()
                                                 an = mes.MessageHeader;
 
 #if TOPICS_SYSTEM_SUPPORT
-                                        if (mes.Topics < TOPICS_COUNT && mes.Topics != 0) {
+                                        if (mes.Topics < TOPICS_COUNT && mes.Topics != 0)
                                                 Tittle_cat(Topics_List[mes.Topics]);
-                                                Tittle_cat(TITLE_divider);
-                                        }
 #endif
 
                                         Tittle_cat(an);                                        
@@ -2675,7 +2675,7 @@ int main()
                                                 free(mesb);
                                         }
 
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_ENABLE_TO_MESSAGE, tmpxx, tmp);
+                                        PrintBottomLines();
                                 }
                         }
                         free(st);
@@ -2771,7 +2771,7 @@ int main()
                 PrintMessageForm(&mes, mesb, repnum,
                         repnum ? ACTION_BUTTON_POST | ACTION_BUTTON_PREVIEW | ACTION_BUTTON_FAKEREPLY :
                         ACTION_BUTTON_POST | ACTION_BUTTON_PREVIEW);
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintBottomLines();
                 goto End_part;
         }
         
@@ -2991,7 +2991,7 @@ int main()
 
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                         PrintBoardError(MESSAGEMAIN_spamtry, MESSAGEMAIN_spamtry2, 0);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                         if(passw) free(passw);
                                         goto End_part;
                                 }
@@ -3000,7 +3000,7 @@ int main()
                                 if ( ROOT > 0 && ((DB.VIndexCountInDB() - ROOT) > MAX_DELTA_POST_MESSAGE) ) {
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
                                         PrintBoardError(MESSAGEMAIN_add_closed, MESSAGEMAIN_add_closed2, 0);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                         if(passw) free(passw);
                                         goto End_part;
 
@@ -3066,7 +3066,7 @@ int main()
                                         }
                                         else PrintBoardError(MESSAGEMAIN_add_ok, MESSAGEMAIN_add_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
 
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmpxx, ROOT);
+                                        PrintBottomLines();
 
                                         if(passw != NULL) free(passw);
 
@@ -3226,7 +3226,7 @@ int main()
                 }// switch(action)
                 if(passw) free(passw);
 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, ROOT);
+                PrintBottomLines();
                 goto End_part;
         }
 
@@ -3391,7 +3391,7 @@ int main()
                         /* print configuration form */
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintConfig();
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                         /****************************/
                 }
                 goto End_part;
@@ -3454,7 +3454,7 @@ int main()
 
                                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                         PrintBoardError(boardgreet, MESSAGEMAIN_login_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                        PrintBottomLines();
 
                                                         free(ss);
                                                         free(st);
@@ -3477,7 +3477,7 @@ print2log("incor pass %s", par);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
                                 printf(DESIGN_LOSTPASSW_HEADER, MESSAGEMAIN_lostpassw_header);
                                 PrintLostPasswordForm();
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                                PrintBottomLines();
 
                                 goto End_part;
                         }
@@ -3523,7 +3523,7 @@ print2log("incor pass %s", par);
 
                                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                                 PrintBoardError(MESSAGEMAIN_lostpassw_ok, MESSAGEMAIN_lostpassw_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                                PrintBottomLines();
 
                                                                 free(ss);
                                                                 free(st);
@@ -3538,7 +3538,7 @@ print2log("incor pass %s", par);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
                                 printf(DESIGN_LOSTPASSW_HEADER, MESSAGEMAIN_lostpassw_hretry);
                                 PrintLostPasswordForm();
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                                PrintBottomLines();
 
                                 goto End_part;
                         }
@@ -3550,7 +3550,7 @@ print2log("incor pass %s", par);
                                         /* not logged yet */
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                         PrintBoardError(MESSAGEMAIN_logoff_not_logged_in, MESSAGEMAIN_logoff_not_logged_in2, 0);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                         goto End_part;
                                 }
 
@@ -3563,7 +3563,7 @@ print2log("incor pass %s", par);
                                 
                                 PrintBoardError(MESSAGEMAIN_logoff_ok, MESSAGEMAIN_logoff_ok, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                 
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                PrintBottomLines();
                                 goto End_part;
                         }
                         free(st);
@@ -3575,7 +3575,7 @@ print2log("incor pass %s", par);
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
                 printf(DESIGN_MODERATOR_ENTER_HEADER, MESSAGEMAIN_login_login_header);
                 PrintLoginForm();
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                PrintBottomLines();
                 /********************************/
                 goto End_part;
         }
@@ -3610,7 +3610,7 @@ print2log("incor pass %s", par);
                                         print2log("Message %d (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                        PrintBottomLines();
                                 }
                                 else printaccessdenied(deal);
                         }
@@ -3646,7 +3646,7 @@ print2log("incor pass %s", par);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                PrintBottomLines();
                         }
                         free(st);
                 }
@@ -3679,7 +3679,7 @@ print2log("incor pass %s", par);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                PrintBottomLines();
                         }
                         free(st);
                 }
@@ -3718,7 +3718,7 @@ print2log("incor pass %s", par);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2,
                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                        PrintBottomLines();
                                 }
                                 else printaccessdenied(deal);
                         }
@@ -3755,8 +3755,7 @@ print2log("incor pass %s", par);
                                         tmp);
                                 PrintBoardError(MESSAGEMAIN_threadrolled, MESSAGEMAIN_threadrolled2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
-                                        tmp);
+                                PrintBottomLines();
                         }
                         free(st);
                 }
@@ -3790,7 +3789,7 @@ print2log("incor pass %s", par);
                                 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threaddeleted, MESSAGEMAIN_threaddeleted2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
+                                PrintBottomLines();
                         }
                         free(st);
                 }
@@ -3860,7 +3859,7 @@ print2log("incor pass %s", par);
 
                                         free(mesb);
 
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmp);
+                                        PrintBottomLines();
                                 }
                         }
                         free(st);
@@ -3889,7 +3888,7 @@ print2log("incor pass %s", par);
                         
                         PrintAboutUserInfo(name);
                         
-                        PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                        PrintBottomLines();
                         free(name);
                 }
                 else goto End_URLerror;
@@ -3984,7 +3983,7 @@ print2log("incor pass %s", par);
                                         }
                                         delete ms;
                                 }
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
+                                PrintBottomLines();
                                 free(ss);
                                 goto End_part;
                         }
@@ -3996,7 +3995,7 @@ print2log("incor pass %s", par);
                 
                 PrintSearchForm("", &DB, 1);
                 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
+                PrintBottomLines();
 
                 goto End_part;
         }
@@ -4085,7 +4084,7 @@ print2log("incor pass %s", par);
                                                 }
                                                 delete ms;
                                         }
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                         free(ss);
                                         goto End_part;
                                 }
@@ -4100,7 +4099,7 @@ print2log("incor pass %s", par);
                 
                 PrintSearchForm("", &DB, 1);
                 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
+                PrintBottomLines();
 
                 goto End_part;
         }
@@ -4231,8 +4230,7 @@ print2log("incor pass %s", par);
                                                         MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_register_edit_ex, MESSAGEMAIN_register_edit_ex2,
                                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
-                                                        MAINPAGE_INDEX);
+                                                PrintBottomLines();
 
                                                 // log this task
                                                 print2log("User %s was updated by %s", name, ULogin.pui->username);
@@ -4242,7 +4240,7 @@ print2log("incor pass %s", par);
 
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_register_edit_err, MESSAGEMAIN_register_edit_err2, 0);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                         }
 
                                         free(par);
@@ -4374,14 +4372,9 @@ print2log("incor pass %s", par);
                                         /* read about */
                                         fui.AboutUser = strget(par, "about=", MAX_PARAMETERS_STRING - 1, '&');
 
-                                        // this is needed because of char #10 filtering.
-                                        // in WIN32 printf() works incorrectly with it
-
                                         /* read signature */
                                         ss = strget(par, "sign=", PROFILES_MAX_SIGNATURE_LENGTH - 1, '&');
                                         if(ss != NULL) {
-                                                // this is needed because of char #10 filtering.
-                                                // in WIN32 printf() works incorrectly with it
                                                 strcpy(fui.Signature, ss);
                                                 free(ss);
                                         }
@@ -4390,8 +4383,6 @@ print2log("incor pass %s", par);
                                         //        read selected users
                                         ss = strget(par, "susr=", PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1, '&');
                                         if(ss != NULL) {
-                                                // this is needed because of char #10 filtering.
-                                                // in WIN32 printf() works incorrectly with it
                                                 strcpy(fui.SelectedUsers, ss);
                                                 free(ss);
                                         }
@@ -4511,7 +4502,7 @@ print2log("incor pass %s", par);
 
                 free(fui.AboutUser);
 
-                PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                PrintBottomLines();
                 goto End_part;
         }
 
@@ -4551,7 +4542,7 @@ print2log("incor pass %s", par);
                                                                 mes.ViIndex, mes.ViIndex);
                                                 PrintBoardError(MESSAGEMAIN_messagechanged, MESSAGEMAIN_messagechanged2,
                                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, mes.ViIndex);
+                                                PrintBottomLines();
                                                 print2log("Topic of message %d (%s (by %s)) was changed from [%s] to [%s] by %s", tmp, mes.MessageHeader, mes.AuthorName,
                                                         Topics_List[oldTopic], Topics_List[Topic], ULogin.pui->username);
                                                 goto End_part;
@@ -4599,7 +4590,7 @@ print2log("incor pass %s", par);
 
                 PrintUserList(&DB, code);
 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintBottomLines();
 
                 goto End_part;
         }
@@ -4624,7 +4615,7 @@ print2log("incor pass %s", par);
 
                         PrintPrivateMessageForm(sn, "");
 
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                         free(sn);
                 }
                 else {
@@ -4632,7 +4623,7 @@ print2log("incor pass %s", par);
 
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_privatemsg_denyunreg, MESSAGEMAIN_privatemsg_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -4770,7 +4761,7 @@ print2log("incor pass %s", par);
                                 free(name);
                                 if(nameok) free(fui.AboutUser);
 
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                PrintBottomLines();
                                 goto End_part;
                         }
                         else {
@@ -4802,7 +4793,7 @@ print2log("incor pass %s", par);
                         }
                         PrintPrivateMessageForm(name, body);
 
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                         free(body);
                         free(name);
                 }
@@ -4812,7 +4803,7 @@ print2log("incor pass %s", par);
 
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_privatemsg_denyunreg, MESSAGEMAIN_privatemsg_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -4983,7 +4974,7 @@ print2log("incor pass %s", par);
                 ULogin.pui->readpersmescnt = ULogin.pui->persmescnt;
                 prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
 
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_PRIVATEMSG, MAINPAGE_INDEX);
+                PrintBottomLines();
                 if(msg) free(msg);
                 if(frommsg) free(frommsg);
                 }
@@ -4992,7 +4983,7 @@ print2log("incor pass %s", par);
 
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_privatemsg_denyunreg, MESSAGEMAIN_privatemsg_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -5023,7 +5014,7 @@ print2log("incor pass %s", par);
                                 if(cgann_num != 0) {
                                         SGlobalAnnounce *ga;
                                         DWORD cnt, i;
-                                        if(ReadGlobalAnnounces(0, &ga, &cnt) != ANNOUNCES_RETURN_OK) printhtmlerror();
+                                        if(ReadGlobalAnnounces(&ga, &cnt) != ANNOUNCES_RETURN_OK) printhtmlerror();
                                         for(i = 0; i < cnt; i++) {
                                                 if(ga[i].Number == cgann_num) {
                                                         strcpy(body, ga[i].Announce);
@@ -5036,7 +5027,7 @@ print2log("incor pass %s", par);
 
                                 PrintAnnounceForm(body, cgann_num);
 
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                PrintBottomLines();
                                 goto End_part;
                         }
                         else {
@@ -5092,7 +5083,7 @@ print2log("incor pass %s", par);
 
                                                 PrintAnnounceForm(body, cgann_num);
 
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                         }
                                         else {
                                                 if(preview) {
@@ -5118,7 +5109,7 @@ print2log("incor pass %s", par);
 
                                                         PrintAnnounceForm(body, cgann_num);
 
-                                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                        PrintBottomLines();
 
                                                         if(st) free(st);
                                                 }
@@ -5135,7 +5126,7 @@ print2log("incor pass %s", par);
 
                                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                                 PrintBoardError(MESSAGEMAIN_globann_anncantsend, MESSAGEMAIN_globann_anncantsend2, 0);
-                                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                                PrintBottomLines();
                                                         }
                                                         else {
                                                                 Tittle_cat(TITLE_GlobalAnnWasPosed);
@@ -5148,12 +5139,12 @@ print2log("incor pass %s", par);
                                                                 if(!cgann_num) {
                                                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                                         PrintBoardError(MESSAGEMAIN_globann_annwassent, MESSAGEMAIN_globann_annwassent2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                                        PrintBottomLines();
                                                                 }
                                                                 else {
                                                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                                         PrintBoardError(MESSAGEMAIN_globann_annwasupdated, MESSAGEMAIN_globann_annwasupdated2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                                        PrintBottomLines();
                                                                 }
 
                                                                 print2log("Global announce (%s) was posted by %s", body, ULogin.pui->username);
@@ -5171,7 +5162,7 @@ print2log("incor pass %s", par);
                                         if(body) PrintAnnounceForm(body, cgann_num);
                                         else PrintAnnounceForm("", cgann_num);
 
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                 }
                                 else {
                                         // invalid request
@@ -5208,7 +5199,7 @@ print2log("incor pass %s", par);
                                                 print2log("Global Announce %d was deleted by user %s", MsgNum, ULogin.pui->username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_wasdeleted, MESSAGEMAIN_globann_wasdeleted2, 0);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                         }
                                         else {
                                                 Tittle_cat(TITLE_Error);
@@ -5216,7 +5207,7 @@ print2log("incor pass %s", par);
                                                 print2log("Global Announce %d cannot be deleted by user %s", MsgNum, ULogin.pui->username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_cannotdel, MESSAGEMAIN_globann_cannotdel2, 0);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                         }
                                 }
                                 else {
@@ -5224,7 +5215,7 @@ print2log("incor pass %s", par);
 
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                         PrintBoardError(MESSAGEMAIN_globann_invalidnum, MESSAGEMAIN_globann_invalidnum2, 0);
-                                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintBottomLines();
                                 }
                         }
                         goto End_part;
@@ -5276,14 +5267,14 @@ print2log("incor pass %s", par);
                                 ULogin.LU.right & USERRIGHT_SUPERUSER, &updated)) == 0)
                                 printf("<P><CENTER><B>" MESSAGEMAIN_favourites_listclear "</B></CENTER><P>");
                         if(updated) prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_FAVOURITES, MAINPAGE_INDEX);
+                        PrintBottomLines();
                         goto End_part;
                 }
                 else {
                         Tittle_cat(TITLE_Error);
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_favourites_denyunreg, MESSAGEMAIN_favourites_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -5320,7 +5311,7 @@ print2log("incor pass %s", par);
                                                 Tittle_cat(TITLE_FavouritesPageAdd);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_favourites_addno, MESSAGEMAIN_favourites_addnoparent, 0);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                                 goto End_part;
                                 }
 #endif
@@ -5331,19 +5322,19 @@ print2log("incor pass %s", par);
                                                 Tittle_cat(TITLE_FavouritesPageAdd);
                                                 PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                                 PrintBoardError(MESSAGEMAIN_favourites_added, MESSAGEMAIN_favourites_added2, 0);
-                                                PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                                                PrintBottomLines();
                                                 goto End_part;
                                         case PROFILE_RETURN_ALREADY_EXIST:
                                                 Tittle_cat(TITLE_FavouritesPageAdd);
                                                 PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                                 PrintBoardError(MESSAGEMAIN_favourites_addno, MESSAGEMAIN_favourites_addexist, 0);
-                                                PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                                                PrintBottomLines();
                                                 goto End_part;
                                         case PROFILE_RETURN_UNKNOWN_ERROR:
                                                 Tittle_cat(TITLE_FavouritesPageAdd);
                                                 PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                                 PrintBoardError(MESSAGEMAIN_favourites_addno, MESSAGEMAIN_favourites_addnoplace, 0);
-                                                PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                                                PrintBottomLines();
                                                 goto End_part;
                                         default:
                                                 printhtmlerror();
@@ -5356,7 +5347,7 @@ print2log("incor pass %s", par);
                         Tittle_cat(TITLE_Error);
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_favourites_denyunreg, MESSAGEMAIN_favourites_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -5395,13 +5386,13 @@ print2log("incor pass %s", par);
                                                 Tittle_cat(TITLE_FavouritesPageDel);
                                                 PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                                 PrintBoardError(MESSAGEMAIN_favourites_deleted, MESSAGEMAIN_favourites_deleted2, 0);
-                                                PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                                                PrintBottomLines();
                                                 goto End_part;
                                         case PROFILE_RETURN_UNKNOWN_ERROR:
                                                 Tittle_cat(TITLE_FavouritesPageDel);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_favourites_delno,  MESSAGEMAIN_favourites_delnoexist, 0);
-                                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBottomLines();
                                                 goto End_part;
                                         default:
                                                 printhtmlerror();
@@ -5414,7 +5405,7 @@ print2log("incor pass %s", par);
                         Tittle_cat(TITLE_Error);
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintBoardError(MESSAGEMAIN_favourites_denyunreg, MESSAGEMAIN_favourites_denyunreg2, 0);
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBottomLines();
                 }
                 goto End_part;
         }
@@ -5494,7 +5485,7 @@ print2log("incor pass %s", par);
                                 printf("<br /><b>Будет удалено <fonc color=red>%lu</font> из %lu пользователей</b>"
                                        "<br /><a href=\"" MY_CGI_URL "?cluserlist=yes\"><font color=\"red\">Продолжить ?</font></a>", ii, uc);
                 }
-                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintBottomLines();
                 goto End_part;
         }
 #endif
@@ -5512,15 +5503,13 @@ print2log("incor pass %s", par);
                                 par = GetParams(MAX_PARAMETERS_STRING);
                                 char *ban_list;
                                 ban_list = strget(par,"ban_list=", MAX_PARAMETERS_STRING, '&');
-                                // this is needed because of char #10 filtering.
-                                // in WIN32 printf() works incorrectly with it
                                 
                                 // check ban_list is empty
                                 if(ban_list == NULL || *ban_list == 0) {
                                         Tittle_cat(TITLE_BanSave);
                                         PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                         PrintBoardError(MESSAGEMAIN_ban_no_save, MESSAGEMAIN_ban_empty, 0);
-                                        PrintBottomLines(HEADERSTRING_DISABLE_ALL, 0);
+                                        PrintBottomLines();
                                         goto End_part;
                         
                                 }
@@ -5543,7 +5532,7 @@ print2log("incor pass %s", par);
                                 Tittle_cat(TITLE_BanSave);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
                                 PrintBoardError(MESSAGEMAIN_ban_save, MESSAGEMAIN_ban_save2, 0);
-                                PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
+                                PrintBottomLines();
 
                                 print2log("Banlist update by %s from %s", ULogin.pui->username, Cip);
                         
@@ -5553,7 +5542,7 @@ print2log("incor pass %s", par);
 
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, 0);
                         PrintBanList();
-                        PrintBottomLines(HEADERSTRING_RETURN_TO_MAIN_PAGE, 0);
+                        PrintBottomLines();
 
                         print2log("Banlist view by %s from %s", ULogin.pui->username, Cip);
                 }
@@ -5601,7 +5590,7 @@ print2log("incor pass %s", par);
                                 Tittle_cat(TITLE_ClSession);
                                 PrintHTMLHeader(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
                                 PrintBoardError(MESSAGEMAIN_session_closed_no, MESSAGEMAIN_session_check_failed, 0);
-                                PrintBottomLines(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
+                                PrintBottomLines();
                                 goto End_part;
                         }
                 }
@@ -5611,14 +5600,14 @@ print2log("incor pass %s", par);
                         Tittle_cat(TITLE_ClSession);
                         PrintHTMLHeader(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
                         PrintBoardError(MESSAGEMAIN_session_closed_ok, MESSAGEMAIN_session_closed_ok2, 0);
-                        PrintBottomLines(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
+                        PrintBottomLines();
                         goto End_part;
                 }
                 else {
                         Tittle_cat(TITLE_ClSession);
                         PrintHTMLHeader(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
                         PrintBoardError(MESSAGEMAIN_session_closed_no, MESSAGEMAIN_session_close_failed, 0);
-                        PrintBottomLines(HEADERSTRING_DISABLE_ALL | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
+                        PrintBottomLines();
                         goto End_part;
                 }
                 }

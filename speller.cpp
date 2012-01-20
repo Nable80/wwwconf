@@ -207,7 +207,7 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  * Don't forget that all Unicode symbols are stored in decimal base NCR
  * format.
  */
-char *FilterBiDi(const char *s)
+char *FilterBiDi(const char *s, bool disable_lrm)
 {
         size_t level = 0;
         char *os, *ss;
@@ -252,8 +252,7 @@ char *FilterBiDi(const char *s)
                 }
         *ss = '\0';
 
-	// +7 for LRM
-	if (!(os = (char*) realloc(os, strlen(os) + level*7 + 7 + 1)))
+	if (!(os = (char*) realloc(os, strlen(os) + level*7 + (disable_lrm ? 0 : 7) + 1)))
 		printhtmlerrormes("realloc");
 	
 	if (level) {
@@ -262,7 +261,8 @@ char *FilterBiDi(const char *s)
 			strcat(os, "&#8236;");
 	}
 	
-	strcat(os, "&#8206;");
+        if (!disable_lrm)
+                strcat(os, "&#8206;");
 
         return os;
 }
@@ -288,25 +288,6 @@ int CheckIPinSubnet(char *IP, char *mask)
         }
         if(sl == i && (mask[i - 1] == '.' || strlen(IP) == i)) return 1;
         return 0;
-}
-
-void FilterMessageForPreview(char *s, char **dd)
-{
-        char *d;
-        if(!s) {
-                *dd = NULL;
-                return;
-        }
-        d = *dd = (char*)malloc(strlen(s) + 1);
-        while(*s != 0) {
-                if(*s != 10) {
-                        *d = *s;
-                        d++;
-                }
-                s++;
-        }
-        *d = *s;
-        *dd = (char*)realloc(*dd, d - (*dd) + 2);
 }
 
 int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags)

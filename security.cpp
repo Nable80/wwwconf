@@ -145,7 +145,7 @@ int CheckForIpInQueue(DWORD ip, SSpamQueue *buf, int n, int &Alatest)
 }
 
 
-int MarkPostfromIPInvalid(DWORD IP, int TimeInterval)
+int MarkPostfromIPInvalid(DWORD IP)
 {
         int Alatest;
         WCFILE *f;

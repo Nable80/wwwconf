@@ -50,7 +50,7 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
 
 /* Read annonces that implies to 'ct' date. (!!! ignored for now !!!)
  */
-int ReadGlobalAnnounces(time_t ct, SGlobalAnnounce **ga, DWORD *cnt);
+int ReadGlobalAnnounces(SGlobalAnnounce **ga, DWORD *cnt);
 
 /* Delete global announce by id
  */

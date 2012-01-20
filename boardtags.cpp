@@ -222,8 +222,8 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
  */
 int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, DWORD *flg)
 {
-        register char *dd = d + strlen(d);
-        register char *ss = s;
+        char *dd = d + strlen(d);
+        char *ss = s;
         unsigned int i = 0, fstat;
         int wassmile = 0;
         *flg = 0;

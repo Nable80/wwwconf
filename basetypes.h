@@ -18,6 +18,8 @@
 #include <ctype.h>
 
 
+#define UNUSED(x) x __attribute__((__unused__))
+
 // VERSION 
 #define VERSION                "2.0 PRE BETA5"
 
@@ -435,11 +437,6 @@ struct SMessage
         /* index of main thread message */
         DWORD ParentThread;
 
-        // ????????????????????????????????????????
-        /* index of parent message
-        DWORD ParentMsg;
-        */
-
         /* virtual index of message */
         DWORD ViIndex;
 
@@ -447,6 +444,17 @@ struct SMessage
         DWORD MIndex;
         /* size of message body */
         DWORD msize;
+        
+        SMessage()
+        : IPAddr(0), UniqUserID(0), Security(0), SecHeader(0), Flag(0),
+                Date(0), MDate(0), Level(0), Topics(0), Readed(0),
+                ParentThread(0), ViIndex(0), MIndex(0), msize(0)
+        {
+                MessageHeader[0] = '\0';
+                AuthorName[0] = '\0';
+                HostName[0] = '\0';
+
+        }
 };
 
 

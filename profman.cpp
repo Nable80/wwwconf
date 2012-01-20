@@ -17,20 +17,21 @@ int HPrinted = 0;
 
 void printusage(char *iam)
 {
-        printf("Usage:\n"
-               "\t %1$s -n              - create/renew database (create new messages and profiles database)\n"
-               "\t %1$s -nu             - create/renew ONLY profiles database (delete all profiles)\n"
-               "\t %1$s -nm             - create/renew ONLY messages database (delete all forum messages)\n"
-               "\t %1$s -v user         - view user information for user 'username'\n"
-               "\t %1$s -vp username    - view all private messages for user 'username'\n"
-               "\t %1$s -aa user passwd - create admin (spec. username and password)\n"
-               "\t %1$s -au user passwd - create user (spec. username and password)\n"
-               "\t %1$s -d user         - delete user\n"
-               "\t %1$s -np             - renew(delete) private messages database (in profiles)\n"
-               "\t %1$s -r              - zero refresh count for all users\n"
-               "\t %1$s -vs             - set default view settings for all users\n"
-               "\t %1$s -sr [max_index] - create search index (up to max_index message, optional))\n"
-               "\t %1$s -s [word]       - search for word using index\n",
+        printf("Usage %s <arg>\n"
+               "Possible arguments:"
+               " -n              - create/renew database (create new messages and profiles database)\n"
+               " -nu             - create/renew ONLY profiles database (delete all profiles)\n"
+               " -nm             - create/renew ONLY messages database (delete all forum messages)\n"
+               " -v user         - view user information for user 'username'\n"
+               " -vp username    - view all private messages for user 'username'\n"
+               " -aa user passwd - create admin (spec. username and password)\n"
+               " -au user passwd - create user (spec. username and password)\n"
+               " -d user         - delete user\n"
+               " -np             - renew(delete) private messages database (in profiles)\n"
+               " -r              - zero refresh count for all users\n"
+               " -vs             - set default view settings for all users\n"
+               " -sr [max_index] - create search index (up to max_index message, optional))\n"
+               " -s [word]       - search for word using index\n",
                iam);
 }
 

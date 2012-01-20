@@ -61,15 +61,12 @@ char* CodeHttpString(char *s, int allocmem = 1, int type = ALL_ENCODE);
 /* check email (with current #define settings) */
 int IsMailCorrect(char *s);
 
-/* Preprare message under WIN32 for preview - actually filter char #10 */
-void FilterMessageForPreview(char *s, char **dd);
-
 /* filter html tags, if allocmem = 1 - function will allocate memory for you,
  * otherwise internal buffer will be used (10K buffer) */
 char* FilterHTMLTags(const char *s, size_t ml, int allocmem = 1);
 
 /* filter unicode bidirectional markers */
-char* FilterBiDi(const char *s);
+char* FilterBiDi(const char *s, bool disable_lrm = false);
 
 char* FilterWhitespaces(char *s);
 
