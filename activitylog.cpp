@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "activitylog.h"
+#include "error.h"
 #include <algorithm>
 
 #define ACTIVITY_CONTROL_TIME        10*60        // 10min
@@ -116,7 +117,11 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         free(buf);
                         wcfflush(f1);
                         // truncate end of file
-                        truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4);
+                        if (truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4)) {
+                                unlock_file(f);
+                                unlock_file(f1);
+                                printhtmlerror();
+                        }
                         wcfseek(f1, 0, SEEK_END);
                         rr = 1;
                         fCheckedWrite(&rr, 4, f1);
@@ -207,7 +212,11 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                 ss.Time = crtime;
 
                 wcfflush(f);
-                truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4);
+                if (truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4)) {
+                        unlock_file(f);
+                        unlock_file(f1);
+                        printhtmlerror();
+                }
                 wcfseek(f, 4, SEEK_SET);
                 rr = 0;
                 fCheckedWrite(&rr, 4, f);

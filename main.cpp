@@ -835,7 +835,10 @@ void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
                 DWORD LastMsg = 0, LastDate = 0;
                 f = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_R);
                 if(f != NULL) {
-                        fscanf(f, "%lu %lu", &LastMsg, &LastDate);
+                        int tmp;
+                        tmp = fscanf(f, "%lu %lu", &LastMsg, &LastDate);
+                        if (tmp == EOF && ferror(f))
+                                printhtmlerror();
                         fclose(f);
                 }
                 if(LastMsg != 0) {
@@ -5523,8 +5526,10 @@ print2log("incor pass %s", par);
                                         printhtmlerror();
                                 }
 
-
-                                truncate(F_BANNEDIP, strlen(ban_list));
+                                if (truncate(F_BANNEDIP, strlen(ban_list))) {
+                                        unlock_file(BAN_FILE);
+                                        printhtmlerror();
+                                }
 
                                 unlock_file(BAN_FILE);
                                 wcfclose(BAN_FILE);

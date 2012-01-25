@@ -8,6 +8,7 @@
 
 #include "basetypes.h"
 #include "colornick.h"
+#include "error.h"
 
 CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
 {
@@ -149,7 +150,10 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                         }
                         if(fn) fCheckedWrite(cb, rd, f);
                         pos = wcftell(f);
-                        truncate(ifname, pos);
+                        if (truncate(ifname, pos)) {
+                                unlock_file(f);
+                                printhtmlerror();
+                        }
                         unlock_file(f);
                         wcfclose(f);
                 

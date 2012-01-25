@@ -6,6 +6,7 @@
     email                : pricer@mail.ru
  ***************************************************************************/
 
+#include <stdlib.h>
 #include "basetypes.h"
 #include "profiles.h"
 #include "searcher.h"
@@ -662,7 +663,12 @@ int main(int argc, char *argv[])
                 
                 fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_RW);
                 if(fl != NULL) {
-                        fscanf(fl, "%lu %lu", &StartMsg, &LastDate);
+                        int tmp;
+                        tmp = fscanf(fl, "%lu %lu", &StartMsg, &LastDate);
+                        if (tmp == EOF || ferror(fl)) {
+                                perror("fscanf");
+                                exit(1);
+                        }
                         fclose(fl);
                         if(DBDirty) {
                                 printf("Database marked as dirty (another instance of indexer in progress?)\n");

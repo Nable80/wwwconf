@@ -252,19 +252,19 @@ L_BVisible1:
                                                 if(ll > buf[i].Level)
                                                 {
                                                         int x = ll - buf[i].Level;
-                                                        for(int j = 0; j < x ; j++) printf(DESIGN_close_dl);
+                                                        for(int j = 0; j < x ; j++) printf("%s", DESIGN_close_dl);
                                                         ll = buf[i].Level;
                                                 }
                                                 else
                                                 {
                                                         // only 1 level increase allowed
-                                                        printf(DESIGN_open_dl);
+                                                        printf("%s", DESIGN_open_dl);
                                                         ll = buf[i].Level;
                                                 }
                                         }
                                         else if (buf[i].Level > 0) {
                                                 // br before messages on one level, READING, 111!!
-                                                printf(DESIGN_break);
+                                                printf("%s", DESIGN_break);
                                         }
 
                                         if(buf[i].Level == 0)
@@ -330,19 +330,19 @@ L_BVisible2:
                                                 if(ll > buf[i].Level)
                                                 {
                                                         int x = ll - buf[i].Level;
-                                                        for(int j = 0; j < x ; j++) printf(DESIGN_close_dl);
+                                                        for(int j = 0; j < x ; j++) printf("%s", DESIGN_close_dl);
                                                         ll = buf[i].Level;
                                                 }
                                                 else
                                                 {
                                                         // only 1 level increase allowed
-                                                        printf(DESIGN_open_dl);
+                                                        printf("%s", DESIGN_open_dl);
                                                         ll = buf[i].Level;
                                                 }
                                         }
                                         else if (buf[i].Level > 0) {
                                                 // br before messages on one level, READING, 111!!
-                                                printf(DESIGN_break);
+                                                printf("%s", DESIGN_break);
                                         }
 
                                         if(buf[i].Level == 0)
@@ -544,8 +544,8 @@ L_BVisible1:
 
                                         if(buf[i].Level == 0 && (*pr)) {
                                                 printf("%s%s",DESIGN_close_dl, DESIGN_threads_divider);
-                                                if(curcolor) printf(DESIGN_open_dl_white);
-                                                else printf(DESIGN_open_dl_grey);
+                                                if(curcolor) printf("%s", DESIGN_open_dl_white);
+                                                else printf("%s", DESIGN_open_dl_grey);
                                                 curcolor = !curcolor;
                                         }
                                         else (*pr) = 1;
@@ -741,8 +741,8 @@ L_BVisible2:
 
                                         if(buf[i].Level == 0 && (*pr)) {
                                                 printf("%s%s", DESIGN_close_dl, DESIGN_threads_divider);
-                                                if(curcolor) printf(DESIGN_open_dl_white);
-                                                else printf(DESIGN_open_dl_grey);
+                                                if(curcolor) printf("%s", DESIGN_open_dl_white);
+                                                else printf("%s", DESIGN_open_dl_grey);
                                                 curcolor = !curcolor;
                                         }
                                         else (*pr) = 1;
@@ -1063,7 +1063,7 @@ int DB_Base::PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt)
         if((m = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
 
         // search result entry
-        printf(DESIGN_open_dl);
+        printf("%s", DESIGN_open_dl);
 
         for(i = 0; i < cnt; i++) {
 
@@ -1083,11 +1083,11 @@ int DB_Base::PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt)
                 // check if user have superuser permissions if message is invisible
                 if( ((msgs.Flag & MESSAGE_IS_INVISIBLE) == 0) ||
                     ((msgs.Flag & MESSAGE_IS_INVISIBLE) != 0 && (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) ) {
-                    printf(DESIGN_break);
+                    printf("%s", DESIGN_break);
                     printhtmlmessage_in_index(&msgs, MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_PRINT_BLANK_URL | MESSAGE_INDEX_DISABLE_ROLLED);
                 }
         }
-        printf(DESIGN_close_dl);
+        printf("%s", DESIGN_close_dl);
         wcfclose(m);
         return 1;
 }
@@ -1124,7 +1124,7 @@ int DB_Base::PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD vi
                         *updated = 1;
                         continue;
                 }
-                printf(DESIGN_break);
+                printf("%s", DESIGN_break);
                 cnt++;
                 printf("%ld." "<A HREF=" MY_CGI_URL "?favdel=%ld target=\"_blank\">" DESIGN_FAVORITES_DEL_THREAD "</A> ",
                         cnt, ui->favs[i]);
@@ -1151,7 +1151,7 @@ int DB_Base::printhtmlindexhron_wothreads()
         if((f = wcfopen(F_VINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
         if((m = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
 
-        printf(DESIGN_open_dl);
+        printf("%s", DESIGN_open_dl);
         
         if(wcfseek(f, 0, SEEK_END) != 0) printhtmlerror();
         fpos = wcftell(f);
@@ -1173,7 +1173,7 @@ int DB_Base::printhtmlindexhron_wothreads()
                         printhtmlerror();
 
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0 || !(msgs.Flag & MESSAGE_IS_INVISIBLE)){
-                        printf(DESIGN_break);
+                        printf("%s", DESIGN_break);
                         printhtmlmessage_in_index(&msgs, MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_DISABLE_ROLLED);
                         alrprn++;
                 }
@@ -1183,7 +1183,7 @@ int DB_Base::printhtmlindexhron_wothreads()
         } while((currentlsel == 1 && msgs.Date > current_minprntime) ||
                 (currentlsel == 2 && alrprn != currenttc + 1));
 
-        printf(DESIGN_close_dl);
+        printf("%s", DESIGN_close_dl);
 
         wcfclose(f);
         wcfclose(m);
@@ -1223,8 +1223,8 @@ int DB_Base::printhtmlindexhron_bythreads(DWORD mode)
 
         // beginning thread envelope - div
         if((mode & PRINTMODE_XML) == 0) {
-                if (curcolor) printf(DESIGN_open_dl_white);
-                else printf(DESIGN_open_dl_grey);
+                if (curcolor) printf("%s", DESIGN_open_dl_white);
+                else printf("%s", DESIGN_open_dl_grey);
                 curcolor=!curcolor;
         }
 
@@ -1298,7 +1298,7 @@ int DB_Base::printhtmlindexhron_bythreads(DWORD mode)
 End_of_Prn:
         
         if((mode & PRINTMODE_XML) == 0) {
-                for(int i = -1; i < LastLevel + 1; i++) printf(DESIGN_close_dl);
+                for(int i = -1; i < LastLevel + 1; i++) printf("%s", DESIGN_close_dl);
 
                 // index ends
                 printf("</div>");
@@ -2656,7 +2656,7 @@ PT_Found:
         collapsed = 0;
         
         printf(MESSAGEMAIN_in_this_thread);
-        printf(DESIGN_open_dl_white);
+        printf("%s", DESIGN_open_dl_white);
 
         
         for(;;) {
@@ -2728,7 +2728,7 @@ PT_Found:
         }
         
 PT_Finish:
-        for(i = -1; i < LastLevel; i++) printf(DESIGN_close_dl);
+        for(i = -1; i < LastLevel; i++) printf("%s", DESIGN_close_dl);
         
         free(buf);
         free(msgs);

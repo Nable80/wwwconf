@@ -68,13 +68,14 @@ int FilterBadWords(char *s)
         if((f = fopen(F_BADWORDS, FILE_ACCESS_MODES_R)) != NULL)
         {
                 while(!feof(f)) {
+                        int tmp;
                         dic[0] = 0;
-                        fscanf(f,"%[^\n\10]", dic);
+                        tmp = fscanf(f,"%[^\n\10]", dic);
 
                         if(dic[0] != 0 && (dic[strlen(dic) - 1] == 13 || dic[strlen(dic) - 1] == 10))
                                 dic[strlen(dic) - 1] = 0;
 
-                        fscanf(f,"%c",&c);
+                        tmp = fscanf(f,"%c",&c);
                         toupperstr(dic);
                         while ((dic[0] != 0 ) && ((sx = strstr(ss, dic)) != NULL)) {
                                 x = 1;
@@ -376,16 +377,17 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         reason = (char*)malloc(MAX_STRING);
         if((f = fopen(F_BANNEDIP, FILE_ACCESS_MODES_R)) != NULL) {
                 while(!feof(f)) {
+                        int tmp;
                         bool fProxy = false;
                         ip[0] = 0;
-                        fscanf(f, "%254[^ \n]", ip);                // get ip
+                        tmp = fscanf(f, "%254[^ \n]", ip);                // get ip
                         if(feof(f)) break;
-                        fscanf(f, "%c", &c);                        // skip " "
+                        tmp = fscanf(f, "%c", &c);                        // skip " "
                         if(c == '\n') continue;
-                        fscanf(f, "%c", &t);                        // type
-                        fscanf(f, "%c", &c);                        // skip " "
-                        fscanf(f, "%[^\n]", reason);        // ban reason
-                        fscanf(f, "%c", &c);                        // skip \n
+                        tmp = fscanf(f, "%c", &t);                        // type
+                        tmp = fscanf(f, "%c", &c);                        // skip " "
+                        tmp = fscanf(f, "%[^\n]", reason);        // ban reason
+                        tmp = fscanf(f, "%c", &c);                        // skip \n
                         if(CheckIPinSubnet(Cip, ip) &&
                                 (t == '*' || (fProxy = ((t|0x20) == 'p' && !fRegged))))
                         {
