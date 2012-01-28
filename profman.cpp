@@ -75,17 +75,17 @@ void printuserrigth(DWORD r)
                 else smthprinted = 1;
                 printf("Create new message thread");
         }
-        if(r & USERRIGTH_ALLOW_HTML) {
+        if(r & USERRIGHT_ALLOW_HTML) {
                 if(smthprinted) printf(", ");
                 else smthprinted = 1;
                 printf("Allow HTML");
         }
-        if(r & USERRIGTH_PROFILE_MODIFY) {
+        if(r & USERRIGHT_PROFILE_MODIFY) {
                 if(smthprinted) printf(", ");
                 else smthprinted = 1;
                 printf("Own Profile modification");
         }
-        if(r & USERRIGTH_PROFILE_CREATE) {
+        if(r & USERRIGHT_PROFILE_CREATE) {
                 if(smthprinted) printf(", ");
                 else smthprinted = 1;
                 printf("New profile creation");

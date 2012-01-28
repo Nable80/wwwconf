@@ -203,7 +203,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 
         if(!(code & ACTION_BUTTON_EDIT)) {
                 if(ULogin.LU.ID[0] == 0) {
-                        int ti = msg->AuthorName[0] ? 2 : 1;
+                        int ti = msg->AuthorName[0] ? 3 : 1;
                         // print name/password form
                         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>"\
                                "<INPUT TYPE=TEXT NAME=\"name\" SIZE=22 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"%d\">",
@@ -229,7 +229,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 // print edit name and ip
                 if(ULogin.LU.ID[0] != 0 && (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
                         printf("<TR><TD ALIGN=CENTER>%s &nbsp;" \
-                                "<INPUT TYPE=TEXT NAME=\"name\" SIZE=29 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\"></TD>" \
+                                "<INPUT TYPE=TEXT NAME=\"name\" SIZE=29 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"3\"></TD>" \
                                 "<TD>%s &nbsp;<INPUT TYPE=TEXT NAME=\"host\" SIZE=40 MAXLENGTH=%d" \
                                 " VALUE=\"%s\"></TD></TR>", MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1,
                                 msg->AuthorName, MESSAGEMAIN_post_hostname, HOST_NAME_LENGTH - 1, msg->HostName);
@@ -343,14 +343,14 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         printf(SCRIPT_FORM_MESSAGE_QEDIT);
 
         if(code & ACTION_BUTTON_EDIT) {
-                printf(DESIGN_FORM_MESSAGE_BUTTON, "edit", MESSAGEMAIN_post_edit_message, 4);
+                printf(DESIGN_FORM_MESSAGE_BUTTON, "edit", MESSAGEMAIN_post_edit_message, 1);
         }
         else {
                 if(code & ACTION_BUTTON_PREVIEW) {
-                        printf(DESIGN_FORM_MESSAGE_BUTTON, "preview",MESSAGEMAIN_post_preview_message, 4);
+                        printf(DESIGN_FORM_MESSAGE_BUTTON, "preview",MESSAGEMAIN_post_preview_message, 2);
                 }
                 if(code & ACTION_BUTTON_POST) {
-                        printf(DESIGN_FORM_MESSAGE_BUTTON, "post", MESSAGEMAIN_post_post_message, 3);
+                        printf(DESIGN_FORM_MESSAGE_BUTTON, "post", MESSAGEMAIN_post_post_message, 1);
                 }
         }
         printf("<INPUT TYPE=HIDDEN NAME=\"jpost\" VALUE=\"%s\">", "");
@@ -835,9 +835,7 @@ void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
                 DWORD LastMsg = 0, LastDate = 0;
                 f = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_R);
                 if(f != NULL) {
-                        int tmp;
-                        tmp = fscanf(f, "%lu %lu", &LastMsg, &LastDate);
-                        if (tmp == EOF && ferror(f))
+                        if (fscanf(f, "%lu %lu", &LastMsg, &LastDate) == EOF && ferror(f))
                                 printhtmlerror();
                         fclose(f);
                 }
@@ -1050,7 +1048,7 @@ void PrintSessionsList(DWORD Uid)
                                 if( seqtime > time(NULL) ) {
                                         printf(MESSAGEMAIN_session_state_active);
 
-                                        if( (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0  || ( ULogin.LU.UniqID == Uid && ( ULogin.LU.right & USERRIGTH_PROFILE_MODIFY) != 0 ) )
+                                        if( (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0  || ( ULogin.LU.UniqID == Uid && ( ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) != 0 ) )
                                                 printf(" [<a href=\"%s?clsession1=%ld&clsession2=%ld\">"MESSAGEMAIN_session_state_toclose"</a>]", MY_CGI_URL, seqid[0], seqid[1]);
                                 }
                                 else  printf(MESSAGEMAIN_session_state_closed);
@@ -1501,7 +1499,7 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
         // ************ delete ************
         if(op == 3) {
                 if((ULogin.LU.ID[0] == 0 || strcmp(ULogin.pui->username, ui->username) != 0 ||
-                        (ULogin.LU.right & USERRIGTH_PROFILE_MODIFY) == 0) && (!(ULogin.LU.right & USERRIGHT_SUPERUSER)))
+                        (ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) == 0) && (!(ULogin.LU.right & USERRIGHT_SUPERUSER)))
                         return PROFILE_CHK_ERROR_CANNOT_DELETE_USR;
 
                 uprof = new CProfiles();
@@ -2128,14 +2126,21 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
                 *c_par1 = MESSAGEMAIN_add_closed;
                 *c_par2 = MESSAGEMAIN_add_closed2;
                 break;
-        case MSG_CHK_ERROR_INVALID_REPLY:
-                *c_par1 = MESSAGEMAIN_add_invalid_reply;
-                *c_par2 = MESSAGEMAIN_add_invalid_reply;
+        case MSG_CHK_ERROR_INVALID_NUMBER:
+                *c_par1 = MESSAGEMAIN_nonexistingmsg;
+                *c_par2 = MESSAGEMAIN_nonexistingmsg2;
                 break;
         case MSG_CHK_ERROR_INVALID_PASSW:
                 *c_par1 = MESSAGEMAIN_incorrectpwd;
                 *c_par2 = MESSAGEMAIN_incorrectpwd2;
                 break;
+       	case MSG_CHK_ERROR_EDIT_DENIED:
+                *c_par1 = MESSAGEMAIN_edit_denied;
+                *c_par2 = MESSAGEMAIN_edit_denied2;
+                break;
+        case MSG_CHK_ERROR_INVISIBLE:
+                *c_par1 = MESSAGEMAN_invisible;
+                *c_par2 = MESSAGEMAN_invisible2;
         default:
                 *c_par1 = MESSAGEMAIN_unknownerr;
                 *c_par2 = MESSAGEMAIN_unknownerr2;
@@ -2790,8 +2795,7 @@ int main()
                         errno = 0;
                         char *st;
                         ROOT = strtol(ss, &st, 10);
-                        if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE ||
-                                (ROOT != 0 && DB.TranslateMsgIndex(ROOT) == NO_MESSAGE_CODE)) {
+                        if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE) {
                                 printnomessage(deal);
                                 goto End_part;
                         }
@@ -2977,7 +2981,7 @@ int main()
                 free(par);
 
                 // init current error
-                int cr = 0;
+                int cr;
                 switch(action) {
                 case ACTION_POST:
                         {
@@ -3106,7 +3110,7 @@ int main()
                                         UI.username[0] = 0;
                                 }
 
-                                if(UI.right & USERRIGTH_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
+                                if(UI.right & USERRIGHT_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
                                 mes.Security = UI.secur;
                                 mes.SecHeader = UI.secheader;
                                 mes.UniqUserID = UI.UniqID;
@@ -3144,58 +3148,14 @@ int main()
                         break;
                 case ACTION_EDIT:
                         {
-                                SMessage msg;
-                                SProfile_UserInfo UI;
-                                free(st);
-
-                                //
-                                //        Read the message cause we'll need some parts of it
-                                //
-                                if(!ReadDBMessage(DB.TranslateMsgIndex(ROOT), &msg)) printhtmlerror();
-
-                                // we should leave current time intact and modify only modified
-                                msg.MDate = time(NULL);                // have been modified
-
-                                strcpy(msg.MessageHeader, mes.MessageHeader);
-                                strcpy(msg.AuthorName, mes.AuthorName);
-                                strcpy(msg.HostName, mes.HostName);
                                 if((ULogin.pui->right & USERRIGHT_SUPERUSER) && c_host && c_host[0] != 0) {
-                                        strcpy(msg.HostName, c_host);
-                                        msg.HostName[HOST_NAME_LENGTH - 1] = 0;
+                                        strcpy(mes.HostName, c_host);
+                                        mes.HostName[HOST_NAME_LENGTH - 1] = 0;
                                 }
-                                msg.IPAddr = Nip;
-
-                                // Check security rights
-                                if(ULogin.LU.ID[0] == 0 || (
-                                        !(ULogin.pui->right & USERRIGHT_SUPERUSER) &&
-                                        (ULogin.pui->UniqID != msg.UniqUserID)
-                                        )
-                                ) {
-                                        if(passw) free(passw);
-                                        printaccessdenied(deal);
-                                        goto End_part;
-                                }
-                                if((ULogin.pui->right & USERRIGHT_SUPERUSER))
-                                {
-                                        CProfiles *uprof = new CProfiles();
-                                        if(uprof->errnum != PROFILE_RETURN_ALLOK) {
-#if ENABLE_LOG >= 1
-                                                print2log("Error working with profiles database (init)");
-#endif
-                                                printhtmlerror();
-                                        }
-                                        // if user does not exist - it should be unreg
-                                        if(uprof->GetUserByName(mes.AuthorName, &UI, NULL, NULL) != PROFILE_RETURN_ALLOK)
-                                                msg.UniqUserID = 0;
-                                        delete uprof;
-                                }
-                                else {
-                                        strcpy(msg.AuthorName, ULogin.pui->username);
-                                }
+                                mes.IPAddr = Nip;
 
                                 char *banreason;
-                                if((cr = DB.DB_ChangeMessage(ROOT, &msg, // what message
-                                        &mesb, strlen(mesb), CFlags, &banreason)) != MSG_CHK_ERROR_PASSED)
+                                if((cr = DB.DB_ChangeMessage(ROOT, &mes, &mesb, CFlags, &banreason)) != MSG_CHK_ERROR_PASSED)
                                 {
                                         const char *c_ActionResult1, *c_ActionResult2;
                                         PrepareActionResult(cr, &c_ActionResult1, &c_ActionResult2);
@@ -3212,8 +3172,22 @@ int main()
                                         cookie_name = (char*)realloc(cookie_name, AUTHOR_NAME_LENGTH);
                                         strcpy(cookie_name, mes.AuthorName);
                                         
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, ROOT);
-                                        PrintBoardError(MESSAGEMAIN_add_ok, MESSAGEMAIN_add_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
+                                        // Check if message was posted to rolled thread then we should change ROOT to main root of thread
+                                        DWORD tmpxx;
+                                        if (mes.Flag & MESSAGE_COLLAPSED_THREAD) {
+                                                SMessage parmes;
+                                                if (!ReadDBMessage(mes.ParentThread, &parmes))
+                                                        printhtmlerror();
+                                                tmpxx = parmes.ViIndex;
+                                        } else
+                                                tmpxx = ROOT;
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmpxx, ROOT);
+                                        PrintBoardError(MESSAGEMAIN_add_ok, MESSAGEMAIN_add_ok2,
+                                                        HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, ROOT);
+                                }
+                                if (mesb) {
+                                        free(mesb);
+                                        mesb = NULL;
                                 }
                         }
                         break;
@@ -3839,7 +3813,9 @@ print2log("incor pass %s", par);
 #if STABLE_TITLE == 0
                                         // set title - change title to change message
                                         char *aheader = FilterBiDi(mes.MessageHeader);
-                                        ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + strlen(TITLE_divider) + strlen(TITLE_ChangingMessage) + strlen(mes.MessageHeader) + 6);
+                                        ConfTitle = (char*)realloc(ConfTitle,
+                                                            strlen(ConfTitle) + strlen(TITLE_divider)
+                                                            + strlen(TITLE_ChangingMessage) + strlen(aheader) + 1);
                                         strcat(ConfTitle, TITLE_divider);
                                         strcat(ConfTitle, TITLE_ChangingMessage);
                                         strcat(ConfTitle, aheader);
@@ -4259,7 +4235,7 @@ print2log("incor pass %s", par);
 
         if(strncmp(deal, "register", 8) == 0) {
                 /* security check */
-                if((ULogin.LU.right & USERRIGTH_PROFILE_CREATE) == 0) {
+                if((ULogin.LU.right & USERRIGHT_PROFILE_CREATE) == 0) {
                         printaccessdenied(deal);
                         goto End_part;
                 }
@@ -5526,10 +5502,8 @@ print2log("incor pass %s", par);
                                         printhtmlerror();
                                 }
 
-                                if (truncate(F_BANNEDIP, strlen(ban_list))) {
-                                        unlock_file(BAN_FILE);
+                                if (truncate(F_BANNEDIP, strlen(ban_list)))
                                         printhtmlerror();
-                                }
 
                                 unlock_file(BAN_FILE);
                                 wcfclose(BAN_FILE);
@@ -5585,7 +5559,7 @@ print2log("incor pass %s", par);
                 // user can receive only access deny message (session bf aware)
 
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0){
-                        if( (ULogin.LU.right & USERRIGTH_PROFILE_MODIFY) == 0 || ULogin.CheckSession(closeseq, 0, ULogin.LU.UniqID) != 1) {
+                        if( (ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) == 0 || ULogin.CheckSession(closeseq, 0, ULogin.LU.UniqID) != 1) {
                                 printaccessdenied(deal);
                                 goto End_part;
                         }

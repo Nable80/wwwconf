@@ -49,6 +49,10 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_add_closed2                 "Эта ветвь закрыта Администратором, новые сообщения не принимаются"
 #define MESSAGEMAIN_add_invalid_reply        "Сообщение не может быть добавлено"
 #define MESSAGEMAIN_add_invalid_reply2        "Сообщение на которое Вы хотите ответить не существует!"
+#define MESSAGEMAIN_edit_denied                 "Сообщение не может быть отредактировано"
+#define MESSAGEMAIN_edit_denied2                "Возможно, у Вас нет прав на редактирование сообщений"
+#define MESSAGEMAN_invisible    "Сообщение не может быть добавлено или изменено"
+#define MESSAGEMAN_invisible2   "Сообщение было скрыто Администратором"
 
 #define MESSAGEMAIN_add_ok                                "Сообщение добавлено"
 #define MESSAGEMAIN_add_ok_login                "Сообщение добавлено, Вы вошли в конференцию "
@@ -102,7 +106,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_messagechanged2                "Спасибо за участие"
 
 #define MESSAGEMAIN_incorrectpwd                 "Указанное имя уже существует и введен неверный пароль"
-#define MESSAGEMAIN_incorrectpwd2                 "Проверьте правильность написания пароля и имени<BR>Если Вы хотите отправить сообщение не регестрируясь в конференции попробуйте указать другое не занятое имя"
+#define MESSAGEMAIN_incorrectpwd2                 "Проверьте правильность написания пароля и имени<BR>Если Вы хотите отправить сообщение, не регестрируясь в конференции, попробуйте указать другое не занятое имя"
 
 #define MESSAGEMAIN_robotmessage                 "Использование указанного имени запрещено"
 #define MESSAGEMAIN_robotmessage2                 ""
@@ -877,7 +881,7 @@ extern char DESIGN_break[10];
 
 #define DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, name, title, callback, argumentlist) \
         "<button type=\"button\" class=\"style\" name=\"" name "\" accesskey=\"" accesskey "\" style=\"width: " width "\" title=\"" title "\" " \
-        "onclick=\"" callback "(" argumentlist ");\" tabindex=\"5\">" label "</button>&nbsp;"
+        "onclick=\"" callback "(" argumentlist ");\">" label "</button>&nbsp;"
 
 #define DESIGN_STYLE_BUTTONS_ADD_WRAP(accesskey, width, label, title, opentag, closetag, allowsubj) \
 	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "wrap", "'" opentag "', '" closetag "', " #allowsubj)

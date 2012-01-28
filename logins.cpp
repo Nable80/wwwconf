@@ -347,8 +347,8 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 if(LU.right & USERRIGHT_SUPERUSER) {
                         LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
                                 USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
-                                USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
-                                USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
+                                USERRIGHT_OPEN_MESSAGE | USERRIGHT_ALLOW_HTML | USERRIGHT_PROFILE_MODIFY |
+                                USERRIGHT_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
                 }
 
                 // fill sequence info
@@ -500,8 +500,8 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         if(LU.right & USERRIGHT_SUPERUSER) {
                                 LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
                                         USERRIGHT_MODIFY_MESSAGE | USERRIGHT_CREATE_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD |
-                                        USERRIGHT_OPEN_MESSAGE | USERRIGTH_ALLOW_HTML | USERRIGTH_PROFILE_MODIFY |
-                                        USERRIGTH_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
+                                        USERRIGHT_OPEN_MESSAGE | USERRIGHT_ALLOW_HTML | USERRIGHT_PROFILE_MODIFY |
+                                        USERRIGHT_PROFILE_CREATE | USERRIGHT_POST_GLOBAL_ANNOUNCE | USERRIGHT_ALT_DISPLAY_NAME;
                         }
                 }
                 else {

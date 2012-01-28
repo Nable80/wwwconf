@@ -14,17 +14,21 @@
 #include "dbase.h"
 
 /* error codes for CheckSpellingBan() */
-#define MSG_CHK_ERROR_PASSED                        1
-#define MSG_CHK_ERROR_NONAME                        2
-//#define MSG_CHK_ERROR_NOEMAIL                        3
-#define MSG_CHK_ERROR_NOMSGHEADER                4
-#define MSG_CHK_ERROR_NOMSGBODY                        5
-#define MSG_CHK_ERROR_BADSPELLING                6
-#define MSG_CHK_ERROR_BANNED                        7
-#define MSG_CHK_ERROR_CLOSED                        8
-#define MSG_CHK_ERROR_INVALID_REPLY                9
-#define MSG_CHK_ERROR_INVALID_PASSW                10
-#define MSG_CHK_ERROR_ROBOT_MESSAGE                11
+typedef enum {
+        MSG_CHK_ERROR_PASSED = 1,
+        MSG_CHK_ERROR_NONAME = 2,
+        // MSG_CHK_ERROR_NOEMAIL = 3,
+        MSG_CHK_ERROR_NOMSGHEADER = 4,
+        MSG_CHK_ERROR_NOMSGBODY = 5,
+        MSG_CHK_ERROR_BADSPELLING = 6,
+        MSG_CHK_ERROR_BANNED = 7,
+        MSG_CHK_ERROR_CLOSED = 8,
+        MSG_CHK_ERROR_INVALID_NUMBER = 9,
+        MSG_CHK_ERROR_INVALID_PASSW = 10,
+        MSG_CHK_ERROR_ROBOT_MESSAGE = 11,
+        MSG_CHK_ERROR_EDIT_DENIED = 12,
+        MSG_CHK_ERROR_INVISIBLE = 13
+} msg_chk_error_t;
 
 #define PROFILE_CHK_ERROR_ALLOK                                        1
 #define PROFILE_CHK_ERROR_ALREADY_EXIST                        2

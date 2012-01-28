@@ -137,8 +137,7 @@ public:
         int PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt);
 
         int DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
-        int DB_ChangeMessage(DWORD root, SMessage *msg, char **body, WORD msize, DWORD CFlags, char **banreason);
-
+        int DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CFlags, char **banreason);
         int PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD viewinv, int *updated);
         
         int DB_DeleteMessages(DWORD root);

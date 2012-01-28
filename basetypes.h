@@ -134,12 +134,12 @@
 /************* default not logged users parameters ***************/
 #define DEFAULT_NOBODY_SECURITY_BYTE        10
 #define DEFAULT_NOBODY_HDR_SEC_BYTE                255
-#define DEFAULT_NOBODY_RIGHT                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGTH_PROFILE_CREATE
+#define DEFAULT_NOBODY_RIGHT                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGHT_PROFILE_CREATE
 
 /******** default user creation parameters (logged users) ********/
 #define DEFAULT_USER_SECURITY_BYTE                2
 #define DEFAULT_USER_HDR_SEC_BYTE                11
-#define DEFAULT_USER_RIGHT                                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGTH_PROFILE_MODIFY | USERRIGTH_PROFILE_CREATE
+#define DEFAULT_USER_RIGHT                                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGHT_PROFILE_MODIFY | USERRIGHT_PROFILE_CREATE
 #define USER_DEFAULT_PROFILE_CREATION_FLAGS PROFILES_FLAG_VISIBLE_EMAIL | PROFILES_FLAG_VIEW_SETTINGS
 
 /******** default admin creation parameters (moderators) *********/
@@ -375,9 +375,9 @@ typedef unsigned char BYTE;
 #define USERRIGHT_OPEN_MESSAGE                        0x0010        // open thread right (form closed)
 #define USERRIGHT_CREATE_MESSAGE                0x0020        // create message (reply)
 #define USERRIGHT_CREATE_MESSAGE_THREAD        0x0040        // create message (new thread)
-#define USERRIGTH_ALLOW_HTML                        0x0080        // allow HTML right
-#define USERRIGTH_PROFILE_MODIFY                0x0100        // allow modify, delete own profile
-#define USERRIGTH_PROFILE_CREATE                0x0200        // allow create new profiles
+#define USERRIGHT_ALLOW_HTML                        0x0080        // allow HTML right
+#define USERRIGHT_PROFILE_MODIFY                0x0100        // allow modify, delete own profile
+#define USERRIGHT_PROFILE_CREATE                0x0200        // allow create new profiles
 #define USERRIGHT_ROLL_MESSAGE                        0x0400        // roll thread right
 #define USERRIGHT_UNROLL_MESSAGE                0x0800        // unroll thread right
 #define USERRIGHT_POST_GLOBAL_ANNOUNCE        0x1000        // post global conference announce

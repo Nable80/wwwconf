@@ -882,7 +882,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
                 printf("</B>");
         printf("<span class=\"marker\">");
-        if (mes->Flag | MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB)
+        if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
                 printf(" ");
         if (mes->Flag & MESSAGE_HAVE_URL)
                 printf(TAG_MSG_HAVE_URL);
@@ -1431,7 +1431,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
         //
         //        Message security == user security !!!
         //
-        if(UI.right & USERRIGTH_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
+        if(UI.right & USERRIGHT_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
         mes->Security = UI.secur;
         mes->SecHeader = UI.secheader;
         // set poster ID of message
@@ -1499,8 +1499,8 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                 re = 1; // set "reply" flag
 
                 // get real index
-                root = TranslateMsgIndex(root);
-                if(root == NO_MESSAGE_CODE) return MSG_CHK_ERROR_INVALID_REPLY;
+                if ( (root = TranslateMsgIndex(root)) == NO_MESSAGE_CODE)
+                        return MSG_CHK_ERROR_INVALID_NUMBER;
                 
                 // read parent message
                 if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
@@ -1510,10 +1510,15 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                 wcfclose(fm);
 
                 // check whether post is allowed
-                if((UI.right & USERRIGHT_SUPERUSER) == 0 &&
-                   (msg->Flag & (MESSAGE_IS_CLOSED | MESSAGE_IS_INVISIBLE))) {
-                        free(msg);
-                        return MSG_CHK_ERROR_CLOSED;
+                if ((UI.right & USERRIGHT_SUPERUSER) == 0) {
+                        if (msg->Flag & MESSAGE_IS_CLOSED) {
+                                free(msg);
+                                return MSG_CHK_ERROR_CLOSED;
+                        }
+                        if (msg->Flag & MESSAGE_IS_INVISIBLE) {
+                                free(msg);
+                                return MSG_CHK_ERROR_INVISIBLE;
+                        }
                 }
 
                 // tune level of message
@@ -2110,48 +2115,71 @@ LB_MsgFound:
         if(fdb1.MarkFreeSpace(fbindex, fbsize) != FREEDBFILE_ERROR_ALLOK)
                 printhtmlerror();
         
-        return 1;
+        return MSG_CHK_ERROR_PASSED;
 }
 
-int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msize,
-                                                          DWORD CFlags, char **banreason)
+// if it executes w/o errors, it modifies mes->Flag and mes->ParentThread for you to generate correct redirect page
+int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CFlags, char **banreason)
 {
         int i;
         DWORD RFlags;
         DWORD omsize;
         WCFILE *fm;
+        DWORD troot;
+        SMessage msg;
 
-        root = TranslateMsgIndex(root);
-        if(root == NO_MESSAGE_CODE) return 0;
+        if ( (troot = TranslateMsgIndex(viroot)) == NO_MESSAGE_CODE)
+                return MSG_CHK_ERROR_INVALID_NUMBER;
+        if (!ReadDBMessage(troot, &msg))
+                printhtmlerror();
 
-        // message header, banned address and spelling message check
-        switch (i = CheckSpellingBan(nmsg, body, banreason, CFlags, &RFlags)) {
-        case MSG_CHK_ERROR_PASSED: break;
-        default: return i;
+        // go away if unreg
+        if (ULogin.LU.ID[0] == 0)
+                return MSG_CHK_ERROR_INVALID_PASSW;
+
+        if((ULogin.pui->right & USERRIGHT_SUPERUSER) == 0) {
+                if((ULogin.pui->right & USERRIGHT_MODIFY_MESSAGE) == 0 || ULogin.pui->UniqID != msg.UniqUserID)
+                        return MSG_CHK_ERROR_EDIT_DENIED;
+                if(msg.Flag & MESSAGE_IS_CLOSED)
+                        return MSG_CHK_ERROR_CLOSED;
+                if(msg.Flag & MESSAGE_IS_INVISIBLE)
+                        return MSG_CHK_ERROR_INVISIBLE;
         }
 
-        // tuning some columns of message stucture (first stage)
-        omsize = nmsg->msize;
+        msg.MDate = time(NULL);
+        strcpy(msg.MessageHeader, mes->MessageHeader);
+        strcpy(msg.HostName, mes->HostName);
+        msg.IPAddr = mes->IPAddr;
 
+        if ((ULogin.pui->right & USERRIGHT_SUPERUSER) && strcmp(msg.AuthorName, mes->AuthorName)) {
+                msg.UniqUserID = 0;
+                strcpy(msg.AuthorName, mes->AuthorName);
+        }
+
+        if ( (i = CheckSpellingBan(&msg, body, banreason, CFlags, &RFlags)) != MSG_CHK_ERROR_PASSED)
+                return i;
+
+        // save size of old message body to decide later
+        // if we must allocate another place for new body in DB
+        omsize = msg.msize;
+
+        //************ set sizes and flags of message ************/
         // save new message size
-        if(*body != NULL && **body != 0) nmsg->msize = (WORD)(strlen(*body) + 1);
-        else {
-                nmsg->msize = 0;
+        if(*body && **body) {
+                msg.msize = (WORD)(strlen(*body) + 1);
+                msg.Flag |= MESSAGE_HAVE_BODY;
+        } else {
+                msg.msize = 0;
+                msg.Flag &= ~MESSAGE_HAVE_BODY;
         }
 
-        /************ set flags of message ************/
-        /* tune [pic] [url] message flags and other message flags */
-        nmsg->Flag = nmsg->Flag | RFlags;
+        // tune [pic] [url] message flags and other message flags
+        msg.Flag |= RFlags;
 
-        // set "signed" flag
-//        if(msigned && (CFlags & MSG_CHK_DISABLE_SIGNATURE) == 0)
-//                nmsg->Flag |= MESSAGE_WAS_SIGNED;
-
-        if(msize > 0) nmsg->Flag |= MESSAGE_HAVE_BODY;
-        else nmsg->Flag &= (~MESSAGE_HAVE_BODY);
-
-        if((CFlags & MSG_CHK_ENABLE_EMAIL_ACKNL) && ULogin.LU.ID[0] != 0xFFFFFFFF)
-                nmsg->Flag |= MESSAGE_MAIL_NOTIFIATION;
+        if ((CFlags & MSG_CHK_ENABLE_EMAIL_ACKNL) && msg.UniqUserID)
+                msg.Flag |= MESSAGE_MAIL_NOTIFIATION;
+        else
+                msg.Flag &= ~MESSAGE_MAIL_NOTIFIATION;
 
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 printhtmlerror();
@@ -2159,13 +2187,13 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
         // ********* lock FM *********
         lock_file(fm);
 
-        if(wcfseek(fm, root, SEEK_SET) != 0) {
+        if(wcfseek(fm, troot, SEEK_SET) != 0) {
                 unlock_file(fm);
                 printhtmlerror();
         }
 
         // enought size for write new body ?
-        if(nmsg->msize > omsize) {
+        if(msg.msize > omsize) {
                 // No, it's a pity we need to reallocate free space
 
                 // mark body of message as free space
@@ -2174,7 +2202,7 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
                         unlock_file(fm);
                         printhtmlerror();
                 }
-                if(fdb.MarkFreeSpace(nmsg->MIndex, omsize) != FREEDBFILE_ERROR_ALLOK) {
+                if(fdb.MarkFreeSpace(msg.MIndex, omsize) != FREEDBFILE_ERROR_ALLOK) {
                         unlock_file(fm);
                         printhtmlerror();
                 }
@@ -2188,7 +2216,7 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
                 lock_file(fb);
 
                 // get free space and set WCFILE pointer
-                if((nmsg->MIndex = fdb.AllocFreeSpace(msize)) == 0xFFFFFFFF) {
+                if((msg.MIndex = fdb.AllocFreeSpace(msg.msize)) == 0xFFFFFFFF) {
                         // no free space - allocate it at the end of WCFILE
                         if(fdb.errnum != FREEDBFILE_ERROR_ALLOK) {
                                 unlock_file(fm);
@@ -2201,18 +2229,18 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
                                 unlock_file(fb);
                                 printhtmlerror();
                         }
-                        nmsg->MIndex = wcftell(fb);
+                        msg.MIndex = wcftell(fb);
                 }
                 else {
                         // free space found
-                        if(wcfseek(fb, nmsg->MIndex, SEEK_SET) != 0) {
+                        if(wcfseek(fb, msg.MIndex, SEEK_SET) != 0) {
                                 unlock_file(fm);
                                 unlock_file(fb);
                                 printhtmlerror();
                         }
                 }
 
-                if(!fCheckedWrite(*body, nmsg->msize, fb)) {
+                if(!fCheckedWrite(*body, msg.msize, fb)) {
                         unlock_file(fb);
                         unlock_file(fm);
                         printhtmlerror();
@@ -2224,7 +2252,7 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
         }
         else {
                 // if the body present write it
-                if(nmsg->msize) {
+                if(msg.msize) {
                         if((fb = wcfopen(F_MSGBODY, FILE_ACCESS_MODES_RW)) == NULL) {
                                 unlock_file(fm);
                                 printhtmlerror();
@@ -2232,12 +2260,12 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
                         // ********* lock fb *********
                         lock_file(fb);
 
-                        if(wcfseek(fb, nmsg->MIndex, SEEK_SET) != 0) {
+                        if(wcfseek(fb, msg.MIndex, SEEK_SET) != 0) {
                                 unlock_file(fb);
                                 unlock_file(fm);
                                 printhtmlerror();
                         }
-                        if(!fCheckedWrite(*body, nmsg->msize, fb)) {
+                        if(!fCheckedWrite(*body, msg.msize, fb)) {
                                 unlock_file(fb);
                                 unlock_file(fm);
                                 printhtmlerror();
@@ -2248,15 +2276,15 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
                 }
 
                 // more or equal to sizeof(SMessageBody) will left free?
-                if(nmsg->msize < omsize) {
+                if(msg.msize < omsize) {
                         // mark it as free space
                         CFreeDBFile fdb(F_FREEMBODY, 0);
                         if(fdb.errnum != FREEDBFILE_ERROR_ALLOK) {
                                 unlock_file(fm);
                                 printhtmlerror();
                         }
-                        if(fdb.MarkFreeSpace(nmsg->MIndex + nmsg->msize,
-                                omsize - nmsg->msize) != FREEDBFILE_ERROR_ALLOK)
+                        if(fdb.MarkFreeSpace(msg.MIndex + msg.msize,
+                                omsize - msg.msize) != FREEDBFILE_ERROR_ALLOK)
                         {
                                 unlock_file(fm);
                                 printhtmlerror();
@@ -2265,7 +2293,7 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
         }
         
         // write message header
-        if(!fCheckedWrite(nmsg, sizeof(SMessage), fm)) {
+        if(!fCheckedWrite(&msg, sizeof(SMessage), fm)) {
                 unlock_file(fm);
                 printhtmlerror();
         }
@@ -2275,7 +2303,10 @@ int DB_Base::DB_ChangeMessage(DWORD root, SMessage *nmsg, char **body, WORD msiz
         
         wcfclose(fm);
 
-        return 1;
+        mes->Flag = msg.Flag;
+        mes->ParentThread = msg.ParentThread;
+
+        return MSG_CHK_ERROR_PASSED;
 }
 
 /* Print message with body
