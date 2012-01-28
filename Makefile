@@ -14,7 +14,7 @@ else
 CFLAGS=-O3 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic
 endif
 
-INDEX_SRCS=sha1.cpp statfs.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp indexer.cpp profiles.cpp logins.cpp hashindex.cpp searcher.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp
+INDEX_SRCS=statfs.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp indexer.cpp profiles.cpp logins.cpp hashindex.cpp searcher.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp
 DBTOOL_SRCS=freedb.cpp profiles.cpp hashindex.cpp profman.cpp indexer.cpp searcher.cpp
 SRCS=$(INDEX_SRCS) $(DBTOOL_SRCS)
 
