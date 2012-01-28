@@ -106,7 +106,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_messagechanged2                "Спасибо за участие"
 
 #define MESSAGEMAIN_incorrectpwd                 "Указанное имя уже существует и введен неверный пароль"
-#define MESSAGEMAIN_incorrectpwd2                 "Проверьте правильность написания пароля и имени<BR>Если Вы хотите отправить сообщение, не регестрируясь в конференции, попробуйте указать другое не занятое имя"
+#define MESSAGEMAIN_incorrectpwd2                 "Проверьте правильность написания пароля и имени<BR>Если Вы хотите отправить сообщение, не регистрируясь в конференции, попробуйте указать другое не занятое имя"
 
 #define MESSAGEMAIN_robotmessage                 "Использование указанного имени запрещено"
 #define MESSAGEMAIN_robotmessage2                 ""
