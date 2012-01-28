@@ -10,7 +10,6 @@
 #define SECURITY_H_INCLUDED
 
 #include "basetypes.h"
-#include "sha1.h"
 
 // antispam codes
 #define POST_MSG                1

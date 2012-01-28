@@ -398,14 +398,3 @@ DWORD rand32(void)
         bno -= 4;
         return *(DWORD*)(buf + 8 - bno);
 }
-
-/*
-void MakeSHA(char *origstring, char *shastring)
-{
-        CSHA1 sha1;
-        sha1.Reset();
-        sha1.Update((UINT_8 *)origstring, strlen(origstring));
-        sha1.Final();
-        sha1.GetHash((UINT_8 *)shastring);
-}
-*/
