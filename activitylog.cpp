@@ -117,7 +117,6 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         free(buf);
                         wcfflush(f1);
                         // truncate end of file
-                        truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4);
                         if (truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4))
                                 printhtmlerror();
                         wcfseek(f1, 0, SEEK_END);
@@ -210,7 +209,6 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                 ss.Time = crtime;
 
                 wcfflush(f);
-                truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4);
                 if (truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4))
                         printhtmlerror();
                 wcfseek(f, 4, SEEK_SET);

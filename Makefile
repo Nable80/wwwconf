@@ -9,9 +9,9 @@ debug: all
 
 CC=g++
 ifeq ($(MAKECMDGOALS), debug)
-CFLAGS=-g -O0 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic
+CFLAGS=-m32 -g -O0 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic
 else
-CFLAGS=-O3 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic
+CFLAGS=-m32 -O3 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic
 endif
 
 INDEX_SRCS=statfs.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp indexer.cpp profiles.cpp logins.cpp hashindex.cpp searcher.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp

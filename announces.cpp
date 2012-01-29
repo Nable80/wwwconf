@@ -112,7 +112,6 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
         siz = wcftell(f);
         if(!fCheckedWrite(&an, sizeof(SGlobalAnnounce), f)) {
                 // rolling back
-                truncate(F_GLOBAL_ANN, siz);
                 if (truncate(F_GLOBAL_ANN, siz))
                         printhtmlerror();
                 id--;
