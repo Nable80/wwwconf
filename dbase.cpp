@@ -895,6 +895,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         printf(" (%d)</span></A> ", mes->Readed);
         if (mes->Flag & MESSAGE_HAVE_BODY)
                 printf(TAG_MSG_HAVE_BODY);
+        else
+                printf(TAG_MSG_HAVE_NO_BODY);
         printf(" &mdash; ");
 
         char *aname_fbidi = FilterBiDi(aname);

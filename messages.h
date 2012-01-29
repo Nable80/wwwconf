@@ -505,7 +505,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define MESSAGEHEAD_configure_showhrononlyheaders        "ѕо сообщени€м в хронологическом виде, только заголовки"
 
 
-#define WWWCONF_FULL_NAME "просто форум"
+#define WWWCONF_FULL_NAME "свободноеЩ общение"
 
 // for STABLE_TITLE = 1
 #if STABLE_TITLE == 1
@@ -524,7 +524,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 /**************************** title messages *****************************/
 // for STABLE_TITLE = 0
 // board name prefix
-#define TITLE_WWWConfBegining                "просто форум"
+#define TITLE_WWWConfBegining                "свободноеЩ общение"
 #define TITLE_divider                                " : "
 // forms name
 #define TITLE_WWWConfIndex                        " "
@@ -729,6 +729,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 // from design.h
 /*=====================================================================*/
 #define TAG_MSG_HAVE_BODY               "(+)"
+#define TAG_MSG_HAVE_NO_BODY            "(-)"
 #define TAG_MSG_HAVE_PIC                "(pic)"
 #define TAG_MSG_HAVE_URL                "(url)"
 #define TAG_MSG_HAVE_TEX                "(tex)"
