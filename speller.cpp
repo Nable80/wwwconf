@@ -416,7 +416,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         if((CFlags & MSG_CHK_ALLOW_HTML) == 0) {
                 // HTML tags check and filtering (%lt, %gt)
                 char *st;
-                st = FilterHTMLTags(mes->MessageHeader, MESSAGE_HEADER_LENGTH - 1);
+                st = FilterHTMLTags(mes->MessageHeader, MESSAGE_HEADER_LENGTH);
                 st = FilterWhitespaces(st);
                 strcpy(mes->MessageHeader, st);
                 free(st);
