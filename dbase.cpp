@@ -196,12 +196,12 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
         if(reg) {
                 if(doparsehtml) str = FilterHTMLTags(name, AUTHOR_NAME_LENGTH*3+1, 0);
                 else str = name;
-                str = FilterBiDi(str, true);
+                str = FilterBiDi(str);
                 str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
                 sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" "
-                        "title=\"Информация о Пользователе\" target=\"_blank\">%s</a>&#8206;", MY_CGI_URL, str1, str1, str);
+                        "title=\"Информация о Пользователе\" target=\"_blank\">%s</a>", MY_CGI_URL, str1, str1, str);
         } else {
-		str = FilterBiDi(name, true);
+		str = FilterBiDi(name);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
 	}
 	free(str);
@@ -877,7 +877,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 #endif
         // subject
         char *aheader = FilterBiDi(mp);
-        printf("%s", aheader);
+        printf(DESING_INDEX_MSG_HEADER, aheader);
         free(aheader);
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
                 printf("</B>");

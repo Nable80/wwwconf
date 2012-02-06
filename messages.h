@@ -783,6 +783,8 @@ extern char DESIGN_break[10];
 
 #define DESIGN_GLOBAL_BOARD_MESSAGE                "<P ALIGN=CENTER><BIG><STRONG>%s</STRONG></BIG><BR><BR>%s"
 
+#define DESING_INDEX_MSG_HEADER  "<span class=\"subject\">%s</span>"
+
 #define DESIGN_VIEW_THREAD_BODY                        "<br /><div class=\"body\">%s</div>"
 #define DESIGN_VIEW_THREAD_SIGN                        "<br /><div class=\"sign\">%s</div>"
 #define DESIGN_VIEW_THREAD_MSG_HEADER        "<BR><DIV ALIGN=CENTER>"
@@ -824,7 +826,7 @@ extern char DESIGN_break[10];
 #define DESIGN_BEGIN_REGISTER_OPEN                "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_REGISTER_CLOSE                "</TABLE></CENTER>"
 // nick in read_message
-#define DESIGN_MESSAGE_UNREG                        "<b>%s</b>&#8206;<SMALL> (unreg)</SMALL>"
+#define DESIGN_MESSAGE_UNREG                        "<span class=\"unreg\">%s</span>"
 
 #define DESIGN_BEGIN_USERINFO_INTRO_OPEN        "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_USERINFO_INTRO_CLOSE                "</TABLE></CENTER>"

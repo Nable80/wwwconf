@@ -200,8 +200,10 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  * characters it's need to place the special zero-width strong-direction
  * character (Left-to-Right Mark (LRM, &#8206;) or Right-To-Left Mark (RLM,
  * &#8207;)) to guarantee that punctuation and whitespace symbols will
- * have desirable direction. So the function adds this symbol to the end of the
- * output string (LRM in our case).
+ * have desirable direction. So the function *added* this symbol to the end of the
+ * output string (LRM in our case). But:
+ * It was decided to replace adding LRM by attribute dir="ltr" due to absense
+ * of the symbol in an each line in ?index and suchlike.
  *
  * All about bidirectional text in Unicode read
  * http://www.iamcal.com/understanding-bidirectional-text/
@@ -209,7 +211,7 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  * Don't forget that all Unicode symbols are stored in decimal base NCR
  * format.
  */
-char *FilterBiDi(const char *s, bool disable_lrm)
+char *FilterBiDi(const char *s)
 {
         size_t level = 0;
         char *os, *ss;
@@ -254,7 +256,7 @@ char *FilterBiDi(const char *s, bool disable_lrm)
                 }
         *ss = '\0';
 
-	if (!(os = (char*) realloc(os, strlen(os) + level*7 + (disable_lrm ? 0 : 7) + 1)))
+	if (!(os = (char*) realloc(os, strlen(os) + level*7 + 1)))
 		printhtmlerrormes("realloc");
 	
 	if (level) {
@@ -262,9 +264,6 @@ char *FilterBiDi(const char *s, bool disable_lrm)
 		for (i = 0; i < level; ++i)
 			strcat(os, "&#8236;");
 	}
-	
-        if (!disable_lrm)
-                strcat(os, "&#8206;");
 
         return os;
 }

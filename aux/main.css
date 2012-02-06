@@ -1,4 +1,7 @@
-
+body, div, span {
+        unicode-bidi: bidi-override;
+        direction: ltr;
+}
 
 a {text-decoration: none;}
 a:visited {color: #000088;}
@@ -163,11 +166,30 @@ div.ibody
 div.body, div.sign {padding: 25px;}
 
 
+span.unreg, span.reg, span.unr, span.own, span.sel,
+span.subject,
+div.body,
+div.sign,
+div.pr_from, div.pr_to {
+        unicode-bidi: embed;
+}
+
 /* nickname */
 a.nn {
 	color: #00f;
 	font-weight: bold;
 }
+
+span.unreg {
+        font-weight: bold;
+}
+
+span.unreg:after {
+        content: "\a0 (unreg)"; /* \a0 is &nbsp;*/
+        font-size: smaller;
+        font-weight: normal;
+}
+
 span.reg {
 	color: #207025;
 	font-size: 133%;
@@ -185,16 +207,16 @@ span.own {
 	font-weight: bold;
 }
 
-span.own a, span.reg a, span.unr a {
-        font-size: 100%;
-}
-
 span.sel {
 	color: #FF9900;
 	font-size: 133%;
 	font-weight: bold;
 }
 
+
+span.own a, span.reg a, span.unr a, span.sel a {
+        font-size: 100%;
+}
 
 /* privates*/
 div.pr_to{

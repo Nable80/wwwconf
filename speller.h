@@ -70,7 +70,7 @@ int IsMailCorrect(char *s);
 char* FilterHTMLTags(const char *s, size_t ml, int allocmem = 1);
 
 /* filter unicode bidirectional markers */
-char* FilterBiDi(const char *s, bool disable_lrm = false);
+char* FilterBiDi(const char *s);
 
 char* FilterWhitespaces(char *s);
 
