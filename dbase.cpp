@@ -824,10 +824,13 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 mp = mes->MessageHeader;
 
         // does this message posted by registred user ?
-        if(mes->UniqUserID == 0)
-                sprintf(aname, DESIGN_UNREGISTRED_NICK, mes->AuthorName);
-        else {
+        if (mes->UniqUserID == 0) {
+                char *tmp = FilterBiDi(mes->AuthorName);
+                sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
+                free(tmp);
+        } else {
                 char altnick[1000];
+                char *altnick_f;
 
                 if((currentdsm & CONFIGURE_nalt) == 0 && AltNames.NameToAltName(mes->UniqUserID, altnick)) {
                         char *st;
@@ -836,9 +839,11 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 } else
                         strcpy(altnick, mes->AuthorName);
 
+                altnick_f = FilterBiDi(altnick);
+
                 // if this, is does this user view this message ;-) ?
                 if( ((currentdsm & CONFIGURE_onh) == 0) && ULogin.LU.ID[0] !=0 && mes->UniqUserID == ULogin.LU.UniqID ) {
-                        sprintf(aname, DESIGN_REGISTRED_OWN_NICK, altnick);
+                        sprintf(aname, DESIGN_REGISTRED_OWN_NICK, altnick_f);
                 }
                 else {
                         char *ts;
@@ -847,12 +852,13 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                                 (ts[strlen(mes->AuthorName)] == '\n' || ts[strlen(mes->AuthorName)] == '\r' || ts[strlen(mes->AuthorName)] == '\0') && 
                                 (ts == ULogin.pfui->SelectedUsers || ts[-1] == '\n' || ts[-1] == '\r'  ) ){ 
 //                        if(ULogin.LU.ID[0] != 0 && ((ts = strstr(ULogin.pfui->SelectedUsers, mes->AuthorName)) != NULL)) {
-                                sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick);
+                                sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick_f);
                         }
                         else {
-                                sprintf(aname, DESIGN_REGISTRED_NICK, altnick);
+                                sprintf(aname, DESIGN_REGISTRED_NICK, altnick_f);
                         }
                 }
+                free(altnick_f);
         }
 
 
@@ -918,9 +924,13 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if(skipped != 0xffffffff && skipped != 0) {
                 if(newmessmark) {
                         // does this message posted by registred user ?
-                        if(lastmes.UniqUserID == 0) sprintf(aname, DESIGN_UNREGISTRED_NICK, lastmes.AuthorName);
-                        else {
+                        if(lastmes.UniqUserID == 0) {
+                                char *tmp = FilterBiDi(lastmes.AuthorName);
+                                sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
+                                free(tmp);
+                        } else {
                                 char altnick[1000];
+                                char *altnick_f;
 
                                 if((currentdsm & CONFIGURE_nalt) == 0 && AltNames.NameToAltName(lastmes.UniqUserID, altnick)) {
                                         char *st;
@@ -929,20 +939,23 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                                 } else
                                         strcpy(altnick, lastmes.AuthorName);
 
+                                altnick_f = FilterBiDi(altnick);
+
                                 // if this, is does this user view this message ;-) ?
                                 if( ((currentdsm & CONFIGURE_onh) == 0) && ULogin.LU.ID[0] !=0 && lastmes.UniqUserID == ULogin.LU.UniqID ) {
-                                        sprintf(aname, DESIGN_REGISTRED_OWN_NICK, altnick);
+                                        sprintf(aname, DESIGN_REGISTRED_OWN_NICK, altnick_f);
                                 }
                                 else {
                                         char *ts;
                                         // maybe user has selected some nicks to be displayed as detailed nicks?
                                         if(ULogin.LU.ID[0] != 0 && ((ts = strstr(ULogin.pfui->SelectedUsers, lastmes.AuthorName)) != NULL)) {
-                                                sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick);
+                                                sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick_f);
                                         }
                                         else {
-                                                sprintf(aname, DESIGN_REGISTRED_NICK, altnick);
+                                                sprintf(aname, DESIGN_REGISTRED_NICK, altnick_f);
                                         }
                                 }
+                                free(altnick_f);
                         }
                         tm = ConvertTime(lastmes.Date);
                         char *aname_fbidi = FilterBiDi(aname);

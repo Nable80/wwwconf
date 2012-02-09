@@ -4943,7 +4943,7 @@ print2log("incor pass %s", par);
                                 st = NULL;
                         }
                         
-                        st1_f = FilterBidi(st1);
+                        st1_f = FilterBiDi(st1);
                         
                         if(!received) {        
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(pmsg->NameTo, 0),
