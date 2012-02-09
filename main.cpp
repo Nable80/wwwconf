@@ -4678,6 +4678,7 @@ print2log("incor pass %s", par);
 
                                         char *st = FilterHTMLTags(body, MAX_PARAMETERS_STRING - 1);
                                         char *st1 = NULL;
+                                        char *st1_f;
                                         DWORD retflg;
                                         DWORD enabled_smiles = 0;
                                         if((currentdsm & CONFIGURE_dsm) == 0)
@@ -4689,15 +4690,19 @@ print2log("incor pass %s", par);
                                                 st1 = st;
                                                 st = NULL;
                                         }
-        
+                                        
+                                        st1_f = FilterBiDi(st1);
+
                                         // print message text
                                         printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(name), 
-                                        MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1);
-                                                                          
+                                               MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1_f);
+                                        
                                         PrintPrivateMessageForm(name, body);
 
                                         if(st) free(st);
                                         if(st1) free(st1);
+                                        if (st1_f)
+                                                free(st1_f);
                                 }
                                 else {
                                 if(prof.PostPersonalMessage(name, 0, body, ULogin.pui->username, ULogin.LU.UniqID) == PROFILE_RETURN_ALLOK) {
@@ -4925,6 +4930,7 @@ print2log("incor pass %s", par);
 
                         char *st = FilterHTMLTags(pmsg->Msg, MAX_PARAMETERS_STRING - 1);
                         char *st1 = NULL;
+                        char *st1_f;
                         DWORD retflg;
                         DWORD enabled_smiles = 0;
                         if((currentdsm & CONFIGURE_dsm) == 0)
@@ -4936,18 +4942,21 @@ print2log("incor pass %s", par);
                                 st1 = st;
                                 st = NULL;
                         }
-
+                        
+                        st1_f = FilterBidi(st1);
                         
                         if(!received) {        
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(pmsg->NameTo, 0),
-                                        MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1);
+                                        MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1_f);
                         }else{
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_fromuser, tostr, CodeHttpString(pmsg->NameFrom, 0),
-                                        MESSAGEMAIN_privatemsg_answer, DESIGN_PRIVATEMSG_FRAME_IN, st1);
+                                        MESSAGEMAIN_privatemsg_answer, DESIGN_PRIVATEMSG_FRAME_IN, st1_f);
                         }                
 
                         if(st) free(st);
                         if(st1) free(st1);
+                        if (st1_f)
+                                free(st1_f);
                 }
 
                 ULogin.pui->readpersmescnt = ULogin.pui->persmescnt;
