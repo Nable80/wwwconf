@@ -1415,8 +1415,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                         char *st;
 
                         /* default user */
-                        UI.secur = DEFAULT_NOBODY_SECURITY_BYTE;
-                        UI.secheader = DEFAULT_NOBODY_HDR_SEC_BYTE;
                         UI.right = DEFAULT_NOBODY_RIGHT;
                         UI.UniqID = 0;
 
@@ -1453,12 +1451,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
         }
 
 
-        //
-        //        Message security == user security !!!
-        //
         if(UI.right & USERRIGHT_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
-        mes->Security = UI.secur;
-        mes->SecHeader = UI.secheader;
         // set poster ID of message
         mes->UniqUserID = UI.UniqID;
 
@@ -2557,8 +2550,6 @@ int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
 
         printf("<cdate>%lu</cdate>\n", (unsigned long) msg->Date);
         printf("<mdate>%lu</mdate>\n", (unsigned long) msg->MDate);
-        printf("<bodysec>%u</bodysec>", msg->Security);
-        printf("<headsec>%u</headsec>", msg->SecHeader);
         printf("<flag>%lx</flag>", msg->Flag);
 
         return 0;

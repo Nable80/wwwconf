@@ -318,16 +318,10 @@ int main(int argc, char *argv[])
 
                 ui.lastIP = 0;
                 ui.Flags = 0; // don't have picture or signature
-                if(strcmp(argv[1], "-aa") != 0) {
+                if(strcmp(argv[1], "-aa") != 0)
                         ui.right = DEFAULT_USER_RIGHT;
-                        ui.secur = DEFAULT_USER_SECURITY_BYTE;
-                        ui.secheader = DEFAULT_USER_HDR_SEC_BYTE;
-                }
-                else {
+                else
                         ui.right = DEFAULT_ADMIN_RIGHT;
-                        ui.secur = DEFAULT_ADMIN_SECURITY_BYTE;
-                        ui.secheader = DEFAULT_ADMIN_HDR_SEC_BYTE;
-                }
 
                 if((errcode = ul->AddNewUser(&ui, &fui, NULL)) == PROFILE_RETURN_ALLOK)
                         printf("User successfully created\n");
@@ -352,14 +346,12 @@ int main(int argc, char *argv[])
                 }
                 if((errcode = ul->GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("User Information\n");
-                        int sr = ui.secheader;
-                        int srb = ui.secur;
                         printf("Login name : %s  Password : %s\n", ui.username, ui.password);
                         fui.SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;
                         printf("AltName : %s\n, Full name : %s, E-mail : %s\nSelected users: %s\nAbout : %s\nSignature: %s\n"
-                                   "Flags: 0x%08lx\nSecurity right byte (hdr) : %d\nSecurity right byte (body) : %d\nRefresh count : %lu\n",
+                                   "Flags: 0x%08lx\nRefresh count : %lu\n",
                                 ui.altdisplayname, fui.FullName, fui.Email, fui.SelectedUsers, fui.AboutUser,
-                                fui.Signature, ui.Flags, sr, srb, ui.RefreshCount);
+                                fui.Signature, ui.Flags, ui.RefreshCount);
                         printuserrigth(ui.right);
                         
                         char *s;

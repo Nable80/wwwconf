@@ -34,6 +34,7 @@ struct SAuthUserSeq {
         DWORD right;
         /* uniq user ID */
         DWORD UniqID;
+        // These two fields are not used now.
         // security level of message and header
         BYTE sec;
         BYTE sechdr;

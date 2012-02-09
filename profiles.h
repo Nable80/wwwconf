@@ -129,6 +129,7 @@ struct SProfile_UserInfo {
         BYTE Status;
         // Ip of last login
         DWORD lastIP;
+        // This field is not used now.
         // security level for message header
         BYTE secheader;
         BYTE align1[3];
@@ -136,6 +137,7 @@ struct SProfile_UserInfo {
         DWORD UniqID;
         // flags for user (ex: have picture... etc.)
         DWORD Flags;
+        // This field is not used now.
         // security level of user (for message body)
         BYTE secur;
         BYTE align2[3];

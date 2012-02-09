@@ -132,19 +132,13 @@
 #define HOST_NAME_LENGTH                60
 
 /************* default not logged users parameters ***************/
-#define DEFAULT_NOBODY_SECURITY_BYTE        10
-#define DEFAULT_NOBODY_HDR_SEC_BYTE                255
 #define DEFAULT_NOBODY_RIGHT                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGHT_PROFILE_CREATE
 
 /******** default user creation parameters (logged users) ********/
-#define DEFAULT_USER_SECURITY_BYTE                2
-#define DEFAULT_USER_HDR_SEC_BYTE                11
 #define DEFAULT_USER_RIGHT                                USERRIGHT_CREATE_MESSAGE | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CREATE_MESSAGE_THREAD | USERRIGHT_PROFILE_MODIFY | USERRIGHT_PROFILE_CREATE
 #define USER_DEFAULT_PROFILE_CREATION_FLAGS PROFILES_FLAG_VISIBLE_EMAIL | PROFILES_FLAG_VIEW_SETTINGS
 
 /******** default admin creation parameters (moderators) *********/
-#define DEFAULT_ADMIN_SECURITY_BYTE                0
-#define DEFAULT_ADMIN_HDR_SEC_BYTE                0
 #define DEFAULT_ADMIN_RIGHT                        USERRIGHT_SUPERUSER
 
 /******************** default "own settings" *********************/
@@ -411,6 +405,7 @@ struct SMessage
         /* unique user ID or 0, if anonymous posts */
         DWORD UniqUserID;
 
+        /* These two fields are not used now. */
         /* security level of message (for tags, etc.) */
         /* body security */
         BYTE Security;
@@ -446,7 +441,7 @@ struct SMessage
         DWORD msize;
         
         SMessage()
-        : IPAddr(0), UniqUserID(0), Security(0), SecHeader(0), Flag(0),
+        : IPAddr(0), UniqUserID(0), Flag(0),
                 Date(0), MDate(0), Level(0), Topics(0), Readed(0),
                 ParentThread(0), ViIndex(0), MIndex(0), msize(0)
         {

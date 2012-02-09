@@ -301,8 +301,6 @@ CUserLogin::CUserLogin()
         pfui = NULL;
         LU.SIndex = 0xFFFFFFFF;
         LU.right = DEFAULT_NOBODY_RIGHT;
-        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
         LU.UniqID = 0;
         LU.ID[0] = 0;
         LU.ID[1] = 0;
@@ -339,8 +337,6 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
         {
                 /* prepare SUserInfo structure */
                 LU.right = pui->right;
-                LU.sec = pui->secur;
-                LU.sechdr = pui->secheader;
                 LU.UniqID = pui->UniqID;
 
                 /* modify SUPERUSER right */
@@ -364,8 +360,6 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 if(OpenAuthSequence(&SEQ) != 1) {
                         LU.SIndex = 0xFFFFFFFF;
                         LU.right = DEFAULT_NOBODY_RIGHT;
-                        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-                        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
                         LU.UniqID = 0;
                         LU.ID[0] = 0;
                         LU.ID[1] = 0;
@@ -492,10 +486,6 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         // LOAD REAL RIGHTS !!!
                         LU.right = pui->right;
 
-                        // LOAD REAL SECURITY BYTES
-                        LU.sechdr = pui->secheader;
-                        LU.sec = pui->secur;
-
                         /* modify SUPERUSER right */
                         if(LU.right & USERRIGHT_SUPERUSER) {
                                 LU.right = LU.right | USERRIGHT_VIEW_MESSAGE | USERRIGHT_CLOSE_MESSAGE |
@@ -534,8 +524,6 @@ SessionErrorEnd:
         // init as no session
         LU.SIndex = 0xFFFFFFFF;
         LU.right = DEFAULT_NOBODY_RIGHT;
-        LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-        LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
         LU.UniqID = 0;
         LU.ID[0] = 0;
         LU.ID[1] = 0;
@@ -551,8 +539,6 @@ DWORD CUserLogin::CloseSession(DWORD seq[2])
         if(CloseAuthSequence(seq, 0) == 1) {
                 LU.SIndex = 0xFFFFFFFF;
                 LU.right = DEFAULT_NOBODY_RIGHT;
-                LU.sec = DEFAULT_NOBODY_SECURITY_BYTE;
-                LU.sechdr = DEFAULT_NOBODY_HDR_SEC_BYTE;
                 LU.UniqID = 0;
                 LU.ID[0] = 0;
                 LU.ID[1] = 0;

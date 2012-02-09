@@ -240,7 +240,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 
 
 /***************** profile information *****************/
-#define MESSAGEMAIN_profview_intro                        "Информация о пользователе: "
+#define MESSAGEMAIN_profview_intro                        "Информация о пользователе:"
 #define MESSAGEMAIN_profview_login                        "Имя: "
 #define MESSAGEMAIN_profview_postpersmsg        "отправить приватное сообщение"
 #define MESSAGEMAIN_profview_editinfo                "изменить"
@@ -261,7 +261,8 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_profview_lastip                        "Последний вход с: "
 #define MESSAGEMAIN_profview_persmsgcnt                "Всего персональных сообщений(прочитано): "
 
-#define MESSAGEMAIN_profview_no_user                "<P></P><CENTER>Пользователь %s не зарегистрирован в этой конференции</CENTER>"
+#define MESSAGEMAIN_profview_no_user                "<P></P><CENTER><span>Пользователь <span class=\"nick\">%s</span> не " \
+        "зарегистрирован в этой конференции</span></CENTER>"
 
 #define MESSAGEMAIN_profview_privacy_prof        "Дальнейшая информация о пользователе недоступна"
 #define MESSAGEMAIN_profview_privacy_inf        "Личная информация"
@@ -826,7 +827,7 @@ extern char DESIGN_break[10];
 #define DESIGN_BEGIN_REGISTER_OPEN                "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_REGISTER_CLOSE                "</TABLE></CENTER>"
 // nick in read_message
-#define DESIGN_MESSAGE_REG    "<a href=\"" MY_CGI_URL "?uinfo=%s\" class=\"nn\">%s</a>"
+#define DESIGN_MESSAGE_REG    "<a href=\"" MY_CGI_URL "?uinfo=%s\" class=\"nn\" target=\"_blank\">%s</a>"
 #define DESIGN_MESSAGE_UNREG                        "<span class=\"unreg\">%s</span>"
 
 #define DESIGN_BEGIN_USERINFO_INTRO_OPEN        "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"

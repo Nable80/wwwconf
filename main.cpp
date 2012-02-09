@@ -1091,10 +1091,10 @@ int PrintAboutUserInfo(char *name)
         }
 
         printf("<P></P>" DESIGN_BEGIN_USERINFO_INTRO_OPEN
-               "<TR><TD COLSPAN=2><BIG>%s %s</BIG></TD></TR>", MESSAGEMAIN_profview_intro, nickname);
+               "<TR><TD COLSPAN=2><BIG><span>%s <span class=\"nick\">%s</span></span></BIG></TD></TR>", MESSAGEMAIN_profview_intro, nickname);
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TR>");
         char *nickname_f = FilterBiDi(nickname);
-        printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG><SMALL>", MESSAGEMAIN_profview_login, nickname_f);
+        printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG><span class=\"nick\">%s</span></STRONG><SMALL>", MESSAGEMAIN_profview_login, nickname_f);
         if (nickname_f)
                 free(nickname_f);
 
@@ -1278,8 +1278,6 @@ int PrintAboutUserInfo(char *name)
                 }
                 printf("</SELECT>");
 
-                printf("<BR>" MESSAGEMAIN_profview_sechdr "<INPUT TYPE=TEXT SIZE=3 NAME=\"sechdr\" VALUE=\"%u\">", (unsigned)ui.secheader);
-                printf("<BR>" MESSAGEMAIN_profview_secbdy "<INPUT TYPE=TEXT SIZE=3 NAME=\"secbdy\" VALUE=\"%u\">", (unsigned)ui.secur);
                 printf("<INPUT TYPE=HIDDEN SIZE=0 NAME=\"name\" VALUE=\"%s\">", nickname);
 
                 // user rights here
@@ -3106,16 +3104,12 @@ int main()
                                 }
                                 else {
                                         /* default user */
-                                        UI.secur = DEFAULT_NOBODY_SECURITY_BYTE;
                                         UI.right = DEFAULT_NOBODY_RIGHT;
-                                        UI.secheader = DEFAULT_NOBODY_HDR_SEC_BYTE;
                                         UI.UniqID = 0;
                                         UI.username[0] = 0;
                                 }
 
                                 if(UI.right & USERRIGHT_ALLOW_HTML) CFlags = CFlags | MSG_CHK_ALLOW_HTML;
-                                mes.Security = UI.secur;
-                                mes.SecHeader = UI.secheader;
                                 mes.UniqUserID = UI.UniqID;
 
                                 char *banreason = NULL;
@@ -3867,8 +3861,8 @@ print2log("incor pass %s", par);
 
                         free(nickname);
 #endif
-                        PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
-                        
+
+                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintAboutUserInfo(name);
                         
                         PrintBottomLines();
@@ -4101,36 +4095,12 @@ print2log("incor pass %s", par);
                                 //        get parameters
                                 par = GetParams(MAX_PARAMETERS_STRING);
                                 if(par !=NULL) {
-                                        BYTE sechdr, secbdy, ustat;
+                                        BYTE ustat;
                                         DWORD right = 0;
                                         char *name;
 
-                                        /* security byte header */
-                                        if((st = strget(par, "sechdr=", 10, '&')) != NULL) {
-                                                errno = 0;
-                                                char *ss;
-                                                sechdr = (BYTE)strtol(st, &ss, 10);
-                                                if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE) {
-                                                        sechdr = 255;
-                                                }
-                                                free(st);
-                                        }
-                                        else sechdr = 255;
-
                                         /* name */
                                         name = strget(par, "name=", PROFILES_MAX_USERNAME_LENGTH - 1, '&');
-
-                                        /* security byte body */
-                                        if((st = strget(par, "secbdy=", 10, '&')) != NULL) {
-                                                errno = 0;
-                                                char *ss;
-                                                secbdy = (BYTE)strtol(st, &ss, 10);
-                                                if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE) {
-                                                        secbdy = 255;
-                                                }
-                                                free(st);
-                                        }
-                                        else secbdy = 255;
 
                                         /* ustat */
                                         if((st = strget(par, "ustat=", 10, '&')) != NULL) {
@@ -4190,8 +4160,6 @@ print2log("incor pass %s", par);
                                                                 altnupd = 1;
                                                         }
 
-                                                        ui.secur = secbdy;
-                                                        ui.secheader = sechdr;
                                                         ui.Status = ustat;
                                                         ui.right = right;
 
@@ -4253,8 +4221,6 @@ print2log("incor pass %s", par);
                                 /****** set default user creation parameters ******/
                                 ui.Flags = 0; // don't have picture or signature
                                 ui.right = DEFAULT_USER_RIGHT;
-                                ui.secur = DEFAULT_USER_SECURITY_BYTE;
-                                ui.secheader = DEFAULT_USER_HDR_SEC_BYTE;
                                 /**************************************************/
 
                                 /* get parameters */
@@ -4415,7 +4381,7 @@ print2log("incor pass %s", par);
                                         ss = strget(par, "vprs=", 10, '&');
                                         if(ss != NULL && strcmp(ss, "1") == 0) {
                                                 ui.Flags = ui.Flags | PROFILES_FLAG_VIEW_SETTINGS;
-                    }
+                                        }
                                         else ui.Flags = ui.Flags & (~PROFILES_FLAG_VIEW_SETTINGS);
                                         if(ss != NULL) free(ss);
                                                                                                                                                                                                         
@@ -4479,7 +4445,7 @@ print2log("incor pass %s", par);
 
                 Tittle_cat(TITLE_Registration);
 
-                PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
+                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_REGISTER, MAINPAGE_INDEX);
                 
                 PrintEditProfileForm(&ui, &fui, x);
 
