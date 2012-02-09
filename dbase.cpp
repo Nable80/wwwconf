@@ -198,8 +198,7 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
                 else str = name;
                 str = FilterBiDi(str);
                 str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
-                sprintf(tostr, "<a href=\"%s?uinfo=%s\" class=\"nn\" onclick=\"popup('uinfo', '%s', 700, 600); return false;\" "
-                        "title=\"Информация о Пользователе\" target=\"_blank\">%s</a>", MY_CGI_URL, str1, str1, str);
+                sprintf(tostr, DESIGN_MESSAGE_REG, str1, str);
         } else {
 		str = FilterBiDi(name);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);

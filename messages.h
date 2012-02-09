@@ -826,6 +826,7 @@ extern char DESIGN_break[10];
 #define DESIGN_BEGIN_REGISTER_OPEN                "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_REGISTER_CLOSE                "</TABLE></CENTER>"
 // nick in read_message
+#define DESIGN_MESSAGE_REG    "<a href=\"" MY_CGI_URL "?uinfo=%s\" class=\"nn\">%s</a>"
 #define DESIGN_MESSAGE_UNREG                        "<span class=\"unreg\">%s</span>"
 
 #define DESIGN_BEGIN_USERINFO_INTRO_OPEN        "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
@@ -865,12 +866,6 @@ extern char DESIGN_break[10];
 
 #define DESIGN_BAN_FORM2        "</textarea><br /><input type=\"submit\" name=\"submit\" value=\"Save\">"\
                                         "</form></center>"
-
-/********************java script **************************/
-
-#define DESIGN_SCRIPT_POPUP "<script language=\"JavaScript\" type=\"text/javascript\">function popup(action, value, w, h){wnd=window.open(\"" MY_CGI_URL "?\"+action+\"=\"+value,\"popup\",\"resizable=no,menubars=no,scrollbars=yes,width=\"+w+\",height=\"+h); }</script>"
-
-#define DESIGN_SCRIPT_SELFCLOSE "<script language=\"JavaScript\" type=\"text/javascript\">window.close()</script>"
 
 /******************* new msg **************************/
 
@@ -943,7 +938,7 @@ extern char DESIGN_break[10];
         "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
-#define HTML_STYLE_HEADER "</head><body>\n" DESIGN_SCRIPT_POPUP
+#define HTML_STYLE_HEADER "</head><body>\n"
 
 #define HTML_BOTTOMBANNER                                               \
         "<div style=\"font-size: 7pt; text-align: center;margin:10px;\">" \
