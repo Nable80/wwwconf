@@ -204,7 +204,8 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
 		str = FilterBiDi(name);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
 	}
-	free(str);
+	if (str)
+                free(str);
 }
 
 /* this function could not print more than 32000 messages at once */
@@ -827,7 +828,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if (mes->UniqUserID == 0) {
                 char *tmp = FilterBiDi(mes->AuthorName);
                 sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
-                free(tmp);
+                if (tmp)
+                        free(tmp);
         } else {
                 char altnick[1000];
                 char *altnick_f;
@@ -858,7 +860,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                                 sprintf(aname, DESIGN_REGISTRED_NICK, altnick_f);
                         }
                 }
-                free(altnick_f);
+                if (altnick_f)
+                        free(altnick_f);
         }
 
 
@@ -884,7 +887,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         // subject
         char *aheader = FilterBiDi(mp);
         printf(DESING_INDEX_MSG_HEADER, aheader);
-        free(aheader);
+        if (aheader)
+                free(aheader);
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
                 printf("</B>");
         printf("<span class=\"marker\">");
@@ -910,7 +914,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 
         char *aname_fbidi = FilterBiDi(aname);
         printf("%s", aname_fbidi);
-        free(aname_fbidi);
+        if (aname_fbidi)
+                free(aname_fbidi);
         if((currentdsm & CONFIGURE_host) == 0)printf(" (%s)", mes->HostName);
         printf(" &mdash; %s", tm);
 
@@ -927,7 +932,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                         if(lastmes.UniqUserID == 0) {
                                 char *tmp = FilterBiDi(lastmes.AuthorName);
                                 sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
-                                free(tmp);
+                                if (tmp)
+                                        free(tmp);
                         } else {
                                 char altnick[1000];
                                 char *altnick_f;
@@ -955,7 +961,8 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                                                 sprintf(aname, DESIGN_REGISTRED_NICK, altnick_f);
                                         }
                                 }
-                                free(altnick_f);
+                                if (altnick_f)
+                                        free(altnick_f);
                         }
                         tm = ConvertTime(lastmes.Date);
                         char *aname_fbidi = FilterBiDi(aname);
@@ -1033,7 +1040,8 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
         printf("<pubDate>%s</pubDate>\n",pubdate);
         char *aname_fbidi = FilterBiDi(mes->AuthorName);
         printf("<author>%s@%s</author>\n", aname_fbidi, mes->HostName);
-        free(aname_fbidi);
+        if (aname_fbidi)
+                free(aname_fbidi);
 
         char *aheader = FilterBiDi(mp);
 #if        TOPICS_SYSTEM_SUPPORT
@@ -1055,8 +1063,8 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
         
         printf("</item>\n\n");
         
-
-        free(aheader);
+        if (aheader)
+                free(aheader);
         if(mp != mes->MessageHeader) free(mp);
         if(mes->msize > 0 && pb != body) free(pb);
 
@@ -1578,7 +1586,8 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                                 pb_f = FilterBiDi(pb);
                                 sprintf(subj, MAILACKN_REPLY_SUBJECT, pb_f);
                                 free(pb);
-                                free(pb_f);
+                                if (pb_f)
+                                        free(pb_f);
 
                                 if(!PrepareTextForPrint(mes->MessageHeader, &pb, 1, mes->Flag | BOARDTAGS_EXPAND_ENTER)) {
                                         pb = (char*)malloc(strlen(mes->MessageHeader) + 1);
@@ -1606,8 +1615,14 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                                 free(pb);
                                 free(pb1);
                                 free(pb2);
-                                free(pb_f);
-                                free(pb1_f);
+                                if (pb_f)
+                                        free(pb_f);
+                                if (pb1_f)
+                                        free(pb1_f);
+                                if (root_aname)
+                                        free(root_aname);
+                                if (aname)
+                                        free(aname);
                         }
                         if(fui.AboutUser) free(fui.AboutUser);
                 }
@@ -2393,7 +2408,8 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
         char *an_f = FilterBiDi(an);
         printf("<BIG>%s</BIG>", an_f);
-        free(an_f);
+        if (an_f)
+                free(an_f);
 
 #if USER_FAVOURITES_SUPPORT
         DWORD favid;
@@ -2480,7 +2496,8 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         if(msg->msize > 0) {
 		char *pb_f = FilterBiDi(pb);
                 printf(DESIGN_VIEW_THREAD_BODY, pb_f);
-		free(pb_f);
+                if (pb_f)
+                        free(pb_f);
         }
         else printf(DESIGN_VIEW_THREAD_BODY, "");
 
@@ -2489,7 +2506,8 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                 if((currentdsm & CONFIGURE_dsig) == 0) {
 			char *ps_f = FilterBiDi(ps);
                         printf(DESIGN_VIEW_THREAD_SIGN, ps_f);
-			free(ps_f);
+                        if (ps_f)
+                                free(ps_f);
                 }
                 else {
                         printf(DESIGN_VIEW_THREAD_SIGN, MESSAGEMAIN_viewthread_sigdisabled);

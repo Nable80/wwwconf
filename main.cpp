@@ -222,7 +222,8 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>"\
                                 "<B>%s</B>&nbsp;&nbsp;&nbsp;<A HREF=\"%s?login=logoff\"><SMALL>[%s] </SMALL></A></TD></TR>\n",
                                 MESSAGEMAIN_post_you_name, aname, MY_CGI_URL, MESSAGEHEAD_logoff);
-                        free(aname);
+                        if (aname)
+                                free(aname);
                 }
         }
         else {
@@ -1084,7 +1085,8 @@ int PrintAboutUserInfo(char *name)
                 delete mprf;
                 char *nickname_f = FilterBiDi(nickname);
                 printf(MESSAGEMAIN_profview_no_user, nickname_f);
-                free(nickname_f);
+                if (nickname_f)
+                        free(nickname_f);
                 return 1;
         }
 
@@ -1093,7 +1095,8 @@ int PrintAboutUserInfo(char *name)
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TR>");
         char *nickname_f = FilterBiDi(nickname);
         printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG><SMALL>", MESSAGEMAIN_profview_login, nickname_f);
-        free(nickname_f);
+        if (nickname_f)
+                free(nickname_f);
 
         if(ULogin.LU.UniqID == ui.UniqID){
                 printf(" <A HREF=\"%s?register=form\">(%s)</A>", MY_CGI_URL, MESSAGEMAIN_profview_editinfo);
@@ -3819,7 +3822,8 @@ print2log("incor pass %s", par);
                                         strcat(ConfTitle, TITLE_divider);
                                         strcat(ConfTitle, TITLE_ChangingMessage);
                                         strcat(ConfTitle, aheader);
-                                        free(aheader);
+                                        if (aheader)
+                                                free(aheader);
 #endif
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmp);
 
