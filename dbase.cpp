@@ -3392,7 +3392,7 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 	WORD mlevel;
 	int i = 0;
 	int czero = 0, bp = 0;
-	int backward = 0, success = 0;
+	int success = 0;
 	SMessage amsg;
 
 	// translate virtual to real index, and check it
@@ -3511,9 +3511,37 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 					}
 				}
 			} else {
-				// backward direction is not supposed so error is returned
-				backward = 1;
-				goto TT_Finish;
+				// backward direction
+                                DWORD toread;
+                                fmpos = buf[i].begin + 1;
+                                while(fmpos != buf[i].end) {
+                                        if( fmpos - buf[i].end > READ_MESSAGE_HEADER*sizeof(SMessage)) {
+                                                fmpos = fmpos - READ_MESSAGE_HEADER*sizeof(SMessage);
+                                                toread = READ_MESSAGE_HEADER*sizeof(SMessage);
+                                        }
+                                        else {
+                                                toread = fmpos - buf[i].end;
+                                                fmpos = buf[i].end;
+                                        }
+                                        
+                                        if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
+					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
+					for (DWORD jj = 0; jj < toread/sizeof(SMessage); jj++) {
+                                                DWORD j = toread/sizeof(SMessage) - 1 - jj;
+						if(fmpos + j*sizeof(SMessage) == root)
+							bp = 1;
+						if (bp) {
+							if (msgs[j].Level == 0 && ++czero == 2)
+								goto TT_Finish;
+							if (msgs[j].Level == mlevel - 1)
+								parent = msgs[j].ViIndex;
+							if (msgs[j].ViIndex == oldroot) {
+								success = 1;
+								goto TT_Finish;
+							}
+						}
+					}
+                                }
 			}
 			i--;
 		}
@@ -3523,11 +3551,6 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 	free(msgs);
 	wcfclose(fi);
 	wcfclose(fm);
-
-	if (backward) {
-		*error = "backward";
-		return 0;
-	}
 
 	if (!success) {
 		*error = "notfound";
