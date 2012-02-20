@@ -667,7 +667,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 "%s ответил на ваше сообщение <strong>%s</strong>.<br /><br />"\
 "Тема ответа:<strong> %s</strong><br />"\
 "----------- Сообщение ---------<br />%s<br />-------------------------------<br /><br />"\
-"Весь тред можно увидеть <a href=\"" MA_READURL "?read=%lu\">здесь</A><br /><br />"
+"Весь тред можно увидеть <a href=\"%s?read=%lu\">здесь</A><br /><br />"
 
 //        password recovery
 #define MAILACKN_LOSTPASS_SUBJECT          WWWCONF_FULL_NAME ": пароль для профиля %s"
@@ -680,8 +680,8 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MAILACKN_PRIVATEMSG_BODY        MAIL_SEND_GREETING \
 "Для Вас получено новое личное сообщение от <strong>%s</strong>.<br /><br />"\
 "----------- Сообщение ---------<br />%s<br />-------------------------------<br /><br />"\
-"Ответить на него можно <a href=\"" MA_READURL "?persmsgform=%s\">здесь</a><br />" \
-"Посмотреть остальные личные сообщения Вы можете <a href=\"" MA_READURL "?persmsg\">здесь</A><br /><br />"
+"Ответить на него можно <a href=\"%s?persmsgform=%s\">здесь</a><br />" \
+"Посмотреть остальные личные сообщения Вы можете <a href=\"%s?persmsg\">здесь</A><br /><br />"
 
 
 
@@ -927,7 +927,7 @@ extern char DESIGN_break[10];
                                "<rss version=\"2.0\">"\
                                "<channel>"\
                                "<title>BOARD RSS</title>"\
-                               "<link>http://board.rt.mipt.ru/</link>"\
+                               "<link>%s</link>"\
                                "<description>BOARD RSS</description>"\
                                "<language>ru</language>"
 
@@ -936,7 +936,7 @@ extern char DESIGN_break[10];
 #define HTML_ENCODING_HEADER        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
         "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
         "<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
-        "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"http://board.rt.mipt.ru/index.cgi?index=rss\" />"\
+        "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"%s?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
 #define HTML_STYLE_HEADER "</head><body>\n"

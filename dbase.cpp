@@ -1033,12 +1033,12 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
         //======================
 
         printf("<item>\n");
-        printf("<link>http://board.rt.mipt.ru/index.cgi?read=%ld</link>\n", mes->ViIndex);
-        printf("<guid>http://board.rt.mipt.ru/index.cgi?index#%ld</guid>\n", mes->ViIndex);
-        printf("<comments>http://board.rt.mipt.ru/index.cgi?read=%ld</comments>\n", mes->ViIndex);
+        printf("<link>%s?read=%lu</link>\n", GetBoardUrl(), mes->ViIndex);
+        printf("<guid>%s?read=%lu</guid>\n", GetBoardUrl(), mes->ViIndex);
+        printf("<comments>%s?read=%lu</comments>\n", GetBoardUrl(), mes->ViIndex);
         printf("<pubDate>%s</pubDate>\n",pubdate);
         char *aname_fbidi = FilterBiDi(mes->AuthorName);
-        printf("<author>%s@%s</author>\n", aname_fbidi, mes->HostName);
+        printf("<author><![CDATA[%s@%s]]></author>\n", aname_fbidi, mes->HostName);
         if (aname_fbidi)
                 free(aname_fbidi);
 
@@ -1046,18 +1046,18 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
 #if        TOPICS_SYSTEM_SUPPORT
         if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0) {
                 printf( "<category>%s</category>\n" ,Topics_List[mes->Topics]);
-                printf("<title>[%s] %s</title>\n", Topics_List[mes->Topics], aheader);
+                printf("<title><![CDATA[%s]]></title>\n", aheader);
         }
         else {
-                printf("<title>%s</title>\n", aheader);
+                printf("<title><![CDATA[%s]]></title>\n", aheader);
         }
 #else
-        printf("<title>%s</title>\n", aheader);
+        printf("<title><![CDATA[%s]]></title>\n", aheader);
 #endif
         
 
         if(mes->msize > 0){
-                printf("<description>%s</description>\n", pb);
+                printf("<description><![CDATA[%s]]></description>\n", pb);
         }
         
         printf("</item>\n\n");
@@ -1598,7 +1598,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
                                 char *aname = FilterBiDi(mes->AuthorName);
                                 pb_f = FilterBiDi(pb);
                                 pb1_f = FilterBiDi(pb1);
-                                sprintf(bdy, MAILACKN_REPLY_BODY, root_aname, aname, pb1_f,  pb_f, pb2, viroot);
+                                sprintf(bdy, MAILACKN_REPLY_BODY, root_aname, aname, pb1_f,  pb_f, pb2, GetBoardUrl(), viroot);
                                 
                                 wcSendMail(fui.Email, subj, bdy);
 

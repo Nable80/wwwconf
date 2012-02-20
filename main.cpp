@@ -689,7 +689,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         }
 
         // print output encoding (charset)
-        printf(HTML_ENCODING_HEADER);
+        printf(HTML_ENCODING_HEADER, GetBoardUrl());
 
         // print title
 #if STABLE_TITLE == 0
@@ -2098,6 +2098,23 @@ void ParseCookie()
         }
 }
 
+const char *GetBoardUrl()
+{
+        static char *url;
+        char *h, *s;
+
+        if (!url) {
+                if ( (h = getenv("HTTP_HOST")) == NULL)
+                        printhtmlerror();
+                s = getenv("SCRIPT_NAME");
+                url = (char*) malloc(strlen("http://") + strlen(h) + (s || *s ? strlen(s) : 1) + 1);
+                strcpy(url, "http://");
+                strcat(url, h);
+                strcat(url, (s || *s ? s : "/"));
+        }
+        return url;        
+}
+
 static void PrepareActionResult(int action, const char **c_par1, const char **c_par2)
 {
         switch(action) {
@@ -2299,7 +2316,7 @@ int main()
 #if _DEBUG_ == 1
         //        print2log("Entering from : %s, deal=%s", Cip, deal);
 #endif
-        
+
         strcat(deal,"&");
 
         /************ get user info from session ************/
@@ -2579,7 +2596,7 @@ int main()
                 }//if not xml
                 else{
                         printf("Content-type: application/rss+xml\n\n");
-                        printf(RSS_START);
+                        printf(RSS_START, GetBoardUrl());
                 }
                 
 #if TOPICS_SYSTEM_SUPPORT
@@ -4695,7 +4712,8 @@ print2log("incor pass %s", par);
                                                         strcpy(pb2, body);
                                                 }
 
-                                                sprintf(bdy, MAILACKN_PRIVATEMSG_BODY, name, ULogin.pui->username, pb2, ULogin.pui->username);
+                                                sprintf(bdy, MAILACKN_PRIVATEMSG_BODY, name, ULogin.pui->username, pb2,
+                                                        GetBoardUrl(), ULogin.pui->username, GetBoardUrl());
 
                                                 wcSendMail(fui.Email, subj, bdy);
                                                 print2log("Private message mailackn was sent to %s (%s->%s)", fui.Email, ULogin.pui->username, name);

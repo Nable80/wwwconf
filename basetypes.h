@@ -20,6 +20,8 @@
 
 #define UNUSED(x) x __attribute__((__unused__))
 
+const char *GetBoardUrl();
+
 // VERSION 
 #define VERSION                "2.0 PRE BETA5"
 
