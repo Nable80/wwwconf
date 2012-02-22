@@ -745,6 +745,14 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define TAG_NEW_MSG_MARK_HREF        "<span class=e id=p%ld><a name=n%ld href=\"#n%ld\">+</a> </span>"
 #define TAG_NEW_MSG_MARK                "<span class=e>+ </span>"
 
+/******************** Unicode BiDi ************************/
+#define DESIGN_BIDI_LRO     "<span class=\"lro\">"
+#define DESIGN_BIDI_LRE     "<span class=\"lre\">"
+#define DESIGN_BIDI_RLE     "<span class=\"rle\">"
+#define DESIGN_BIDI_RLO     "<span class=\"rlo\">"
+#define DESIGN_BIDI_CLOSE   "</span>"
+#define DESIGN_BIDI_MAXLEN  21  // max length of the tags
+
 /*********************** Topics **************************/
 #define DESIGN_TOPIC_TAG_OPEN                "["
 #define DESIGN_TOPIC_TAG_CLOSE                "]"

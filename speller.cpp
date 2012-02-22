@@ -215,11 +215,13 @@ char *FilterBiDi(const char *s)
 {
         size_t level = 0;
         char *os, *ss;
+        const char *tag;
 
 	if (!s)
 		return NULL;
-
-        if (!(os = (char*) malloc(strlen(s)+1)))
+        // 7 is a length of NCR for the Unicode BiDi chararacters
+        // allocate a max possible size
+        if (!(os = (char*) malloc(DESIGN_BIDI_MAXLEN*(strlen(s)/7) + strlen(s)%7 + 1)))
                 printhtmlerrormes("malloc");
 
 	if (!(*s)) {
@@ -236,18 +238,31 @@ char *FilterBiDi(const char *s)
                     *(s+5) >= '4' && *(s+5) <= '8'   &&
                     *(s+6) == ';') {
                         if (*(s+5) == '6') {   // PDF
-				// if the stack isn't empty
-				// don't copy unnecessary PDF
+				// if the stack is empty
+				// don't copy unnecessary DESIGN_BIDI_CLOSE
                                 if (level) {
-                                        strncpy(ss, s, 7);
+                                        tag = DESIGN_BIDI_CLOSE;
                                         --level;
-                                        ss += 7;
                                 }
                         } else {
-                                strncpy(ss, s, 7);
+                                switch (s[5]) {
+                                case '4':
+                                        tag = DESIGN_BIDI_LRE;
+                                        break;
+                                case '5':
+                                        tag = DESIGN_BIDI_RLE;
+                                        break;
+                                case '7':
+                                        tag = DESIGN_BIDI_LRO;
+                                        break;
+                                case '8':
+                                        tag = DESIGN_BIDI_RLO;
+                                        break;
+                                }
                                 ++level;
-                                ss += 7;
                         }
+                        strcpy(ss, tag);
+                        ss += strlen(tag);
                         s += 7;
                 } else {
                         *ss = *s;
@@ -256,13 +271,13 @@ char *FilterBiDi(const char *s)
                 }
         *ss = '\0';
 
-	if (!(os = (char*) realloc(os, strlen(os) + level*7 + 1)))
+	if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + 1)))
 		printhtmlerrormes("realloc");
 	
 	if (level) {
 		size_t i;
 		for (i = 0; i < level; ++i)
-			strcat(os, "&#8236;");
+			strcat(os, DESIGN_BIDI_CLOSE);
 	}
 
         return os;

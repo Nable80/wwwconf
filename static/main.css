@@ -1,6 +1,17 @@
-body, div, span {
+span.lro, span.rlo {
         unicode-bidi: bidi-override;
+}
+
+span.lre, span.lro {
+        unicode-bidi: emded;
+}
+
+span.lro, span.lre {
         direction: ltr;
+}
+
+span.rlo, span.rle {
+        direction: rtl;
 }
 
 a {text-decoration: none;}
@@ -164,16 +175,6 @@ div.ibody
 .inquote {color: #E9E9E9;}
 
 div.body, div.sign {padding: 25px;}
-
-
-span.unreg, span.reg, span.unr, span.own, span.sel,
-span.nick
-span.subject,
-div.body,
-div.sign,
-div.pr_from, div.pr_to {
-        unicode-bidi: embed;
-}
 
 /* nickname */
 a.nn {
