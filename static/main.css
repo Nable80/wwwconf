@@ -1,9 +1,22 @@
+* {
+        unicode-bidi: bidi-override;
+}
+
+span.unreg, span.reg, span.unr, span.own, span.sel,
+span.nick,
+span.subject,
+div.body,
+div.sign,
+div.pr_from, div.pr_to {
+        unicode-bidi: embed;
+}
+
 span.lro, span.rlo {
         unicode-bidi: bidi-override;
 }
 
-span.lre, span.lro {
-        unicode-bidi: emded;
+span.lre, span.rle {
+        unicode-bidi: embed;
 }
 
 span.lro, span.lre {

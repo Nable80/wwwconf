@@ -215,7 +215,6 @@ char *FilterBiDi(const char *s)
 {
         size_t level = 0;
         char *os, *ss;
-        const char *tag;
 
 	if (!s)
 		return NULL;
@@ -237,6 +236,7 @@ char *FilterBiDi(const char *s)
                     !strncmp(s+1, "#823", 4)         &&
                     *(s+5) >= '4' && *(s+5) <= '8'   &&
                     *(s+6) == ';') {
+                        const char *tag = "";
                         if (*(s+5) == '6') {   // PDF
 				// if the stack is empty
 				// don't copy unnecessary DESIGN_BIDI_CLOSE
