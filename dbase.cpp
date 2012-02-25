@@ -868,6 +868,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 
         if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
                 printf("<strike>");
+        printf(DESIGN_NOWRAP_START);
 
         printf("<A NAME=%ld", mes->ViIndex);
         if(MESSAGE_INDEX_PRINT_ITS_URL & style)
@@ -909,14 +910,14 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         printf("</span></A>");
         if (mes->Readed)
                 printf(" (%d)", mes->Readed);
-        printf(" &mdash; ");
+        printf(" &mdash;%s ", DESIGN_NOWRAP_END);
 
         char *aname_fbidi = FilterBiDi(aname);
-        printf("%s", aname_fbidi);
+        printf("%s%s%s", DESIGN_NOWRAP_START, aname_fbidi, DESIGN_NOWRAP_END);
         if (aname_fbidi)
                 free(aname_fbidi);
-        if((currentdsm & CONFIGURE_host) == 0)printf(" (%s)", mes->HostName);
-        printf(" &mdash; %s", tm);
+        if((currentdsm & CONFIGURE_host) == 0)printf(" %s(%s)", DESIGN_NOWRAP_START, mes->HostName);
+        printf(" &mdash;%s %s%s%s", DESIGN_NOWRAP_END, DESIGN_NOWRAP_START, tm, DESIGN_NOWRAP_END);
 
         if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
                 printf("</strike>");
