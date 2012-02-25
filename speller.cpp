@@ -179,48 +179,20 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
         return os;
 }
 
+
 /*
- * Controls using of unicode text direction markers.
- * Returns the safety string filtered from `s' that won't change text direction
- * of other page content. The returned string is dynamically allocated, so it
- * must be freed by user.
- *
- * Some technical porridge:
- * There are 4 text direction markers (code points 8234, 8235, 8237, 8238)
- * and a text direction terminator (code point 8236, abbr.: PDF) in Unicode.
- * They affect text direction by stack (push-pop) rule, where a direction
- * marker pushes some direction rule onto a stack and the terminator pops it
- * off.
- * This function filters its input so that there aren't attempts to pop
- * an element from the empty stack and that the stack will be empty at the end
- * of the output string. So the function does two things:
- *  - removes excess PDF characters;
- *  - adds missing PDF characters at the end.
- * Also there is one more thing. Due to existence of weak and neutral 
- * characters it's need to place the special zero-width strong-direction
- * character (Left-to-Right Mark (LRM, &#8206;) or Right-To-Left Mark (RLM,
- * &#8207;)) to guarantee that punctuation and whitespace symbols will
- * have desirable direction. So the function *added* this symbol to the end of the
- * output string (LRM in our case). But:
- * It was decided to replace adding LRM by attribute dir="ltr" due to absense
- * of the symbol in an each line in ?index and suchlike.
- *
- * All about bidirectional text in Unicode read
- * http://www.iamcal.com/understanding-bidirectional-text/
- *
+ * Remove unicode text direction markers.
  * Don't forget that all Unicode symbols are stored in decimal base NCR
  * format.
  */
 char *FilterBiDi(const char *s)
 {
-        size_t level = 0;
         char *os, *ss;
 
 	if (!s)
 		return NULL;
-        // 7 is a length of NCR for the Unicode BiDi chararacters
-        // allocate a max possible size
-        if (!(os = (char*) malloc(DESIGN_BIDI_MAXLEN*(strlen(s)/7) + strlen(s)%7 + 1)))
+
+        if (!(os = (char*) malloc(strlen(s) + 1)))
                 printhtmlerrormes("malloc");
 
 	if (!(*s)) {
@@ -236,33 +208,6 @@ char *FilterBiDi(const char *s)
                     !strncmp(s+1, "#823", 4)         &&
                     *(s+5) >= '4' && *(s+5) <= '8'   &&
                     *(s+6) == ';') {
-                        const char *tag = "";
-                        if (*(s+5) == '6') {   // PDF
-				// if the stack is empty
-				// don't copy unnecessary DESIGN_BIDI_CLOSE
-                                if (level) {
-                                        tag = DESIGN_BIDI_CLOSE;
-                                        --level;
-                                }
-                        } else {
-                                switch (s[5]) {
-                                case '4':
-                                        tag = DESIGN_BIDI_LRE;
-                                        break;
-                                case '5':
-                                        tag = DESIGN_BIDI_RLE;
-                                        break;
-                                case '7':
-                                        tag = DESIGN_BIDI_LRO;
-                                        break;
-                                case '8':
-                                        tag = DESIGN_BIDI_RLO;
-                                        break;
-                                }
-                                ++level;
-                        }
-                        strcpy(ss, tag);
-                        ss += strlen(tag);
                         s += 7;
                 } else {
                         *ss = *s;
@@ -271,14 +216,8 @@ char *FilterBiDi(const char *s)
                 }
         *ss = '\0';
 
-	if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + 1)))
+	if (!(os = (char*) realloc(os, strlen(os) + 1)))
 		printhtmlerrormes("realloc");
-	
-	if (level) {
-		size_t i;
-		for (i = 0; i < level; ++i)
-			strcat(os, DESIGN_BIDI_CLOSE);
-	}
 
         return os;
 }
