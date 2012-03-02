@@ -201,20 +201,26 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         printf("</BIG></TD></TR>");
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TR>");
 
+        if ((currentdsm & CONFIGURE_bot) == 0 && ULogin.LU.ID[0] == 0) {
+                printf("<TR class=\"nd\"><TD COLSPAN=2 ALIGN=CENTER><b>" MESSAGEMAIN_post_bot "</b></TR>");
+                printf("<TR class=\"nd\"><TD ALIGN=CENTER><b>Name:</b></TD>"
+                       "<TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"name\" SIZE=22 MAXLENGTH=%d>&nbsp;&nbsp;&nbsp;"
+                       "<b>E-mail: </b><input type=\"TEXT\" name=\"email\" size=\"35\" maxlength=\"%d\">"
+                       "</TD></TR>",
+                       AUTHOR_NAME_LENGTH - 1, PROFILES_FULL_USERINFO_MAX_EMAIL - 1);
+        }
+
         if(!(code & ACTION_BUTTON_EDIT)) {
                 if(ULogin.LU.ID[0] == 0) {
                         int ti = msg->AuthorName[0] ? 3 : 1;
                         // print name/password form
                         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>"\
-                               "<INPUT TYPE=TEXT NAME=\"name\" SIZE=22 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"%d\">",
+                               "<INPUT TYPE=TEXT NAME=\"amen\" SIZE=22 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"%d\">",
                                MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1, msg->AuthorName, ti);
                         // print password
                         printf("&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=PASSWORD NAME=\"pswd\" SIZE=22 MAXLENGTH=%d VALUE=\"\" tabindex=\"%d\">"\
                                "&nbsp;&nbsp;&nbsp;%s <INPUT TYPE=CHECKBOX NAME=\"lmi\" tabindex=\"%d\"></TD></TR>\n",
                                MESSAGEMAIN_post_your_password, PROFILES_MAX_PASSWORD_LENGTH - 1, ti, MESSAGEMAIN_post_login_me, ti);
-                        // print captcha
-                        printf("<tr><td align=center>captcha:&nbsp;88</td><td align=left>" \
-                               "<input type=text name=\"cp\" size=\"5\" maxlength=\"5\" tabindex=\"1\"></td></tr>");
                 }
                 else {
                         // print name
@@ -535,6 +541,8 @@ static void PrintConfig()
         else str9[0] = 0;
         if((currentdsm & CONFIGURE_clr) != 0) strcpy(str4, RADIO_CHECKED);
         else str4[0] = 0;
+        if((currentdsm & CONFIGURE_bot) != 0) strcpy(str5, RADIO_CHECKED);
+        else str5[0] = 0;
 
         printf("<TABLE><TR><TD ALIGN=RIGHT>%s<INPUT TYPE=CHECKBOX NAME=\"dsm\" VALUE=1 %s>",
                 MESSAGEHEAD_configure_disablesmiles, str3);
@@ -553,7 +561,9 @@ static void PrintConfig()
                 MESSAGEHEAD_configure_plus_is_href, str1);
 #endif
         printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"clr\" VALUE=1 %s>",
-                MESSAGEHEAD_configure_disablecolor, str4);        
+                MESSAGEHEAD_configure_disablecolor, str4);
+        printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"bot\" VALUE=1 %s>",
+                MESSAGEHEAD_configure_disablebot, str5);
         printf("</TD></TR></TABLE>");
 
         if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS) )
@@ -932,13 +942,26 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
                 MESSAGEMAIN_register_full_name, PROFILES_FULL_USERINFO_MAX_NAME - 1,
                 FilterHTMLTags(fui->FullName, 1000, 0));
                 
-        printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_validemail_req "</STRONG></TR>" \
-                "<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"email\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>" \
-                "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><INPUT TYPE=CHECKBOX NAME=\"pem\" VALUE=1%s></TD></TR>",
-                MESSAGEMAIN_register_email, PROFILES_FULL_USERINFO_MAX_EMAIL - 1,
-                FilterHTMLTags(fui->Email, 1000, 0),
-                MESSAGEMAIN_register_email_pub, str1);
-                
+        printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_validemail_req "</STRONG></TR>");
+
+        if ((currentdsm & CONFIGURE_bot) == 0 && ULogin.LU.ID[0] == 0)
+                printf("<TR class=\"nd\"><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_bot "</STRONG></TR>");
+
+        printf("<TR><TD ALIGN=RIGHT>" MESSAGEMAIN_register_email " </TD>");
+
+        printf("<TD ALIGN=LEFT>");
+
+        if ((currentdsm & CONFIGURE_bot) == 0 && ULogin.LU.ID[0] == 0)
+                printf("<INPUT TYPE=TEXT class=\"nd\" NAME=\"email\" SIZE=35 MAXLENGTH=%d><span class\"nd\"><BR></span>",
+                       PROFILES_FULL_USERINFO_MAX_EMAIL - 1);
+
+        printf("<INPUT TYPE=TEXT NAME=\"emchk\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>"
+               "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_email_pub 
+               "</STRONG><INPUT TYPE=CHECKBOX NAME=\"pem\" VALUE=1%s>",
+               PROFILES_FULL_USERINFO_MAX_EMAIL - 1, FilterHTMLTags(fui->Email, 1000, 0), str1);
+        
+        printf("</TD></TR>");
+
         printf("<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"hpage\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                 MESSAGEMAIN_register_homepage, PROFILES_FULL_USERINFO_MAX_HOMEPAGE - 1,
                 FilterHTMLTags(fui->HomePage, 1000, 0));
@@ -2803,7 +2826,7 @@ int main()
         
         
         if(strncmp(deal, "xpost", 5) == 0) {
-                char *ss = NULL;
+                char *ss = NULL, *st = NULL;
                 char *passw, *c_host;
                 DWORD ROOT = 0;
                 DWORD CFlags = 0, LogMeIn = 0;
@@ -2895,8 +2918,19 @@ int main()
                 // get parameters
                 par = GetParams(MAX_PARAMETERS_STRING);
 
+                // read antibot fields
+                st = strget(par, "name=", AUTHOR_NAME_LENGTH - 1, '&');
+                ss = strget(par, "email=", AUTHOR_NAME_LENGTH - 1, '&');
+                if ((st && st[0]) || (ss && ss[0])) {
+                        print2log("xpost: A bot is trapped: name=%s email=%s", st ? st : "", ss ? ss : "");
+                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                        PrintBoardError(MESSAGEMAIN_register_already_exit, MESSAGEMAIN_register_already_exit2, 0);
+                        PrintBottomLines();
+                        exit(0);
+                }
+
                 // read name
-                st = strget(par,"name=",  AUTHOR_NAME_LENGTH - 1, '&');
+                st = strget(par,"amen=",  AUTHOR_NAME_LENGTH - 1, '&');
                 if(st == NULL) {
                         strcpy(mes.AuthorName, "");
                 }
@@ -2959,17 +2993,6 @@ int main()
                 if(st != NULL) {
                         if(strcmp(st, "on") == 0) {
                                 LogMeIn = 1;
-                        }
-                        free(st);
-                }
-
-                // read captcha
-                st = strget(par,"cp=", 5, '&');
-                if(st != NULL) {
-                        if (strncmp(st, "88", 2)) {
-                                free(st);
-                                printaccessdenied(deal);
-                                goto End_part;
                         }
                         free(st);
                 }
@@ -3265,6 +3288,8 @@ int main()
                                         READ_PARAM_MASK("shrp=", currentdsm, CONFIGURE_shrp);
                                         // read disable colors
                                         READ_PARAM_MASK("clr=", currentdsm, CONFIGURE_clr);
+                                        // read disable bot defense
+                                        READ_PARAM_MASK("bot=", currentdsm, CONFIGURE_bot);
 
 #define READ_PARAM_NUM(param, var, vardefault) {                        \
        char *st, *ss = strget(par, param, 20, '&');                     \
@@ -4253,6 +4278,17 @@ print2log("incor pass %s", par);
                                                 strcpy(act, MESSAGEMAIN_register_register);
                                         }
 
+                                        /* check bot */
+                                        ss = strget(par, "email=", PROFILES_FULL_USERINFO_MAX_EMAIL - 1, '&');
+                                        if (ss && ss[0]) {
+                                                print2log("register: A bot is trapped: email=%s", ss);
+                                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                PrintBoardError(MESSAGEMAIN_register_already_exit, MESSAGEMAIN_register_already_exit2, 0);
+                                                PrintBottomLines();
+                                                exit(0);
+                                        }
+                                        free(ss);
+                                        
                                         /* read login name (username) and load user profile if update */
                                         ss = strget(par, "login=", PROFILES_MAX_USERNAME_LENGTH - 1, '&');
                                         if(ss != NULL) {
@@ -4310,15 +4346,15 @@ print2log("incor pass %s", par);
                                                 free(ss);
                                         }
                                         else fui.FullName[0] = 0;
-                                        
+
                                         /* read email */
-                                        ss = strget(par, "email=", PROFILES_FULL_USERINFO_MAX_EMAIL - 1, '&');
+                                        ss = strget(par, "emchk=", PROFILES_FULL_USERINFO_MAX_EMAIL - 1, '&');
                                         if(ss != NULL) {
                                                 strcpy(fui.Email, ss);
                                                 free(ss);
                                         }
                                         else fui.Email[0] = 0;
-
+                                        
                                         /* read email */
                                         ss = strget(par, "icq=", PROFILES_MAX_ICQ_LEN - 1, '&');
                                         if(ss != NULL) {

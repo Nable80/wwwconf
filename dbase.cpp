@@ -804,6 +804,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         DWORD ff;
         
         printf("<span id=m%lu>", mes->ViIndex);
+        printf(DESIGN_NOWRAP_START);
 
 #if ALLOW_MARK_NEW_MESSAGES == 2
         if((currentdsm & CONFIGURE_plu) != 0) {
@@ -868,7 +869,6 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 
         if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
                 printf("<strike>");
-        printf(DESIGN_NOWRAP_START);
 
         printf("<A NAME=%ld", mes->ViIndex);
         if(MESSAGE_INDEX_PRINT_ITS_URL & style)

@@ -383,6 +383,7 @@ typedef unsigned char BYTE;
 /* configure view */
 #define CONFIGURE_dsm        0x000001
 #define CONFIGURE_clr        0x000002
+#define CONFIGURE_bot        0x000004
 #define CONFIGURE_onh        0x000008
 #define CONFIGURE_plu        0x000010
 #define CONFIGURE_host       0x000020
