@@ -178,7 +178,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_register_password2                "Новый пароль еще раз (*):"
 #define MESSAGEMAIN_register_full_name                "Ваше полное имя:"
 #define MESSAGEMAIN_register_validemail_req        "Вы должны указать действующий E-Mail адрес <BR>(он будет использоваться для получения пароля и сводок по конференции)"
-#define MESSAGEMAIN_register_bot "<span class=\"email\">Внимание!<br>Если вы видите два поля, то введите e-mail только<br>во второе, оставьте первое пустым!<br>Attention!<br>If you see two fields, fill with e-mail only<br>the second one, leave the first one blank!</span>"
+#define MESSAGEMAIN_register_bot "Внимание!<br>Если вы видите два поля, то введите e-mail только<br>во второе, оставьте первое пустым!<br>Attention!<br>If you see two fields, fill with e-mail only<br>the second one, leave the first one blank!"
 #define MESSAGEMAIN_register_email  "E-Mail адрес (*):"        
 #define MESSAGEMAIN_register_email_pub                "Публичный доступ к Вашему E-Mail"
 #define MESSAGEMAIN_register_homepage                "Адрес Вашей домашней страницы:"

@@ -952,7 +952,7 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         printf("<TD ALIGN=LEFT>");
 
         if ((currentdsm & CONFIGURE_bot) == 0 && ULogin.LU.ID[0] == 0)
-                printf("<INPUT TYPE=TEXT class=\"nd\" NAME=\"email\" SIZE=35 MAXLENGTH=%d><span class\"nd\"><BR></span>",
+                printf("<span class=\"nd\"><INPUT TYPE=TEXT NAME=\"email\" SIZE=35 MAXLENGTH=%d><br></span>",
                        PROFILES_FULL_USERINFO_MAX_EMAIL - 1);
 
         printf("<INPUT TYPE=TEXT NAME=\"emchk\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>"
@@ -2928,6 +2928,8 @@ int main()
                         PrintBottomLines();
                         exit(0);
                 }
+                free(st);
+                free(ss);
 
                 // read name
                 st = strget(par,"amen=",  AUTHOR_NAME_LENGTH - 1, '&');
