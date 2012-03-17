@@ -494,3 +494,42 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
 
         return MSG_CHK_ERROR_PASSED;
 }
+
+char* replace(const char *s, const char *find, const char *subst)
+{
+        const char *sp;
+        char *ss, *ssp;
+        size_t allocnum;
+
+        if (strlen(subst) > strlen(find))
+                allocnum = strlen(subst)*(strlen(s)/strlen(find))
+                        + strlen(s)%strlen(subst) + 1;
+        else
+                allocnum  = strlen(s) + 1;
+        
+        if ( (ss = (char*) malloc(allocnum)) == NULL)
+                printhtmlerror();
+
+        sp = s;
+        ssp = ss;
+
+        while ( (sp = strstr(s, find))) {
+                strncpy(ssp, s, sp - s);
+                ssp += sp - s;
+                strcpy(ssp, subst);
+                ssp += strlen(subst);
+                s = sp + strlen(find);;
+        }
+
+        strcpy(ssp, s);
+        
+        if ( (ss = (char*) realloc(ss, strlen(ss) + 1)) == NULL)
+                printhtmlerror();
+        
+        return ss;
+}
+
+char *FilterCdata(const char *s)
+{
+        return replace(s, "]]>", "]]]]><![CDATA[>");
+}

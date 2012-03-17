@@ -328,6 +328,8 @@ typedef unsigned char BYTE;
 /* maximal parameters string and message length */
 #define MAX_PARAMETERS_STRING 65535
 
+#define XML_INDEX_MAXLEN 100
+
 #define DATE_PRINT_STYLE                                         1
 #define THREAD_PRINT_STYLE                                        2
 #define SHOW_MESSAGE_STYLE_HRON_FORWARD                1

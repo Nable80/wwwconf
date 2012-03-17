@@ -122,6 +122,7 @@ public:
         ~DB_Base();
         
         DWORD TranslateMsgIndex(DWORD root);
+        DWORD TranslateMsgIndexDel(DWORD root);
         DWORD AddMsgIndex(DWORD root);
         int DeleteMsgIndex(DWORD root);
         DWORD VIndexCountInDB();
@@ -133,7 +134,13 @@ public:
         int ReadMainThreadCount(DWORD *root);
         
         int PrintHtmlMessageBody(SMessage *mes,  char *body);
-        int PrintXMLMessageBody(SMessage *mes,  char *body);
+
+        char* PrintBodyForXml(SMessage *mes);
+        char* PrintXmlMessage(DWORD num, int is_xmlfp = 0, int print_body = 1);
+        char* PrintXmlfpMessage(DWORD num);
+        void PrintXmlfpLastNumber();
+        void PrintXmlfpIndex(DWORD from, DWORD to);
+
         int PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt);
 
         int DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
@@ -146,9 +153,9 @@ public:
         int DB_ChangeCloseThread(DWORD root, int code);
         int DB_PrintMessageThread(DWORD root);
         int DB_PrintHtmlIndex(DWORD mtc);
-        int DB_PrintMessageBody(DWORD root, int is_xml = 0);
+        int DB_PrintMessageBody(DWORD root);
         void Profile_UserName(char *name, char *tostr, int reg, int doparsehtml = 1);
-	DWORD getparent(DWORD, const char**);
+	DWORD getparent(DWORD);
 };
 
 #endif

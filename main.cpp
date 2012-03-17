@@ -1494,6 +1494,27 @@ void PrintUserList(DB_Base *dbb, int code)
         printf("</CENTER>");
 }
 
+void PrintXmlfpDescriptor()
+{
+        printf("<forum>");
+        printf("<name>%s</name>", WWWCONF_FULL_NAME);
+        printf("<description>диктатура свободного™ общения без модерации</description>");
+        printf("<url>%s</url>", GetBoardUrl());
+        printf("<charset>windows-1251</charset>");
+        printf("<type>tree</type>");
+        printf("<messagesListMaxLen>%d</messagesListMaxLen>", XML_INDEX_MAXLEN);
+        printf("<xmlfpUrls>");
+        printf("<lastMessageNumberUrl>?xmlfplast</lastMessageNumberUrl>");
+        printf("<messageUrl>?xmlfpread=%%1</messageUrl>");
+        printf("<messageListUrl>?xmlfpindex&amp;from=%%1&amp;to=%%2</messageListUrl>");
+        printf("</xmlfpUrls>");
+        printf("<forumUrls>");
+        printf("<messageUrl>?read=%%1</messageUrl>");
+        printf("<userProfileUrl>?uinfo=%%1</userProfileUrl>");
+        printf("</forumUrls>");
+        printf("</forum>");
+}
+
 /* create or update user profile
  * if op == 1 - create
  * if op == 2 - update
@@ -2733,53 +2754,80 @@ int main()
                 goto End_part;
         }
 
-	if(strncmp(deal, "xmlread", 7) == 0) {
-		/* security check */
-		if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
-			printaccessdenied(deal);
-			goto End_part;
-		}
+	if (strncmp(deal, "xmlfpread", 9) == 0) {
+                char *ss;
+                DWORD num;
+
+                st = strget(deal, "xmlfpread=", 16, '&');
+                if (!st || !isdigit(st[0]))
+                        goto End_URLerror;
+
+                errno = 0;
+                num = strtoul(st, &ss, 10);
+                if (ss[0] || errno)
+                        goto End_URLerror;
 
 		printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
-		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?><reply>");
+		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
 
-		if((st = strget(deal,"xmlread=", 16, '&')) != NULL) {
-			errno = 0;
-			char *ss;
-			DWORD tmp = strtol(st, &ss, 10);
-			DWORD x;
-			if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
-			   tmp < 1 || (x = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE) {
-				printf("<error msg=\"nomsgcode\" />");
-				printf("</reply>");
-				goto End_part;
-			}
-			free(st);
+                xmlerror = 1;
+                printf("%s", DB.PrintXmlfpMessage(num));
 
-			// read message
-			if(!ReadDBMessage(x, &mes)) {
-				printf("<error msg=\"ioerr\"/>");
-				printf("</reply>");
-				goto End_part;
-			}
-
-			/* allow read invisible message only to SUPERUSER */
-			if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
-				printf("<error msg=\"accden\"/>");
-				printf("</reply>");
-				goto End_part;
-			}
-			printf("<data>");
-			DB.DB_PrintMessageBody(tmp, 1);
-			printf("</data>");
-		}
-		else
-			printf("<error msg=\"badreq\"/>");
-			
-		printf("</reply>");
 		goto End_part;
 	}
 
+        // 'xmlfplast&' and 11 to guarantee that a query is exactly 'xmlfplast'
+	if (strncmp(deal, "xmlfplast&", 11) == 0) {
+		printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
+		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+
+                xmlerror = 1;
+                DB.PrintXmlfpLastNumber();
+
+		goto End_part;
+	}
+
+        if (strncmp(deal, "xmlfpindex&", 11) == 0) {
+                char *from_s, *to_s, *ss;
+                DWORD from, to;
+
+                from_s = strget(deal, "from=", 16, '&');
+                to_s = strget(deal, "to=", 16, '&');
+
+                if (!to_s || !isdigit(to_s[0]) || !from_s || !isdigit(from_s[0]))
+                        goto End_URLerror;
+
+                errno = 0;
+                from = strtoul(from_s, &ss, 10);
+                if (ss[0] || errno) {
+                        free(from_s);
+                        goto End_URLerror;
+                }
+
+                to = strtoul(to_s, &ss, 10);
+                if (ss[0] || errno) {
+                        free(to_s);
+                        goto End_URLerror;
+                }
+
+                printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
+		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+
+                xmlerror = 1;
+                DB.PrintXmlfpIndex(from, to);
+                
+                goto End_part;
+        }
+
+        if (strncmp(deal, "xmlfp&", 7) == 0) {
+                printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
+		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+
+                PrintXmlfpDescriptor();
+
+                goto End_part;
+        }
+        
         if(strncmp(deal, "form", 4) == 0)
         {
                 DWORD repnum = 0;

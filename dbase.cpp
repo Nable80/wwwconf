@@ -2517,47 +2517,250 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         return 0;
 }
 
-
-int DB_Base::PrintXMLMessageBody(SMessage *msg, char *body)
+char* DB_Base::PrintBodyForXml(SMessage *mes)
 {
-        DWORD parent;
-        const char *error;
+        char *body, *body_to_filter, *body_to_cdata;
+        DWORD tmp;
+        if (mes->msize == 0)
+                return NULL;
+        if ( (body_to_filter = (char*) malloc(mes->msize)) == NULL)
+                printhtmlerror();
+        if (!ReadDBMessageBody(body_to_filter, mes->MIndex, mes->msize))
+                printhtmlerror();
+        if (!FilterBoardTags(body_to_filter, &body_to_cdata, 0, MAX_PARAMETERS_STRING,
+                             mes->Flag | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp))
+                printhtmlerror();
+        free(body_to_filter);
+        body = FilterCdata(body_to_cdata);
+        free(body_to_cdata);
+        return body;
+}
 
-        printf("<number>%lu</number>", msg->ViIndex);
+char* DB_Base::PrintXmlMessage(DWORD num, int is_xmlfp, int print_body)
+{
+        DWORD parnum, index, tmp, i = 0;
+        const size_t maxpartnum = 52;
+        size_t partnum, partlen[maxpartnum], len = 0;
+        const char *part[maxpartnum];
+        char *s, *sp;
+        char num_s[sizeof(num)*8/3], parnum_s[sizeof(num)*8/3];
+        size_t num_s_len;
+        char *header, *header_to_cdata;
+        char *body = NULL;
+        char *author, *author_coded = NULL;
+        char ctime[21], mtime[21];
+        SMessage mes;
+        int is_body;
+#if TOPICS_SYSTEM_SUPPORT
+        DWORD topicnum;
+#endif
 
-        if ( (parent = getparent(msg->ViIndex, &error)))
-                printf("<parent>%lu</parent>", parent);
-        else if (error)
-                printf("<parent><error msg=\"%s\" /></parent>", error);
-        else
-                // thread root, parent == 0
-                printf("<parent>%lu</parent>", parent);
+        sprintf(num_s, "%lu", num);
+        num_s_len = strlen(num_s);
+
+        if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                if ( (s = (char*) malloc(60 + num_s_len + 1)) == NULL)
+                        printhtmlerror();
+                sprintf(s, "<message status=\"forbidden\"><info><id>%s</id></info></message>", num_s);
+                return s;
+        }
+
+        index = TranslateMsgIndexDel(num);
+        if (index == 0) {
+                if ( (s = (char*) malloc(58 + num_s_len + 1)) == NULL)
+                        printhtmlerror();
+                sprintf(s, "<message status=\"deleted\"><info><id>%s</id></info></message>", num_s);
+                return s;
+        } else if (index == NO_MESSAGE_CODE) {
+                if ( (s = (char*) malloc(60 + num_s_len + 1)) == NULL)
+                        printhtmlerror();
+                sprintf(s, "<message status=\"notExists\"><info><id>%s</id></info></message>", num_s);
+                return s;
+        }
+
+        if (!ReadDBMessage(index, &mes))
+                printhtmlerror();
+
+        if ((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
+                if ( (s = (char*) malloc(60 + num_s_len + 1)) == NULL)
+                        printhtmlerror();
+                sprintf(s, "<message status=\"forbidden\"><info><id>%s</id></info></message>", num_s);
+                return s;
+        }
+
+        if ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0 && CheckReadValidity(Nip, num)) {
+                ++mes.Readed;
+                if (!WriteDBMessage(index, &mes))
+                        printhtmlerror();
+        }
+
+        if (!FilterBoardTags(mes.MessageHeader, &header_to_cdata, 1, MAX_PARAMETERS_STRING, mes.Flag, &tmp))
+                printhtmlerror();
+        header = FilterCdata(header_to_cdata);
+        free(header_to_cdata);
+
+        is_body = mes.msize && (is_xmlfp || print_body);
+        if (is_body)
+                body = PrintBodyForXml(&mes);
+
+        parnum = getparent(num);
+        sprintf(parnum_s, "%lu", parnum);
 
 #if TOPICS_SYSTEM_SUPPORT
-        printf("<topic>%lu</topic>\n", msg->Topics);
+        if (parnum) {
+                SMessage rootmes;
+                if(!ReadDBMessage(mes.ParentThread, &rootmes))
+                        printhtmlerror();
+                topicnum = rootmes.Topics;
+        } else
+                topicnum = mes.Topics;
+
+        if (topicnum >= TOPICS_COUNT)
+                topicnum = 0;
 #endif
-        printf("<author><![CDATA[%s]]></author>\n", msg->AuthorName);
-        printf("<host>%s</host>\n", msg->HostName);
 
-        unsigned char *aa = (unsigned char *)(&msg->IPAddr);
-        printf("<ip>%u.%u.%u.%u</ip>", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
+        if (mes.UniqUserID)
+                author_coded = CodeHttpString(mes.AuthorName);
+        author = FilterCdata(mes.AuthorName);
 
-        printf("<header><![CDATA[%s]]></header>\n", msg->MessageHeader);
+        strftime(ctime, sizeof(ctime)/sizeof(ctime[0]), "%Y-%m-%dT%H:%S:%MZ", gmtime(&mes.Date));
+        if (mes.MDate)
+                strftime(mtime, sizeof(mtime)/sizeof(mtime[0]), "%Y-%m-%dT%H:%S:%MZ", gmtime(&mes.MDate));
+        
+        part[i++] = "<message status=\"";
+        if (is_xmlfp || (mes.Flag & MESSAGE_IS_CLOSED) == 0)
+                part[i++] = "ok";
+        else
+                part[i++] = "closed";
+        part[i++] = "\">";
+        part[i++] = "<info>";
+        part[i++] = "<date>";
+        part[i++] = ctime;
+        part[i++] = "</date>";
+        if (mes.MDate) {
+                part[i++] = "<dateModified>";
+                part[i++] = mtime;
+                part[i++] = "</dateModified>";
+        }
+        part[i++] = "<id>";
+        part[i++] = num_s;
+        part[i++] = "</id>";
+        if (parnum) {
+                part[i++] = "<parentId>";
+                part[i++] = parnum_s;
+                part[i++] = "</parentId>";
+        }
+        part[i++] = "<messageUrl>";
+        part[i++] = "?read=";
+        part[i++] = num_s;
+        part[i++] = "</messageUrl>";
+        part[i++] = "</info>";
+        part[i++] = "<author>";
+        part[i++] = "<name><![CDATA[";
+        part[i++] = author;
+        part[i++] = "]]></name>";
+        if (mes.UniqUserID) {
+                part[i++] = "<id>";
+                part[i++] = author_coded;
+                part[i++] = "</id>";
+        }
+        part[i++] = "<host>";
+        part[i++] = mes.HostName;
+        part[i++] = "</host>";
+        part[i++] = "<registered>";
+        part[i++] = mes.UniqUserID ? "true" : "false";
+        part[i++] = "</registered>";
+        part[i++] = "</author>";
+        part[i++] = "<content>";
+#if TOPICS_SYSTEM_SUPPORT
+        part[i++] = "<category>";
+        part[i++] = Topics_List[topicnum];
+        part[i++] = "</category>";
+#endif
+        part[i++] = "<title><![CDATA[";
+        part[i++] = header;
+        part[i++] = "]]></title>";
+        if (is_body) {
+                part[i++] = "<body><![CDATA[";
+                part[i++] = body;
+                part[i++] = "]]></body>";
+        }
+        if (mes.Flag & MESSAGE_HAVE_URL)
+                part[i++] = "<tag>" TAG_MSG_HAVE_URL "</tag>";
+        if (mes.Flag & MESSAGE_HAVE_PICTURE)
+                part[i++] = "<tag>" TAG_MSG_HAVE_PIC "</tag>";
+        if (mes.Flag & MESSAGE_HAVE_TEX)
+                part[i++] = "<tag>" TAG_MSG_HAVE_TEX "</tag>";
+        if (mes.Flag & MESSAGE_HAVE_TUB)
+                part[i++] = "<tag>" TAG_MSG_HAVE_TUB "</tag>";
+        part[i++] = "</content>";
+        part[i++] = "</message>";
+        partnum = i;
 
-	if (msg->msize > 0)
-		printf("<body><![CDATA[%s]]></body>\n", body);
-	else
-		printf("<body></body>\n");
+        for (i = 0; i < partnum; ++i) {
+                partlen[i] = strlen(part[i]);
+                len += partlen[i];
+        }
 
-        printf("<cdate>%lu</cdate>\n", (unsigned long) msg->Date);
-        printf("<mdate>%lu</mdate>\n", (unsigned long) msg->MDate);
-        printf("<flag>%lx</flag>", msg->Flag);
+        if ( (s = (char*) malloc(len + 1)) ==  NULL)
+                printhtmlerror();
+        
+        sp = s;
+        for (i = 0; i < partnum; ++i) {
+                strcpy(sp, part[i]);
+                sp += partlen[i];
+        }
+        
+        free(header);
+        free(body);
+        free(author);
+        free(author_coded);
+        
+        return s;
+}
 
-        return 0;
+char* DB_Base::PrintXmlfpMessage(DWORD num)
+{
+        return PrintXmlMessage(num, 1);
+}
+
+void DB_Base::PrintXmlfpLastNumber()
+{
+        printf("<lastMessageNumber>%lu</lastMessageNumber>", VIndexCountInDB());
+}
+
+void DB_Base::PrintXmlfpIndex(DWORD from, DWORD to)
+{
+        DWORD i;
+        char **msgs;
+
+        if (from > to) {
+                printf("<messages/>");
+                return;
+        }
+
+        // TODO: error status
+        if (to - from > XML_INDEX_MAXLEN)
+                printhtmlerror();
+
+        if ( (msgs = (char**) malloc((to - from + 1)*sizeof(msgs[0]))) == NULL)
+                printhtmlerror();
+        
+        for (i = 0; i < to - from + 1; ++i)
+                msgs[i] = PrintXmlfpMessage(from + i);
+
+        printf("<messages>");
+        for (i = 0; i < to - from + 1; ++i) {
+                printf("%s", msgs[i]);
+                free(msgs[i]);
+        }
+        printf("</messages>");
+
+        free(msgs);
 }
 
 // return 1 if valid, 0 otherwise
-int DB_Base::DB_PrintMessageBody(DWORD root, int is_xml)
+int DB_Base::DB_PrintMessageBody(DWORD root)
 {
         SMessage msg;
         char *body;
@@ -2625,8 +2828,7 @@ int DB_Base::DB_PrintMessageBody(DWORD root, int is_xml)
         }
         wcfclose(fb);
 
-        if(!is_xml) PrintHtmlMessageBody(&msg, body);
-        else PrintXMLMessageBody(&msg, body);
+        PrintHtmlMessageBody(&msg, body);
 
         return 1;
 }
@@ -3209,6 +3411,39 @@ DWORD DB_Base::TranslateMsgIndex(DWORD root)
         return r;
 }
 
+// as TranslateMsgIndex() but return 0 if the message was deleted
+DWORD DB_Base::TranslateMsgIndexDel(DWORD root)
+{
+        DWORD i;
+        size_t n;
+        if (root == 0)
+                return NO_MESSAGE_CODE;
+        
+        if ( (fv = wcfopen(F_VINDEX, FILE_ACCESS_MODES_R)) == NULL)
+                printhtmlerror();
+
+        if (wcfseek(fv, root*sizeof(DWORD), SEEK_SET))
+                printhtmlerror();
+
+        n = fread(&i, 1, sizeof(i), fv);
+
+        if (ferror(fv))
+                printhtmlerror();
+
+        if (n != sizeof(i)) {
+                if (n == 0 && feof(fv))
+                        i = NO_MESSAGE_CODE;
+                else
+                        printhtmlerror();
+        } else if (i == NO_MESSAGE_CODE)
+                i = 0;
+        
+        wcfclose(fv);
+
+        return i;
+}
+
+
 /* add message with real index root to virtual indexes and return
    virtual index of this message */
 DWORD DB_Base::AddMsgIndex(DWORD root)
@@ -3384,7 +3619,7 @@ DWORD Fsize(const char *s)
 }
 
 
-DWORD DB_Base::getparent(DWORD root, const char **error)
+DWORD DB_Base::getparent(DWORD root)
 {
 	SMessageTable *buf;
 	SMessage *msgs;
@@ -3397,11 +3632,9 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 	SMessage amsg;
 
 	// translate virtual to real index, and check it
-	root = TranslateMsgIndex(root);
-	if(root == NO_MESSAGE_CODE) {
-		*error = "nomsgcode";
-		return 0; // invalid or nonexisting index
-	}
+	root = TranslateMsgIndexDel(root);
+	if (root == 0 || root == NO_MESSAGE_CODE)
+                printhtmlerror();
 
 	// find where is main thread message
 	if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
@@ -3414,10 +3647,8 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 
 	if(amsg.Level != 0)
 		rr = amsg.ParentThread;
-	else {
-		*error = NULL;
+	else
 		return 0;
-	}
 
 	/* set root index = index of main thread message */
 	root = rr;
@@ -3553,11 +3784,8 @@ DWORD DB_Base::getparent(DWORD root, const char **error)
 	wcfclose(fi);
 	wcfclose(fm);
 
-	if (!success) {
-		*error = "notfound";
-		return 0;
-	}
+	if (!success)
+                printhtmlerror();
 
-	*error = NULL;
 	return parent;
 }

@@ -505,7 +505,7 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
 int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD *RF)
 {
         int beforePreStatus;
-        char *tag1 = NULL, *tag2 = NULL, *res = NULL, *st;
+        char *tag1 = NULL, *tag2 = NULL, *res = NULL, *st = NULL;
         DWORD opentag, reff, status = 0x04, urldisable = 0;        // http preparse
         int i, StringTooLong = 0;
         SSavedTag OldTag[MAX_NESTED_TAGS];

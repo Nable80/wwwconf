@@ -81,4 +81,7 @@ int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags);
 int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason, 
                                          DWORD CFlags, DWORD *RetFlags, bool fRegged = true);
 
+/* filter data to be able to place it between '<![CDATA[' and ']]>' */
+char *FilterCdata(const char *s);
+
 #endif

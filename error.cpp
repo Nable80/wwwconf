@@ -12,6 +12,8 @@
 #include "error.h"
 #include "messages.h"
 
+int xmlerror;
+
 /* print message to logfile
  * s - format string
  *                %s                string
@@ -134,6 +136,11 @@ int printwidehtmlerror(const char *file, DWORD line, const char *s)
         print2log(LOG_UNHANDLED, file, line, getenv(REMOTE_ADDR),
                 (s && (*s != 0)) ? s : LOG_ERRORTYPEUNKN, getenv(QUERY_STRING));
 #endif
+
+        if (xmlerror) {
+                printf("<message status=\"error\"><errorDescription>%s:%lu:%s</errorDescription></message>", file, line, s);
+                exit(0);
+        }
         // for correct showing in browser
         if(!HPrinted) printf("Content-type: text/html\n\n<HTML><HEAD><TITLE>" \
                 TITLE_WWWConfBegining TITLE_divider "Error during page refresh</TITLE></HEAD>");
