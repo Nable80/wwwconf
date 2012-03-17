@@ -1073,51 +1073,6 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
 
 }
 
-int DB_Base::PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt)
-{
-        SMessage msgs;
-        DWORD fmpos, i;
-        WCFILE *m;
-        
-        /* initializing */
-        alrprn = 0;
-
-        invflag = -1;
-        collapsed = 0;
-        newmessflag = 0;
-
-        if((m = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-
-        // search result entry
-        printf("%s", DESIGN_open_dl);
-
-        for(i = 0; i < cnt; i++) {
-
-                fmpos = TranslateMsgIndex(VI[i]);
-
-                if(fmpos == NO_MESSAGE_CODE)
-                        continue;
-
-                if(wcfseek(m, fmpos, SEEK_SET) < 0) {
-                        wcfclose(m);
-                        return 0;
-                }
-
-                if(!fCheckedRead(&msgs, sizeof(SMessage), m))
-                        printhtmlerror();
-
-                // check if user have superuser permissions if message is invisible
-                if( ((msgs.Flag & MESSAGE_IS_INVISIBLE) == 0) ||
-                    ((msgs.Flag & MESSAGE_IS_INVISIBLE) != 0 && (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) ) {
-                    printf("%s", DESIGN_break);
-                    printhtmlmessage_in_index(&msgs, MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_PRINT_BLANK_URL | MESSAGE_INDEX_DISABLE_ROLLED);
-                }
-        }
-        printf("%s", DESIGN_close_dl);
-        wcfclose(m);
-        return 1;
-}
-
 int DB_Base::PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD viewinv, int *updated)
 {
 

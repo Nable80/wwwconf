@@ -123,9 +123,6 @@ const char *GetBoardUrl();
 //delete unused accounts 
 #define CLEANUP_IDLE_USERS 1
 
-//        count of messages on one page of search
-#define SEARCH_MES_PER_PAGE_COUNT        100
-
 /********************* DEFAULT USER AND MESSAGE PARAMETERS *******************/
 
 /******** message database structures length *********/
@@ -276,7 +273,6 @@ typedef unsigned char BYTE;
 /*---------------------- DIRECTORIES ----------------------*/
 #define DIR_MAINDATA        "data/"
 #define DIR_MESSAGES        DIR_MAINDATA "messages/"                        // messages dir, for message database only
-#define DIR_SEARCHER        DIR_MAINDATA "searcher/"                        // searcher dir, for search index only
 #define DIR_PROFILES        DIR_MAINDATA "profiles/"                        // profiles dir, profile database only
 #define DIR_SETTINGS        DIR_MAINDATA "settings/"                        // settings dir, for forum settings
 #define DIR_INTERNALS        DIR_MAINDATA "internals/"                        // internal settings that will be autocreated
@@ -302,11 +298,6 @@ typedef unsigned char BYTE;
 #define F_FREEMBODY                DIR_MESSAGES "freemess.msg"                // free spaces in message bodies
 #define F_FREEINDEX                DIR_MESSAGES "freeindex.msg"        // free spaces in message headers
 #define F_GLOBAL_ANN        DIR_MESSAGES "globalann.msg"        // global announces
-
-/*------------------ SEARCH INDEX FILES -------------------*/
-#define F_SEARCH_INDEX                DIR_SEARCHER "messearch.idx"        // searcher message index file
-#define F_SEARCH_DB                        DIR_SEARCHER "messearch.db"                // searcher message index file
-#define F_SEARCH_LASTINDEX        DIR_SEARCHER "lastindex"                // database id and last indexed message
 
 /*---------------- SETTINGS FILES --------------*/
 #define F_BANNEDIP                DIR_SETTINGS "banned.txt"                // list of banned IP

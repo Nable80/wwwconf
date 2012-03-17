@@ -141,8 +141,6 @@ public:
         void PrintXmlfpLastNumber();
         void PrintXmlfpIndex(DWORD from, DWORD to);
 
-        int PrintHtmlMessageBufferByVI(DWORD *VI, DWORD cnt);
-
         int DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
         int DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CFlags, char **banreason);
         int PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD viewinv, int *updated);

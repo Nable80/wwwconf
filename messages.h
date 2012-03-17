@@ -438,25 +438,6 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define MESSAGEMAIN_lostpassw_email                " Email : "
 #define MESSAGEMAIN_lostpassw_getpassw        "Получить пароль"
 
-/******************    search form   ******************/
-#define MESSAGEMAIN_search_searchmsg        "Искать сообщения"
-
-#define MESSAGEMAIN_search_howtouse                "Введение в правила использования поиска.<BR>Поиск ведется по <U><B>частичным</B></U> кускам слов <B>(не меньше шести символов!)</B> содержащимся в " \
-                                                                                "<U>теле</U> или <U>заголовке</U> сообщения.<BR>Слова в строке поиска можно разделять пробелами, что значит искать" \
-                                                                                " сообщения содержащие все такие подстроки.<BR>На данном сервере поиск может занять от 1 до 10 секунд " \
-                                                                                "(в зависимости от загруженности), поэтому, рекомендуется дождаться результатов поиска, а не нажимать \"Поиск\" " \
-                                                                                "еще раз."
-#define MESSAGEMAIN_search_lastindexed        "Последнее проиндексированое сообщение"
-#define MESSAGEMAIN_search_notindexed        "Индексация не выполнена"
-#define MESSAGEMAIN_search_indexerror        "Ошибка индексов"
-#define MESSAGEMAIN_search_containing        "содержащие"
-#define MESSAGEMAIN_search_sentby                "посланные"
-#define MESSAGEMAIN_search_search_str        "Строка запроса : "
-#define MESSAGEMAIN_search_result1                "Результат поиска: "
-#define MESSAGEMAIN_search_result2                "совпадений найдено <EM>(Будет показано 100 на страницу)</EM>"
-#define MESSAGEMAIN_search_result_nothing        "Ничего не найдено, попробуйте изменить ключевые слова поиска"
-#define MESSAGEMAIN_search_result_pages                "Страницы результатов:"
-
 /******************* message view form ******************/
 #define MESSAGEMAIN_viewthread_sent                "Сообщение было послано:"
 #define MESSAGEMAIN_viewthread_ipview        ", IP: "
@@ -548,7 +529,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define TITLE_ChangingMessage                "Изменить сообщение - "
 #define TITLE_RollMessage                        "Развернуть сообщение"
 #define TITLE_Registration                        "Регистрация / изменить профиль"
-#define TITLE_Search                                "Поиск сообщений"
 #define TITLE_ProfileInfo                        "Информация о пользователе"
 #define TITLE_UserList                                "Список юзеров"
 #define TITLE_PrivateMsg                        "Приватные сообщения"
@@ -828,10 +808,6 @@ extern char DESIGN_break[10];
 
 #define DESIGN_LOSTPASSW_HEADER                        "<P ALIGN=CENTER>%s"
 
-#define DESIGN_SEARCH_SEARCH_STR_WAS        "<BR><CENTER><EM>%s</EM>%s</CENTER>"
-#define DESIGN_SEARCH_RESULT                        "<BR><CENTER>%s%ld %s</CENTER><BR>"
-#define DESIGN_SEARCH_NO_RESULT                        "<BR><CENTER><B>%s %s</B></CENTER><BR>"
-
 #define DESIGN_COMMAND_TABLE_BEGIN        "<div class=\"menu\">"
 #define DESIGN_COMMAND_TABLE_END        "</div>"
 
@@ -849,8 +825,6 @@ extern char DESIGN_break[10];
 
 #define DESIGN_BEGIN_USERINFO_INTRO_OPEN        "<CENTER><TABLE BORDER=0 CELLSPACING=1 CELLPADDING=3>"
 #define DESIGN_END_USERINFO_INTRO_CLOSE                "</TABLE></CENTER>"
-
-#define DESIGN_SEARCH_RESULT                        "<BR><CENTER>%s%ld %s</CENTER><BR>"
 
 /******************* private messages *******************/
 #define DESIGN_PRIVATEMSG_FRAME                        "<div class=\"pr_info\">%s<br>%s %s <A HREF=\"" MY_CGI_URL "?persmsgform=%s\">"\

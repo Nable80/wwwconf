@@ -17,7 +17,6 @@
 #include "boardtags.h"
 #include "profiles.h"
 #include "logins.h"
-#include "searcher.h"
 #include "sendmail.h"
 #include "announces.h"
 #include "colornick.h"
@@ -121,6 +120,24 @@ enum {
 };
 
 char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing = true);
+
+/* toupper string using CP1251
+ */
+char* toupperstr(char *s)
+{
+        if(s == NULL) return s;
+        register DWORD k = (DWORD)strlen(s);
+        for(register DWORD i = 0; i < k; i++) {
+                if(s[i] >= 'à' && s[i] <= 'ÿ') {
+                        s[i] -= ('à' - 'À');
+                }
+                else {
+                        if(!(s[i] >= 'À' && s[i] <= 'ß'))
+                                s[i] = (char)toupper((unsigned char)s[i]);
+                }
+        }
+        return s;
+}
 
 int getAction(char* par)
 {
@@ -831,48 +848,6 @@ int PrintAdminToolbar(DWORD root, int mflag, DWORD UID)
                 printf("</SMALL> ]</TD></TR></TABLE></CENTER>");
         }
         return 0;
-}
-
-void PrintSearchForm(const char *s, DB_Base *db, int start = 0)
-{
-        printf("<FORM METHOD=POST ACTION=\"%s?search=action\">",
-                MY_CGI_URL);
-        
-        printf("<CENTER><P><B>%s</B><BR><P>", MESSAGEHEAD_search);
-
-        if(start) {
-                FILE *f;
-                char LastMsgStr[500];
-                DWORD LastMsg = 0, LastDate = 0;
-                f = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_R);
-                if(f != NULL) {
-                        if (fscanf(f, "%lu %lu", &LastMsg, &LastDate) == EOF && ferror(f))
-                                printhtmlerror();
-                        fclose(f);
-                }
-                if(LastMsg != 0) {
-                        SMessage mes;
-                        if(ReadDBMessage(db->TranslateMsgIndex(LastMsg), &mes)) {
-                                char *s;
-                                s = ConvertTime(mes.Date);
-                                sprintf(LastMsgStr, "%lu (%s)", LastMsg, s);
-                        }
-                        else strcpy(LastMsgStr, MESSAGEMAIN_search_indexerror);
-                }
-                else {
-                        strcpy(LastMsgStr, MESSAGEMAIN_search_notindexed);
-                }
-                printf("<P>%s<P>%s : %s<P>", MESSAGEMAIN_search_howtouse, MESSAGEMAIN_search_lastindexed, LastMsgStr);
-        }
-
-        printf("<P><EM>%s</EM><BR>", MESSAGEMAIN_search_searchmsg);
-        printf("<INPUT TYPE=RADIO NAME=sel VALUE=1 CHECKED>%s <FONT FACE=\"Courier\">"
-                "<INPUT TYPE=TEXT NAME=\"find\" SIZE=45 VALUE=\"%s\"></FONT>", 
-                        MESSAGEMAIN_search_containing, s);
-
-        
-        printf("<P><INPUT TYPE=SUBMIT VALUE=\"%s\"></CENTER></FORM>",
-                MESSAGEHEAD_search);
 }
 
 #if STABLE_TITLE == 0
@@ -3961,215 +3936,6 @@ print2log("incor pass %s", par);
                         free(name);
                 }
                 else goto End_URLerror;
-                goto End_part;
-        }
-
-        if(strncmp(deal, "searchword", 10) == 0) {
-                /* security check */
-                if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
-                        printaccessdenied(deal);
-                        goto End_part;
-                }
-
-                char *ss;
-                DWORD start = 0;
-                if((ss = strget(deal,"searchword=", 255 - 1, '&')) != NULL) {
-                        if((st = strget(deal,"start=", 60, '&')) != NULL) {
-                                errno = 0;
-                                char *ss;
-                                start = strtol(st, &ss, 10);
-                                if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE || tmp == 0) {
-                                        start = 1;
-                                }
-                                free(st);
-                        }
-                        else start = 1;
-
-                        if(strlen(ss) > 0) {
-                                Tittle_cat(TITLE_Search);
-
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX | HEADERSTRING_NO_CACHE_THIS);
-                                PrintSearchForm(ss, &DB);
-                                if(strlen(ss) >= SEARCHER_MIN_WORD) {
-                                        CMessageSearcher *ms = new CMessageSearcher(SEARCHER_INDEX_CREATE_EXISTING);
-                                        if(ms->errnum == SEARCHER_RETURN_ALLOK) {
-                                                DWORD c;
-                                                DWORD *vmsg = ms->SearchMessagesByPattern(ss, &c);
-                                                printf(DESIGN_SEARCH_SEARCH_STR_WAS, MESSAGEMAIN_search_search_str, ms->srch_str);
-                                                if(c != 0) {
-                                                        // print count of found messages
-                                                        printf(DESIGN_SEARCH_RESULT, MESSAGEMAIN_search_result1, c, MESSAGEMAIN_search_result2);
-                                                }
-                                                else {
-                                                        // Nothing have been found
-                                                        printf(DESIGN_SEARCH_NO_RESULT, MESSAGEMAIN_search_result1, MESSAGEMAIN_search_result_nothing);
-                                                }
-
-                                                //        Check and adjust start
-                                                if(c <= (start-1)*SEARCH_MES_PER_PAGE_COUNT) {
-                                                        start = c/SEARCH_MES_PER_PAGE_COUNT + 1;
-                                                }
-
-                                                DWORD oldc = c;
-                                                if(c > SEARCH_MES_PER_PAGE_COUNT) {
-                                                        char *wrd = CodeHttpString(ss, 0);
-                                                        if(wrd) {
-                                                                printf("<CENTER>" MESSAGEMAIN_search_result_pages);
-                                                                DWORD max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
-                                                                        (((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-                                                                for(DWORD i = 0; i < max; i++) {
-                                                                        if(i > 0 && (i % 20) == 0) printf("<BR>");
-                                                                        if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%lu\">%lu</A>&nbsp;", wrd, i+1, i+1);
-                                                                        else printf("<B>&nbsp;%lu&nbsp;</B>", i+1);
-                                                                }
-                                                                printf("</CENTER>");
-                                                        }
-                                                }
-
-                                                if(c - (start-1)*SEARCH_MES_PER_PAGE_COUNT > SEARCH_MES_PER_PAGE_COUNT) c = SEARCH_MES_PER_PAGE_COUNT;
-                                                else c = c - (start-1)*SEARCH_MES_PER_PAGE_COUNT;
-                                                DB.PrintHtmlMessageBufferByVI(vmsg + (start-1)*SEARCH_MES_PER_PAGE_COUNT, c);
-                                                free(vmsg);
-
-                                                c = oldc;
-                                                if(c > SEARCH_MES_PER_PAGE_COUNT) {
-                                                        char *wrd = CodeHttpString(ss, 0);
-                                                        if(wrd) {
-                                                                printf("<BR><CENTER>" MESSAGEMAIN_search_result_pages);
-                                                                DWORD max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
-                                                                        (((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-                                                                for(DWORD i = 0; i < max; i++) {
-                                                                        if(i > 0 && (i % 20 == 0)) printf("<BR>");
-                                                                        if(i != start - 1) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%lu\">%lu</A>&nbsp;", wrd, i+1, i+1);
-                                                                        else printf("<B>&nbsp;%lu&nbsp;</B>", i+1);
-                                                                }
-                                                                printf("</CENTER>");
-                                                        }
-                                                }
-                                        }
-                                        else {
-                                                //        Write that searcher have not been configured properly
-                                        }
-                                        delete ms;
-                                }
-                                PrintBottomLines();
-                                free(ss);
-                                goto End_part;
-                        }
-                }
-
-                Tittle_cat(TITLE_Search);
-
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
-                
-                PrintSearchForm("", &DB, 1);
-                
-                PrintBottomLines();
-
-                goto End_part;
-        }
-
-        if(strncmp(deal, "search", 6) == 0) {
-                /* security check */
-                if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
-                        printaccessdenied(deal);
-                        goto End_part;
-                }
-
-                if((st = strget(deal,"search=", 60, '&')) != NULL) {
-                        if(strcmp(st, "action") == 0) {
-                                free(st);
-                                
-                                /* get "method post" parameters */
-                                par = GetParams(MAX_PARAMETERS_STRING);
-                                if(par != NULL) {
-                                        char *ss;
-                                        /* read search pattern */
-                                        ss = strget(par, "find=", 255 - 1, '&');
-                                        if(ss == NULL) {
-                                                ss = (char*)malloc(1);
-                                                ss[0] = 0;
-                                        }
-
-                                        Tittle_cat(TITLE_Search);
-
-#if ENABLE_LOG == 2
-                                        print2log("Search from %s, query=%s", getenv(REMOTE_ADDR), ss);
-#endif
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
-                                        PrintSearchForm(ss, &DB);
-                                        if(strlen(ss) >= SEARCHER_MIN_WORD) {
-                                                CMessageSearcher *ms = new CMessageSearcher(SEARCHER_INDEX_CREATE_EXISTING);
-                                                if(ms->errnum == SEARCHER_RETURN_ALLOK) {
-                                                        DWORD c;
-                                                        DWORD *vmsg = ms->SearchMessagesByPattern(ss, &c);
-                                                        printf(DESIGN_SEARCH_SEARCH_STR_WAS, MESSAGEMAIN_search_search_str, ms->srch_str);
-                                                        if(c != 0) {
-                                                                // print count of found messages
-                                                                printf(DESIGN_SEARCH_RESULT, MESSAGEMAIN_search_result1, c, MESSAGEMAIN_search_result2);
-                                                        }
-                                                        else {
-                                                                // Nothing have been found
-                                                                printf(DESIGN_SEARCH_NO_RESULT, MESSAGEMAIN_search_result1, MESSAGEMAIN_search_result_nothing);
-                                                        }
-                                                        if(c > SEARCH_MES_PER_PAGE_COUNT) {
-                                                                char *wrd = CodeHttpString(ss, 0);
-                                                                if(wrd) {
-                                                                        printf("<CENTER>" MESSAGEMAIN_search_result_pages);
-                                                                        int max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
-                                                                                (((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-                                                                        for(int i = 0; i < max; i++) {
-                                                                                if(i > 0 && (i % 20 == 0)) printf("<BR>");
-                                                                                if(i != 0) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%d\">%d</A>&nbsp;", wrd, i+1, i+1);
-                                                                                else printf("&nbsp;<B>%d</B>&nbsp;", i+1);
-                                                                        }
-                                                                        printf("</CENTER>");
-                                                                }
-                                                        }
-                                                        DWORD oldc = c;
-                                                        if(c > 0) {
-                                                                if( c > SEARCH_MES_PER_PAGE_COUNT) c = SEARCH_MES_PER_PAGE_COUNT;
-                                                                DB.PrintHtmlMessageBufferByVI(vmsg, c);
-                                                                free(vmsg);
-                                                        }
-                                                        c = oldc;
-                                                        if(c > SEARCH_MES_PER_PAGE_COUNT) {
-                                                                char *wrd = CodeHttpString(ss, 0);
-                                                                if(wrd) {
-                                                                        printf("<BR><CENTER>" MESSAGEMAIN_search_result_pages);
-                                                                        int max = (c/SEARCH_MES_PER_PAGE_COUNT) + 
-                                                                                (((c % SEARCH_MES_PER_PAGE_COUNT) == 0)? 0: 1);
-                                                                        for(int i = 0; i < max; i++) {
-                                                                                if(i > 0 && (i % 20 == 0)) printf("<BR>");
-                                                                                if(i != 0) printf("&nbsp;<A HREF=\"?searchword=%s&amp;start=%d\">%d</A>&nbsp;", wrd, i+1, i+1);
-                                                                                else printf("<B>&nbsp;%d&nbsp;</B>", i+1);
-                                                                        }
-                                                                        printf("</CENTER>");
-                                                                }
-                                                        }
-                                                }
-                                                else {
-                                                        //        Write that searcher have not been configured properly
-                                                }
-                                                delete ms;
-                                        }
-                                        PrintBottomLines();
-                                        free(ss);
-                                        goto End_part;
-                                }
-                                else goto End_URLerror;
-                        }
-                        free(st);
-                }
-
-                Tittle_cat(TITLE_Search);
-
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_SEARCH, MAINPAGE_INDEX);
-                
-                PrintSearchForm("", &DB, 1);
-                
-                PrintBottomLines();
-
                 goto End_part;
         }
 

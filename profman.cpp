@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include "basetypes.h"
 #include "profiles.h"
-#include "searcher.h"
 
 #define DIR_CREATION_MASK    511
 #define FILES_CREATION_MASK  511
@@ -30,9 +29,7 @@ void printusage(char *iam)
                " -d user         - delete user\n"
                " -np             - renew(delete) private messages database (in profiles)\n"
                " -r              - zero refresh count for all users\n"
-               " -vs             - set default view settings for all users\n"
-               " -sr [max_index] - create search index (up to max_index message, optional))\n"
-               " -s [word]       - search for word using index\n",
+               " -vs             - set default view settings for all users\n",
                iam);
 }
 
@@ -249,9 +246,6 @@ int CreateFullDatabase()
                 return 0;
 
         if(!CheckAndCreateFolder(DIR_MESSAGES, s))
-                return 0;
-
-        if(!CheckAndCreateFolder(DIR_SEARCHER, s))
                 return 0;
 
         if(!CheckAndCreateFolder(DIR_PROFILES, s))
@@ -603,200 +597,6 @@ int main(int argc, char *argv[])
                 if(!CreateMessagesDatabase())
                         goto go_stop;
                 printf("Operation completed successfully\n");
-                goto go_stop;
-        }
-
-        if(strcmp(argv[1], "-s") == 0) {
-                if(argc == 3) {
-                        CMessageSearcher *in = new CMessageSearcher(SEARCHER_INDEX_CREATE_EXISTING);
-                        if(in->errnum != SEARCHER_RETURN_ALLOK) {
-                                printf("Searcher init = failed\nMake sure that search index was created\n");
-                                goto go_stop;
-                        }
-                        DWORD c;
-                        DWORD *buf = in->SearchMessagesByPattern(argv[2], &c);
-                        if(c > 0) {
-                                printf("Found %ld matches in messages : ", c);
-                                for(register DWORD i = 0; i < c; i++) {
-                                        printf("%ld ", buf[i]);
-                                }
-                                free(buf);
-                        }
-                        else {
-                                printf("Found 0 matches");
-                        }
-                        printf("\n");
-                        delete in;
-                        goto go_stop;
-                }
-                else {
-                        printf("Invalid parameters count for -s\n");
-                        goto go_stop;
-                }
-        }
-
-        if(strcmp(argv[1], "-sr") == 0) {
-                DWORD StartMsg = 0, LastDate = 0, DBDirty = 0, StopIndex = 0;
-                CMessageSearcher *in = NULL;
-                SMessage *sm;
-                time_t now, start;
-                FILE *fl, *f, *f1, *f2;
-                if(argc == 2) {
-                        StopIndex = 0xffffffff;
-                }
-                else {
-                        char *st;
-                        StopIndex = strtol(argv[2], &st, 10);
-                        if(((!(*(argv[2]) != '\0' && *st == '\0')) || errno == ERANGE)) {
-                                printf("Invalid parameter for -sr command\n");
-                                goto go_stop;
-                        }
-                }
-                
-                fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_RW);
-                if(fl != NULL) {
-                        int tmp;
-                        tmp = fscanf(fl, "%lu %lu", &StartMsg, &LastDate);
-                        if (tmp == EOF || ferror(fl)) {
-                                perror("fscanf");
-                                exit(1);
-                        }
-                        fclose(fl);
-                        if(DBDirty) {
-                                printf("Database marked as dirty (another instance of indexer in progress?)\n");
-                                goto go_stop;
-                        }
-                }
-
-                // mark as dirty
-                fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_CW);
-                if(fl != NULL) {
-                        fprintf(fl, "%lu %lu %d", StartMsg, LastDate, 1);
-                        fclose(fl);
-                }
-                else {
-                        printf("Couldn't create status file %s\n", F_SEARCH_LASTINDEX);
-                        goto go_stop;
-                }
-
-                if(StartMsg == 0) {
-                        f = fopen(F_SEARCH_DB, FILE_ACCESS_MODES_CW);
-                        if(f == NULL) {
-                                printf("Error creating searcher database file %s\n", F_SEARCH_DB);
-                                goto go_stop;
-                        }
-                        fclose(f);
-                        in = new CMessageSearcher(SEARCHER_INDEX_CREATE_NEW);
-                }
-                else in = new CMessageSearcher(SEARCHER_INDEX_CREATE_EXISTING);
-                if(in->errnum != SEARCHER_RETURN_ALLOK) {
-                        printf("Searcher init = failed\n");
-                        goto go_stop;
-                }
-
-                sm = (SMessage*)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER);
-                in->indexed_word_count = 0;
-
-                f = fopen(F_MSGINDEX, FILE_ACCESS_MODES_R);
-                f1 = fopen(F_MSGBODY, FILE_ACCESS_MODES_R);
-                f2 = fopen(F_VINDEX, FILE_ACCESS_MODES_R);
-
-                if(f == NULL || f1 == NULL || f2 == NULL) {
-                        free(sm);
-                        printf("Error opening database files\n");
-                        goto go_stop;
-                }
-
-                DWORD rr, idx;
-                char *mbody;
-                DWORD wc = 0;
-                time_t tm = time(NULL);
-                printf("Indexing(starting from %ld), report format: NUM-SEC, NUM-processed mess, SEC-seconds last 100 mess were indexed", StartMsg);
-
-                if(fseek(f2, (StartMsg+1)*sizeof(DWORD), SEEK_SET) != 0) {
-                        free(sm);
-                        printf("Invalid starting index\n");
-                        goto go_stop;
-                }
-
-                start = time(NULL);
-                while(!feof(f2)) {
-
-                        if(StartMsg >= StopIndex) {
-                                printf("Stopped at index %ld (StopIndex)", StartMsg);
-                                break;
-                        }
-
-                        if(fread(&idx, 1, sizeof(DWORD), f2) != sizeof(DWORD)) {
-                                break;
-                        }
-                        StartMsg++;
-
-                        if(idx == 0xFFFFFFFF) continue;
-
-                        if(fseek(f, idx, SEEK_SET) != 0) {
-                                continue;
-                        }
-                        rr = (DWORD)fread(sm, 1, sizeof(SMessage), f);
-                        if(rr != sizeof(SMessage) && rr != 0) {
-                                printf("Error reading %s\n", F_MSGINDEX);
-                                goto go_stop;
-                        }
-                        wc++;
-                        in->InsertMessageToIndex(sm->MessageHeader, sm->ViIndex);
-
-                        if((sm->Flag & MESSAGE_HAVE_BODY) != 0 && sm->msize > 2) {
-                                DWORD readed;
-                                mbody = (char*)malloc(sm->msize + 10);
-                                if(fseek(f1, sm->MIndex, SEEK_SET) != 0) {
-                                        free(mbody);
-                                        continue;
-                                }
-                                if((readed = (DWORD)fread(mbody, 1, sm->msize + 2, f1)) < sm->msize) {
-                                        free(mbody);
-                                        continue;
-                                }
-                                mbody[readed] = 0;
-                                if(sm->msize != 0 && *mbody == 0) {
-                                        char *ss = mbody;
-                                        ss++;
-                                        while(*ss) {
-                                                *(ss-1) = *(ss);
-                                                ss++;
-                                        }
-                                        *(ss-1) = *ss;
-                                }
-                                if(strlen(mbody) > 65000) {
-                                        printf("\nIncorrect DB format: Body of message %lu is too long\n", sm->ViIndex);
-                                        goto go_stop;
-                                }
-                                in->InsertMessageToIndex(mbody, sm->ViIndex);
-                                free(mbody);
-                        }
-                        if((wc % 100) == 0) {
-                                now = time(NULL);
-                                printf("%ld-%d.", wc, (int) difftime(start, now));
-                                start = now;
-                                fflush(stdout);
-                        }
-                }
-                fclose(f);
-                fclose(f1);
-                fclose(f2);
-                printf("\nDone at %ld\nFlusing cache...", StartMsg);
-                DWORD iww = in->indexed_word_count;
-                DWORD tcache = time(NULL);
-                delete in;
-                printf("done in %ld seconds\n", time(NULL) - tcache);
-
-                fl = fopen(F_SEARCH_LASTINDEX, FILE_ACCESS_MODES_CW);
-                if(f != NULL) {
-                        fprintf(fl, "%lu %lu %d", StartMsg, LastDate, 0);
-                        fclose(fl);
-                }
-
-                printf("\nFinished in %ld seconds, words indexed %ld\n", time(NULL) - tm, iww);
-                free(sm);
                 goto go_stop;
         }
 
