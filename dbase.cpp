@@ -895,18 +895,18 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
                 printf(" ");
         if (mes->Flag & MESSAGE_HAVE_URL)
-                printf(TAG_MSG_HAVE_URL);
+                printf("(" TAG_MSG_HAVE_URL ")");
         if (mes->Flag & MESSAGE_HAVE_PICTURE)
-                printf(TAG_MSG_HAVE_PIC);
+                printf("(" TAG_MSG_HAVE_PIC ")");
         if (mes->Flag & MESSAGE_HAVE_TEX)
-                printf(TAG_MSG_HAVE_TEX);
+                printf("(" TAG_MSG_HAVE_TEX ")");
         if (mes->Flag & MESSAGE_HAVE_TUB)
-                printf(TAG_MSG_HAVE_TUB);
+                printf("(" TAG_MSG_HAVE_TUB ")");
         printf(" ");
         if (mes->Flag & MESSAGE_HAVE_BODY)
-                printf(TAG_MSG_HAVE_BODY);
+                printf("(" TAG_MSG_HAVE_BODY ")");
         else
-                printf(TAG_MSG_HAVE_NO_BODY);
+                printf("(" TAG_MSG_HAVE_NO_BODY ")");
         printf("</span></A>");
         if (mes->Readed)
                 printf(" (%d)", mes->Readed);
@@ -2521,9 +2521,10 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
 
         if ((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
                 if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
-                                         strlen(XML_MES_STATUS_HIDED) + num_s_len + 1)) == NULL)
+                                         strlen(is_xmlfp ? XML_MES_STATUS_DELETED : XML_MES_STATUS_HIDED) +
+                                         num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(s, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_HIDED);
+                sprintf(s, XML_MES_STATUS_TEMPLATE, num, is_xmlfp ? XML_MES_STATUS_DELETED : XML_MES_STATUS_HIDED);
                 return s;
         }
 
@@ -2638,7 +2639,10 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 part[i++] = body;
                 part[i++] = "]]></body>";
         }
-        if (!only_body) {
+        if (!only_body &&
+            ((mes.Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB)) ||
+             (!is_xmlfp && (mes.Flag & (MESSAGE_IS_CLOSED | MESSAGE_IS_INVISIBLE | MESSAGE_COLLAPSED_THREAD))))) {
+                part[i++] = "<tags>";
                 if (!is_xmlfp) {
                         if (mes.Flag & MESSAGE_IS_CLOSED)
                                 part[i++] = "<tag>closed</tag>";
@@ -2655,6 +2659,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                         part[i++] = "<tag>" TAG_MSG_HAVE_TEX "</tag>";
                 if (mes.Flag & MESSAGE_HAVE_TUB)
                         part[i++] = "<tag>" TAG_MSG_HAVE_TUB "</tag>";
+                part[i++] = "</tags>";
         }
         part[i++] = "</content>";
         part[i++] = "</message>";

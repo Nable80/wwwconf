@@ -715,6 +715,10 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
                         AUTO_REFRESH_TIME, MY_CGI_URL, curind);
         }
 
+        if (code & HEADERSTRING_SHOWBODY_JS) {
+                printf("<script type=\"text/javascript\" src=\"/showbody.js\"></script>");
+        }
+
         // print output encoding (charset)
         printf(HTML_ENCODING_HEADER, GetBoardUrl());
 

@@ -712,12 +712,12 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 // from design.h
 /*=====================================================================*/
-#define TAG_MSG_HAVE_BODY               "(+)"
-#define TAG_MSG_HAVE_NO_BODY            "(-)"
-#define TAG_MSG_HAVE_PIC                "(pic)"
-#define TAG_MSG_HAVE_URL                "(url)"
-#define TAG_MSG_HAVE_TEX                "(tex)"
-#define TAG_MSG_HAVE_TUB                "(tub)"
+#define TAG_MSG_HAVE_BODY               "+"
+#define TAG_MSG_HAVE_NO_BODY            "-"
+#define TAG_MSG_HAVE_PIC                "pic"
+#define TAG_MSG_HAVE_URL                "url"
+#define TAG_MSG_HAVE_TEX                "tex"
+#define TAG_MSG_HAVE_TUB                "tub"
 #define TAG_MSG_CLOSED_THREAD        "<span class=\"close\" id=c%ld>(закрыто) </span>"
 #define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
 #define TAG_MSG_ROLLED_THREAD_MARKNEW        "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>" \
