@@ -716,7 +716,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         }
 
         if (code & HEADERSTRING_SHOWBODY_JS) {
-                printf("<script type=\"text/javascript\" src=\"/showbody.js\"></script>");
+                printf("<script type=\"text/javascript\" src=\"showbody.js\"></script>");
         }
 
         // print output encoding (charset)

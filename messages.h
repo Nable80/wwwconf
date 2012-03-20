@@ -903,10 +903,10 @@ extern char DESIGN_break[10];
 #define DESIGN_FORM_MESSAGE_BUTTON        "<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
 
 #define SCRIPT_FORM_MESSAGE_QEDIT "<script language=\"JavaScript\" type=\"text/javascript\" "\
-"src=\"/qecode2.js\"></script>"
+"src=\"qecode2.js\"></script>"
 
 #define SCRIPT_FORM_MESSAGE_BUTTON "<script language=\"JavaScript\" type=\"text/javascript\" "\
-"src=\"/postcheck.js\"></script>"
+"src=\"postcheck.js\"></script>"
 
 #define XML_MES_STATUS_TEMPLATE   "<message id=\"%lu\"><status>%s</status></message>"
 #define XML_MES_STATUS_BASELEN    (strlen(XML_MES_STATUS_TEMPLATE) - strlen("%lu%s"))
