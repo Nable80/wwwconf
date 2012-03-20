@@ -2716,7 +2716,7 @@ void DB_Base::PrintXmlIndexRoutine(DWORD from, DWORD to, int is_xmlfp)
         if (from > to)
                 printhtmlerror();
 
-        if (to - from > XML_INDEX_MAXLEN)
+        if (to - from + 1 > XML_INDEX_MAXLEN)
                 printhtmlerror();
 
         if ( (msgs = (char**) malloc((to - from + 1)*sizeof(msgs[0]))) == NULL)

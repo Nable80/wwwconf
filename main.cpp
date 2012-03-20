@@ -1485,7 +1485,7 @@ void PrintXmlfpDescriptor()
         printf("<xmlfpUrls>");
         printf("<lastMessageNumberUrl>?xmlfplast</lastMessageNumberUrl>");
         printf("<messageUrl>?xmlfpread=__message_id__</messageUrl>");
-        printf("<messageListUrl maxDelta=\"%d\">?xmlfpindex&amp;from=__from__&amp;to=__to__</messageListUrl>", XML_INDEX_MAXLEN);
+        printf("<messageListUrl maxCount=\"%d\">?xmlfpindex&amp;from=__from__&amp;to=__to__</messageListUrl>", XML_INDEX_MAXLEN);
         printf("</xmlfpUrls>");
         printf("<forumUrls>");
         printf("<messageUrl>?read=__message_id__</messageUrl>");
@@ -2855,7 +2855,7 @@ int main()
                         goto End_URLerror;
                 }
 
-                if (from > to || to - from > XML_INDEX_MAXLEN)
+                if (from > to || to - from + 1 > XML_INDEX_MAXLEN)
                         goto End_URLerror;
 
                 if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
@@ -2892,8 +2892,10 @@ int main()
                         goto End_URLerror;
                 }
 
-                if (from > to || to - from > XML_INDEX_MAXLEN)
-                        goto End_URLerror;
+                if (from > to || to - from + 1 > XML_INDEX_MAXLEN) {
+                        printf(PLAIN_START XMLFP_WRONG_BOUNDS);
+                        goto End_part;
+                }
 
                 if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
                         printf(PLAIN_START XMLFP_BANNED);

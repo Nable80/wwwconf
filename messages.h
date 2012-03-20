@@ -917,7 +917,7 @@ extern char DESIGN_break[10];
 
 #define XML_BANNED   "<error><type>forbidden</type></error>"
 #define XMLFP_BANNED "You are forbideen to read messages."
-
+#define XMLFP_WRONG_BOUNDS  "Wrong bounds."
 
 //****************************************************//
 #define HTML_START "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" "\
