@@ -637,7 +637,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
                 printf("<A HREF=\"%s?resetnew\" >%s</A>", MY_CGI_URL, MESSAGEHEAD_resetnew);
         }
 
-        if((c & HEADERSTRING_DISABLE_REGISTER) == 0) {
+        if(c & HEADERSTRING_ENABLE_REGISTER) {
                 if(ULogin.LU.ID[0] == 0)
                         printf("<A HREF=\"%s?register=form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_register);
         }
@@ -2444,7 +2444,8 @@ int main()
                                 }
                         }
                         if(entok) {
-                                PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS, MAINPAGE_INDEX);
+                                PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS | 
+                                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                                 goto End_part;
                         }
 #endif
@@ -2480,8 +2481,9 @@ int main()
 
                 if(!is_xml){
                 PrintHTMLHeader(HEADERSTRING_REG_USER_LIST | HEADERSTRING_POST_NEW_MESSAGE |
-                        HEADERSTRING_CONFIGURE | HEADERSTRING_WELCOME_INFO |
-                        HEADERSTRING_ENABLE_RESETNEW | HEADERSTRING_DISABLE_END_TABLE, MAINPAGE_INDEX);
+                                HEADERSTRING_CONFIGURE | HEADERSTRING_WELCOME_INFO |
+                                HEADERSTRING_ENABLE_RESETNEW | HEADERSTRING_DISABLE_END_TABLE |
+                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
 
                 //        Prepare information about new message count and dispaly mode */
                 char displaymode[500];                // display message mode
@@ -3602,7 +3604,9 @@ int main()
                                                         strcpy(cookie_name, st);
 
 
-                                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN |
+                                                                        HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_ENABLE_REGISTER,
+                                                                        MAINPAGE_INDEX);
                                                         PrintBoardError(boardgreet, MESSAGEMAIN_login_ok2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                                         PrintBottomLines();
 
@@ -3624,7 +3628,8 @@ print2log("incor pass %s", par);
 
                                 Tittle_cat(TITLE_LostPassword);
 
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN |
+                                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                                 printf(DESIGN_LOSTPASSW_HEADER, MESSAGEMAIN_lostpassw_header);
                                 PrintLostPasswordForm();
                                 PrintBottomLines();
@@ -3685,7 +3690,8 @@ print2log("incor pass %s", par);
 
                                 Tittle_cat(TITLE_LostPassword);
 
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN |
+                                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                                 printf(DESIGN_LOSTPASSW_HEADER, MESSAGEMAIN_lostpassw_hretry);
                                 PrintLostPasswordForm();
                                 PrintBottomLines();
@@ -3698,7 +3704,8 @@ print2log("incor pass %s", par);
 
                                 if(ULogin.LU.ID[0] == 0) {
                                         /* not logged yet */
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE |
+                                                        HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                                         PrintBoardError(MESSAGEMAIN_logoff_not_logged_in, MESSAGEMAIN_logoff_not_logged_in2, 0);
                                         PrintBottomLines();
                                         goto End_part;
@@ -3722,7 +3729,8 @@ print2log("incor pass %s", par);
                 Tittle_cat(TITLE_Login);
 
                 /******* print login form *******/
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN, MAINPAGE_INDEX);
+                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_LOGIN |
+                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                 printf(DESIGN_MODERATOR_ENTER_HEADER, MESSAGEMAIN_login_login_header);
                 PrintLoginForm();
                 PrintBottomLines();
@@ -4423,7 +4431,7 @@ print2log("incor pass %s", par);
 
                 Tittle_cat(TITLE_Registration);
 
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_REGISTER, MAINPAGE_INDEX);
+                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                 
                 PrintEditProfileForm(&ui, &fui, x);
 

@@ -17,7 +17,7 @@
 #define HEADERSTRING_WELCOME_INFO                        0x000010
 #define HEADERSTRING_DISABLE_LOGOFF                        0x000040
 #define HEADERSTRING_DISABLE_SEARCH                        0x000080
-#define HEADERSTRING_DISABLE_REGISTER                0x000100
+#define HEADERSTRING_ENABLE_REGISTER                0x000100
 #define HEADERSTRING_DISABLE_LOGIN                        0x000200
 #define HEADERSTRING_DISABLE_ALL                        0x000400
 #define HEADERSTRING_REG_USER_LIST                        0x000800
