@@ -12,7 +12,7 @@
 #include "error.h"
 #include "messages.h"
 
-int xmlerror;
+int error_type;
 
 /* print message to logfile
  * s - format string
@@ -137,10 +137,19 @@ int printwidehtmlerror(const char *file, DWORD line, const char *s)
                 (s && (*s != 0)) ? s : LOG_ERRORTYPEUNKN, getenv(QUERY_STRING));
 #endif
 
-        if (xmlerror) {
-                printf("<message status=\"error\"><errorDescription>%s:%lu:%s</errorDescription></message>", file, line, s);
+        if (error_type == ERROR_TYPE_XML) {
+                printf(XML_START "<error><type>system</type><at>%s:%lu</at>", file, line);
+                if (s && *s)
+                        printf("<description>%s</description>", s);
+                printf("</error>");
+                exit(0);
+        } else if (error_type == ERROR_TYPE_XMLFP) {
+                printf(PLAIN_START "Error at %s:%lu", file, line);
+                if (s && *s)
+                        printf(":%s.", s);
                 exit(0);
         }
+
         // for correct showing in browser
         if(!HPrinted) printf("Content-type: text/html\n\n<HTML><HEAD><TITLE>" \
                 TITLE_WWWConfBegining TITLE_divider "Error during page refresh</TITLE></HEAD>");

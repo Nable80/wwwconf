@@ -908,6 +908,17 @@ extern char DESIGN_break[10];
 #define SCRIPT_FORM_MESSAGE_BUTTON "<script language=\"JavaScript\" type=\"text/javascript\" "\
 "src=\"/postcheck.js\"></script>"
 
+#define XML_MES_STATUS_TEMPLATE   "<message id=\"%lu\"><status>%s</status></message>"
+#define XML_MES_STATUS_BASELEN    (strlen(XML_MES_STATUS_TEMPLATE) - strlen("%lu%s"))
+#define XML_MES_STATUS_DELETED    "deleted"
+#define XML_MES_STATUS_CLOSED     "closed"
+#define XML_MES_STATUS_NOTEXISTS  "not_exists"
+#define XML_MES_STATUS_HIDED      "hided"
+
+#define XML_BANNED   "<error><type>forbidden</type></error>"
+#define XMLFP_BANNED "You are forbideen to read messages."
+
+
 //****************************************************//
 #define HTML_START "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" "\
         "\"http://www.w3.org/TR/html4/loose.dtd\">\n<html><head>"
@@ -923,6 +934,11 @@ extern char DESIGN_break[10];
                                "<language>ru</language>"
 
 #define RSS_END "</channel></rss>"                                                           
+
+#define XML_START  "Content-type: application/xml\n\n" \
+        "<?xml version=\"1.0\" encoding=\"windows-1251\"?>"
+
+#define PLAIN_START  "Content-type: text/plain; charset=windows-1251\n\n"
 
 #define HTML_ENCODING_HEADER        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
         "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\

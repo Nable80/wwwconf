@@ -1471,21 +1471,21 @@ void PrintUserList(DB_Base *dbb, int code)
 
 void PrintXmlfpDescriptor()
 {
+        printf(XML_START);
         printf("<forum>");
         printf("<name>%s</name>", WWWCONF_FULL_NAME);
         printf("<description>диктатура свободного™ общения без модерации</description>");
-        printf("<url>%s</url>", GetBoardUrl());
+        printf("<url>?index</url>");
         printf("<charset>windows-1251</charset>");
         printf("<type>tree</type>");
-        printf("<messagesListMaxLen>%d</messagesListMaxLen>", XML_INDEX_MAXLEN);
         printf("<xmlfpUrls>");
         printf("<lastMessageNumberUrl>?xmlfplast</lastMessageNumberUrl>");
-        printf("<messageUrl>?xmlfpread=%%1</messageUrl>");
-        printf("<messageListUrl>?xmlfpindex&amp;from=%%1&amp;to=%%2</messageListUrl>");
+        printf("<messageUrl>?xmlfpread=__message_id__</messageUrl>");
+        printf("<messageListUrl maxDelta=\"%d\">?xmlfpindex&amp;from=__from__&amp;to=__to__</messageListUrl>", XML_INDEX_MAXLEN);
         printf("</xmlfpUrls>");
         printf("<forumUrls>");
-        printf("<messageUrl>?read=%%1</messageUrl>");
-        printf("<userProfileUrl>?uinfo=%%1</userProfileUrl>");
+        printf("<messageUrl>?read=__message_id__</messageUrl>");
+        printf("<userProfileUrl>?uinfo=__user_id__</userProfileUrl>");
         printf("</forumUrls>");
         printf("</forum>");
 }
@@ -2729,7 +2729,31 @@ int main()
                 goto End_part;
         }
 
-	if (strncmp(deal, "xmlfpread", 9) == 0) {
+        if (strncmp(deal, "xmlread=", 8) == 0) {
+                char *ss;
+                DWORD num;
+
+                st = strget(deal, "xmlread=", 16, '&');
+                if (!st || !isdigit(st[0]))
+                        goto End_URLerror;
+
+                errno = 0;
+                num = strtoul(st, &ss, 10);
+                if (ss[0] || errno)
+                        goto End_URLerror;
+
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(XML_START XML_BANNED);
+                        goto End_part;
+                }
+
+                error_type = ERROR_TYPE_XML;
+                DB.PrintXmlMessage(num);
+
+		goto End_part;
+        }
+
+	if (strncmp(deal, "xmlfpread=", 10) == 0) {
                 char *ss;
                 DWORD num;
 
@@ -2742,25 +2766,102 @@ int main()
                 if (ss[0] || errno)
                         goto End_URLerror;
 
-		printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
-		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(PLAIN_START XMLFP_BANNED);
+                        goto End_part;
+                }
 
-                xmlerror = 1;
-                printf("%s", DB.PrintXmlfpMessage(num));
+                error_type = ERROR_TYPE_XMLFP;
+                DB.PrintXmlfpMessage(num);
 
 		goto End_part;
 	}
 
-        // 'xmlfplast&' and 11 to guarantee that a query is exactly 'xmlfplast'
+        if (strncmp(deal, "xmlbody=", 8) == 0) {
+                char *ss;
+                DWORD num;
+
+                st = strget(deal, "xmlbody=", 16, '&');
+                if (!st || !isdigit(st[0]))
+                        goto End_URLerror;
+
+                errno = 0;
+                num = strtoul(st, &ss, 10);
+                if (ss[0] || errno)
+                        goto End_URLerror;
+
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(XML_START XML_BANNED);
+                        goto End_part;
+                }
+
+                error_type = ERROR_TYPE_XML;
+                DB.PrintXmlBody(num);
+
+		goto End_part;
+        }
+
+        // 'xmllast&' and 9 to guarantee that a query is exactly 'xmllast'
+	if (strncmp(deal, "xmllast&", 9) == 0) {
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(XML_START XML_BANNED);
+                        goto End_part;
+                }
+
+                error_type = ERROR_TYPE_XML;
+                DB.PrintXmlLastNumber();
+
+		goto End_part;
+	}
+
 	if (strncmp(deal, "xmlfplast&", 11) == 0) {
-		printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
-		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(PLAIN_START XMLFP_BANNED);
+                        goto End_part;
+                }
 
-                xmlerror = 1;
-                DB.PrintXmlfpLastNumber();
+                error_type = ERROR_TYPE_XMLFP;
+                DB.PrintXmlLastNumber();
 
 		goto End_part;
 	}
+
+        if (strncmp(deal, "xmlindex&", 9) == 0) {
+                char *from_s, *to_s, *ss;
+                DWORD from, to;
+
+                from_s = strget(deal, "from=", 16, '&');
+                to_s = strget(deal, "to=", 16, '&');
+
+                if (!to_s || !isdigit(to_s[0]) || !from_s || !isdigit(from_s[0]))
+                        goto End_URLerror;
+
+                errno = 0;
+                from = strtoul(from_s, &ss, 10);
+                if (ss[0] || errno) {
+                        free(from_s);
+                        goto End_URLerror;
+                }
+
+                to = strtoul(to_s, &ss, 10);
+                if (ss[0] || errno) {
+                        free(to_s);
+                        goto End_URLerror;
+                }
+
+                if (from > to || to - from > XML_INDEX_MAXLEN)
+                        goto End_URLerror;
+
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(XML_START XML_BANNED);
+                        goto End_part;
+                }
+
+                error_type = ERROR_TYPE_XML;
+                DB.PrintXmlIndex(from, to);
+                
+                goto End_part;
+        }
 
         if (strncmp(deal, "xmlfpindex&", 11) == 0) {
                 char *from_s, *to_s, *ss;
@@ -2785,19 +2886,27 @@ int main()
                         goto End_URLerror;
                 }
 
-                printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
-		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+                if (from > to || to - from > XML_INDEX_MAXLEN)
+                        goto End_URLerror;
 
-                xmlerror = 1;
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(PLAIN_START XMLFP_BANNED);
+                        goto End_part;
+                }
+
+                error_type = ERROR_TYPE_XMLFP;
                 DB.PrintXmlfpIndex(from, to);
                 
                 goto End_part;
         }
 
         if (strncmp(deal, "xmlfp&", 7) == 0) {
-                printf("Cache-Control: no-cache\nContent-type: application/xml\n\n");
-		printf("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
+                if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
+                        printf(PLAIN_START XMLFP_BANNED);
+                        goto End_part;
+                }
 
+                error_type = ERROR_TYPE_XMLFP;
                 PrintXmlfpDescriptor();
 
                 goto End_part;

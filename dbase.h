@@ -135,10 +135,13 @@ public:
         
         int PrintHtmlMessageBody(SMessage *mes,  char *body);
 
-        char* PrintBodyForXml(SMessage *mes);
-        char* PrintXmlMessage(DWORD num, int is_xmlfp = 0, int print_body = 1);
-        char* PrintXmlfpMessage(DWORD num);
-        void PrintXmlfpLastNumber();
+        char* PrintXmlMessageRoutine(DWORD num, int is_xmlfp = 0, int only_body = 0, int print_body = 1);
+        void PrintXmlMessage(DWORD num);
+        void PrintXmlfpMessage(DWORD num);
+        void PrintXmlBody(DWORD num);
+        void PrintXmlLastNumber();
+        void PrintXmlIndexRoutine(DWORD from, DWORD to, int is_xmlfp = 0);
+        void PrintXmlIndex(DWORD from, DWORD to);
         void PrintXmlfpIndex(DWORD from, DWORD to);
 
         int DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body, DWORD CFlags, char *passw, char **banreason);

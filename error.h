@@ -19,6 +19,10 @@
 void print2log(const char *s, ...);
 int printwidehtmlerror(const char *file, DWORD line, const char *s);
 
-extern int xmlerror;
+extern int error_type;
+
+#define ERROR_TYPE_HTML   0
+#define ERROR_TYPE_XML    1
+#define ERROR_TYPE_XMLFP  2
 
 #endif
