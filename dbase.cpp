@@ -2479,7 +2479,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         size_t partnum, partlen[maxpartnum], len = 0;
         const char *part[maxpartnum];
         char *s, *sp;
-        char num_s[sizeof(num)*8/3], parnum_s[sizeof(num)*8/3];
+        char num_s[sizeof(num)*8/3 + 1], parnum_s[sizeof(num)*8/3 + 1];
         size_t num_s_len;
         char *header = NULL, *header_to_cdata;
         char *body = NULL, *body_to_filter, *body_to_cdata;
@@ -2535,13 +2535,27 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         }
 
         if (!only_body) {
+                parnum = getparent(num);
+                if (parnum == NO_MESSAGE_CODE) {
+                        char errmes[100];
+                        sprintf(errmes, "error at %s:%d: parent of %s not found.", __FILE__, __LINE__, num_s);
+                        print2log(errmes);
+                        if (is_xmlfp) {
+                                if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
+                                                         strlen(XML_MES_STATUS_DELETED) + num_s_len + 1)) == NULL)
+                                        printhtmlerror();
+                                sprintf(s, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_DELETED);
+                        } else
+                                printhtmlerror();
+                        return s;
+                }
+                sprintf(parnum_s, "%lu", parnum);
+
                 if (!FilterBoardTags(mes.MessageHeader, &header_to_cdata, 1, MAX_PARAMETERS_STRING, mes.Flag, &tmp))
                         printhtmlerror();
                 header = FilterCdata(header_to_cdata);
                 free(header_to_cdata);
 
-                parnum = getparent(num);
-                sprintf(parnum_s, "%lu", parnum);
 #if TOPICS_SYSTEM_SUPPORT
                 if (parnum) {
                         SMessage rootmes;
@@ -3772,7 +3786,7 @@ DWORD DB_Base::getparent(DWORD root)
 	wcfclose(fm);
 
 	if (!success)
-                printhtmlerror();
+                return NO_MESSAGE_CODE;
 
 	return parent;
 }

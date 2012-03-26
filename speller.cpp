@@ -529,7 +529,39 @@ char* replace(const char *s, const char *find, const char *subst)
         return ss;
 }
 
+char *FilterControl(const char *s)
+{
+        const char *sp;
+        char *ss, *ssp;
+
+        if (!s)
+                return NULL;
+
+        if ( (ss = (char*) malloc(strlen(s) + 1)) == NULL) {
+                perror("ddfdf");
+                exit(1);
+        }
+        
+        sp = s;
+        ssp = ss;
+        while (*sp) {
+                if (*sp > 0 && (*sp < 32 || *sp == 127))
+                        *ssp = ' ';
+                else
+                        *ssp = *sp;
+                ++sp;
+                ++ssp;
+        }
+        *ssp = '\0';
+
+        return ss;
+}
+
 char *FilterCdata(const char *s)
 {
-        return replace(s, "]]>", "]]]]><![CDATA[>");
+        char *s1, *s2;
+        s1 = FilterControl(s);
+        s2 = replace(s1, "]]>", "]]]]><![CDATA[>");
+        free(s1);
+        return s2;
 }

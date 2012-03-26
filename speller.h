@@ -81,6 +81,9 @@ int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags);
 int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason, 
                                          DWORD CFlags, DWORD *RetFlags, bool fRegged = true);
 
+/* replace ascii control characters (1-31, 127) by a space */
+char *FilterControl(const char *s);
+
 /* filter data to be able to place it between '<![CDATA[' and ']]>' */
 char *FilterCdata(const char *s);
 
