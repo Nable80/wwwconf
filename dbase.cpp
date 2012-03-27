@@ -1292,18 +1292,6 @@ End_of_Prn:
 
                 // index ends
                 printf("</div>");
-        
-        
-                DWORD totalcount = MessageCountInDB();
-                printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT);
-
-                printf("<script language=\"JavaScript\" type=\"text/javascript\">"
-                        "current_last=%lu; counter_nm=%lu; counter_nt=%lu; counter_all=%ld; current_nm=%ld;</script>",
-                        maxm_counter,nm_counter,nt_counter,totalcount, currentlm);
-        
-
-                if(nm_counter) printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT_NEW, nt_counter, nm_counter, totalcount);
-                else printf(MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT_NO_NEW, totalcount);
         }
 
 

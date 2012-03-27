@@ -584,27 +584,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS "<span id=\"new_count\">"\
                         MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT"</span>"
 
-                        
-#define MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT_NEW "<script type=\"text/javascript\">"\
-        "update_counter('new_count','"MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT"');</script>"
-#define MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT_NO_NEW "<script type=\"text/javascript\">"\
-        "update_counter('new_count','"MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT"');</script>"
-
-#define MESSAGEMAIN_WELCOME_NEWCOUNT_SCRIPT "<script type=\"text/javascript\">"\
-                        "function update_counter(id, value){"\
-                        "if (document.getElementById){"\
-                                "el = document.getElementById(id);"\
-                                "if(document.all) el.innerHTML = value;"\
-                                "else{"\
-                                        "rng = document.createRange();"\
-                                        "rng.setStartBefore(el);"\
-                                        "htmlFrag = rng.createContextualFragment(value);"\
-                                        "while (el.hasChildNodes()) el.removeChild(el.lastChild);"\
-                                        "el.appendChild(htmlFrag);"\
-                        "}}}</script>"
-                        
-        
-
 #define MESSAGEMAIN_WELCOME_DISPLAYTIME                ", показаны сообщения за %lu %s"
 #define MESSAGEMAIN_WELCOME_DISPLAYTHREADS        ", показаны последние %lu потоков"
 
