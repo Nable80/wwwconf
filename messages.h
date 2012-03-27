@@ -719,8 +719,8 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define TAG_MSG_HAVE_TEX                "tex"
 #define TAG_MSG_HAVE_TUB                "tub"
 #define TAG_MSG_CLOSED_THREAD        "<span class=\"close\" id=c%ld>(закрыто) </span>"
-#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
-#define TAG_MSG_ROLLED_THREAD_MARKNEW        "<span id=r%ld><br><span class=\"roll1\">свернуто: </span><span class=roll2>" \
+#define TAG_MSG_ROLLED_THREAD "<span id=r%ld><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
+#define TAG_MSG_ROLLED_THREAD_MARKNEW        "<span id=r%ld><span class=\"roll1\">свернуто: </span><span class=roll2>" \
                                         "(ответов: <b>%lu</b>, новых: <b>%d</b>, последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
 #define TAG_REPLY_PREFIX                "Re: "
 #define TAG_IP_NOT_DETECTED                "X.X.X.X"
@@ -730,6 +730,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 #define DESIGN_NOWRAP_START  "<span class=\"nw\">"
 #define DESIGN_NOWRAP_END    "</span>"
+#define DESIGN_WRAP "<span style=\"white-space: normal;\"> </span>"
 
 /******************** Unicode BiDi ************************/
 #define DESIGN_BIDI_LRO     "<span class=\"lro\">"

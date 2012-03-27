@@ -87,4 +87,7 @@ char *FilterControl(const char *s);
 /* filter data to be able to place it between '<![CDATA[' and ']]>' */
 char *FilterCdata(const char *s);
 
+/* Decode escape sequences using by FilterHTMLtags() */
+char *DefilterHTMLTags(const char *s);
+
 #endif

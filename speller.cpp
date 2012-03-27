@@ -179,6 +179,8 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
         return os;
 }
 
+
+
 /*
  * Controls using of unicode text direction markers.
  * Returns the safety string filtered from `s' that won't change text direction
@@ -495,7 +497,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         return MSG_CHK_ERROR_PASSED;
 }
 
-char* replace(const char *s, const char *find, const char *subst)
+static char* replace(const char *s, const char *find, const char *subst)
 {
         const char *sp;
         char *ss, *ssp;
@@ -537,10 +539,8 @@ char *FilterControl(const char *s)
         if (!s)
                 return NULL;
 
-        if ( (ss = (char*) malloc(strlen(s) + 1)) == NULL) {
-                perror("ddfdf");
-                exit(1);
-        }
+        if ( (ss = (char*) malloc(strlen(s) + 1)) == NULL)
+                printhtmlerror();
         
         sp = s;
         ssp = ss;
@@ -564,4 +564,56 @@ char *FilterCdata(const char *s)
         s2 = replace(s1, "]]>", "]]]]><![CDATA[>");
         free(s1);
         return s2;
+}
+
+// Copy a next sumbol of `src', decode if necessary,
+// increase the pointers accordingly.
+static void decode_and_copy(char **dst, const char **src)
+{
+        if ((*src)[0] != '&') {
+                *(*dst)++ = *(*src)++;
+                return;
+        }
+
+        if (strncmp(*src+1, "quot;", 5) == 0) {
+                **dst = '"';
+                *src += 6;
+        } else if (strncmp(*src+1, "gt;", 3) == 0) {
+                **dst = '>';
+                *src += 4;
+        } else if (strncmp(*src+1, "lt;", 3) == 0) {
+                **dst = '<';
+                *src += 4;
+        } else  if (strncmp(*src+1, "amp;", 4) == 0) {
+                **dst = '&';
+                *src += 5;
+        } else {
+                **dst = '&';
+                ++*src;
+        }
+
+        ++*dst;
+}
+
+char *DefilterHTMLTags(const char *s)
+{
+        const char *sp;
+        char *ss, *ssp;
+
+        if (!s)
+                return NULL;
+        
+        if ( (ss = (char*) calloc(strlen(s) + 1, 1)) == NULL)
+                printhtmlerror();
+
+        sp = s;
+        ssp = ss;
+        while (*sp)
+                decode_and_copy(&ssp, &sp);
+        *ssp = '\0';
+
+        if ( (ss = (char*) realloc(ss, strlen(ss) + 1)) == NULL)
+                printhtmlerror();
+
+        return ss;
 }

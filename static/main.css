@@ -104,14 +104,24 @@ div.right_info
 
 div.g div, div.w div
 {
-	padding: 0px 0 0px 25px;
+	/* padding: 0px 0 0px 25px; */
+        padding-top: 0px;
+        padding-bottom: 0px;
+        padding-left: 25px;
 }
 
+div.g div > span, div.w div > span
+{
+        display: table;
+}
 
 div.g, div.w
 {
 	font-size: 75%;
-	padding: 4px 0 2px 10px;
+	/* padding: 4px 0 2px 10px; */
+        padding-top: 4px;
+        padding-bottom: 2px;
+        padding-left: 10px;
 }
 
 div.g

@@ -194,17 +194,19 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
 {
         char *str, *str1;
         if(reg) {
+                char *name_dec;
                 if(doparsehtml) str = FilterHTMLTags(name, AUTHOR_NAME_LENGTH*3+1, 0);
                 else str = name;
                 str = FilterBiDi(str);
-                str1 = CodeHttpString(name, 0);        // do not allocate memory, use internal buffer
+                name_dec = DefilterHTMLTags(name);
+                str1 = CodeHttpString(name_dec, 0);        // do not allocate memory, use internal buffer
+                free(name_dec);
                 sprintf(tostr, DESIGN_MESSAGE_REG, str1, str);
         } else {
 		str = FilterBiDi(name);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
 	}
-	if (str)
-                free(str);
+        free(str);
 }
 
 /* this function could not print more than 32000 messages at once */
@@ -264,7 +266,7 @@ L_BVisible1:
                                         }
                                         else if (buf[i].Level > 0) {
                                                 // br before messages on one level, READING, 111!!
-                                                printf("%s", DESIGN_break);
+                                                //printf("%s", DESIGN_break);
                                         }
 
                                         if(buf[i].Level == 0)
@@ -804,7 +806,6 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         DWORD ff;
         
         printf("<span id=m%lu>", mes->ViIndex);
-        printf(DESIGN_NOWRAP_START);
 
 #if ALLOW_MARK_NEW_MESSAGES == 2
         if((currentdsm & CONFIGURE_plu) != 0) {
@@ -872,7 +873,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 
         printf("<A NAME=%ld", mes->ViIndex);
         if(MESSAGE_INDEX_PRINT_ITS_URL & style)
-                printf(" HREF=\"%s?read=%ld\"",MY_CGI_URL, mes->ViIndex);
+                printf(" HREF=\"%s?read=%lu\"",MY_CGI_URL, mes->ViIndex);
         if(MESSAGE_INDEX_PRINT_BLANK_URL & style)
                 printf(" TARGET=\"_blank\"");
         if((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
@@ -891,9 +892,12 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 free(aheader);
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
                 printf("</B>");
+        printf("</A>");
+
+        printf(DESIGN_WRAP DESIGN_NOWRAP_START);
+        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
+                printf("<a href=\"%s?read=%lu\">", MY_CGI_URL, mes->ViIndex);
         printf("<span class=\"marker\">");
-        if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
-                printf(" ");
         if (mes->Flag & MESSAGE_HAVE_URL)
                 printf("(" TAG_MSG_HAVE_URL ")");
         if (mes->Flag & MESSAGE_HAVE_PICTURE)
@@ -902,22 +906,27 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 printf("(" TAG_MSG_HAVE_TEX ")");
         if (mes->Flag & MESSAGE_HAVE_TUB)
                 printf("(" TAG_MSG_HAVE_TUB ")");
-        printf(" ");
+        if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
+                printf(" ");
         if (mes->Flag & MESSAGE_HAVE_BODY)
                 printf("(" TAG_MSG_HAVE_BODY ")");
         else
                 printf("(" TAG_MSG_HAVE_NO_BODY ")");
-        printf("</span></A>");
+        printf("</span>");
+        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
+                printf("</a>");
         if (mes->Readed)
                 printf(" (%d)", mes->Readed);
-        printf(" &mdash;%s ", DESIGN_NOWRAP_END);
+        printf(" &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP);
 
-        char *aname_fbidi = FilterBiDi(aname);
-        printf("%s%s%s", DESIGN_NOWRAP_START, aname_fbidi, DESIGN_NOWRAP_END);
-        if (aname_fbidi)
-                free(aname_fbidi);
-        if((currentdsm & CONFIGURE_host) == 0)printf(" %s(%s)", DESIGN_NOWRAP_START, mes->HostName);
-        printf(" &mdash;%s %s%s%s", DESIGN_NOWRAP_END, DESIGN_NOWRAP_START, tm, DESIGN_NOWRAP_END);
+        if (currentdsm & CONFIGURE_host)  // only name
+                printf(DESIGN_NOWRAP_START "%s &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP, aname);
+        else  // name and host
+                printf(DESIGN_NOWRAP_START "%s" DESIGN_NOWRAP_END DESIGN_WRAP
+                       DESIGN_NOWRAP_START "(%s) &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP,
+                       aname, mes->HostName);
+        
+        printf(DESIGN_NOWRAP_START "%s" DESIGN_NOWRAP_END, tm);
 
         if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
                 printf("</strike>");
@@ -2472,6 +2481,10 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         return 0;
 }
 
+// Be aware of adjusting flags:
+// - is_xmlfp implies !only_body and print_body;
+// - only_body implies print_body;
+// in the above order.
 char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, int print_body)
 {
         DWORD parnum, index, tmp, i = 0;
@@ -2481,9 +2494,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         char *s, *sp;
         char num_s[sizeof(num)*8/3 + 1], parnum_s[sizeof(num)*8/3 + 1];
         size_t num_s_len;
-        char *header = NULL, *header_to_cdata;
-        char *body = NULL, *body_to_filter, *body_to_cdata;
-        char *author = NULL, *author_coded = NULL;
+        char *header = NULL, *body = NULL, *author = NULL, *author_coded = NULL;
         char ctime[21], mtime[21];
         SMessage mes;
         int is_body;
@@ -2503,29 +2514,32 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
 
         index = TranslateMsgIndexDel(num);
         if (index == 0) {
-                if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
+                char *r;
+                if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +
                                          strlen(XML_MES_STATUS_DELETED) + num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(s, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_DELETED);
-                return s;
+                sprintf(r, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_DELETED);
+                return r;
         } else if (index == NO_MESSAGE_CODE) {
-                if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
+                char *r;
+                if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +
                                          strlen(XML_MES_STATUS_NOTEXISTS) + num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(s, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_NOTEXISTS);
-                return s;
+                sprintf(r, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_NOTEXISTS);
+                return r;
         }
 
         if (!ReadDBMessage(index, &mes))
                 printhtmlerror();
 
         if ((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
-                if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
+                char *r;
+                if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +
                                          strlen(is_xmlfp ? XML_MES_STATUS_DELETED : XML_MES_STATUS_HIDED) +
                                          num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(s, XML_MES_STATUS_TEMPLATE, num, is_xmlfp ? XML_MES_STATUS_DELETED : XML_MES_STATUS_HIDED);
-                return s;
+                sprintf(r, XML_MES_STATUS_TEMPLATE, num, is_xmlfp ? XML_MES_STATUS_DELETED : XML_MES_STATUS_HIDED);
+                return r;
         }
 
         if (print_body && (ULogin.LU.right & USERRIGHT_SUPERUSER) == 0 && CheckReadValidity(Nip, num)) {
@@ -2535,19 +2549,22 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         }
 
         if (!only_body) {
-                parnum = getparent(num);
-                if (parnum == NO_MESSAGE_CODE) {
+                char *header_to_cdata, *author_dec;
+                DWORD tmp;
+
+                if ( (parnum = getparent(num)) == NO_MESSAGE_CODE) {
                         char errmes[100];
                         sprintf(errmes, "error at %s:%d: parent of %s not found.", __FILE__, __LINE__, num_s);
                         print2log(errmes);
                         if (is_xmlfp) {
-                                if ( (s = (char*) malloc(XML_MES_STATUS_BASELEN +
+                                char *r;
+                                if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +
                                                          strlen(XML_MES_STATUS_DELETED) + num_s_len + 1)) == NULL)
                                         printhtmlerror();
-                                sprintf(s, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_DELETED);
+                                sprintf(r, XML_MES_STATUS_TEMPLATE, num, XML_MES_STATUS_DELETED);
+                                return r;
                         } else
                                 printhtmlerror();
-                        return s;
                 }
                 sprintf(parnum_s, "%lu", parnum);
 
@@ -2567,10 +2584,12 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 
                 if (topicnum >= TOPICS_COUNT)
                         topicnum = 0;
-#endif                
+#endif
+                author_dec = DefilterHTMLTags(mes.AuthorName);
+                author = FilterCdata(author_dec);
                 if (mes.UniqUserID)
-                        author_coded = CodeHttpString(mes.AuthorName);
-                author = FilterCdata(mes.AuthorName);
+                        author_coded = CodeHttpString(author_dec);
+                free(author_dec);
                 
                 strftime(ctime, sizeof(ctime)/sizeof(ctime[0]), "%Y-%m-%dT%H:%S:%MZ", gmtime(&mes.Date));
                 if (mes.MDate)
@@ -2579,6 +2598,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
 
         is_body = mes.msize && print_body;
         if (is_body) {
+                char *body_to_filter, *body_to_cdata;
                 if ( (body_to_filter = (char*) malloc(mes.msize)) == NULL)
                         printhtmlerror();
                 if (!ReadDBMessageBody(body_to_filter, mes.MIndex, mes.msize))
@@ -2590,10 +2610,11 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 body = FilterCdata(body_to_cdata);
                 free(body_to_cdata);
         } else if (only_body) {
+                char *r;
                 const char *tmpl = "<message id=\"%lu\"/>";
-                if ( (s = (char*) malloc(strlen(tmpl) - strlen("%lu") + num_s_len + 1)) == NULL)
+                if ( (r = (char*) malloc(strlen(tmpl) - strlen("%lu") + num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(s, tmpl, num);
+                sprintf(r, tmpl, num);
                 goto end;
         }
         

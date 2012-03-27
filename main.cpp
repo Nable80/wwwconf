@@ -625,7 +625,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         }
 
         if((c & HEADERSTRING_DISABLE_SEARCH) == 0) {
-                 printf("<a HREF=\"http://zlo.rt.mipt.ru:7500/search?site=9\">%s</a>", MESSAGEHEAD_search);
+                 printf("<a HREF=\"http://zlo.rt.mipt.ru:7500/search\">%s</a>", MESSAGEHEAD_search);
         }
         
         if(c & HEADERSTRING_CONFIGURE) {
