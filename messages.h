@@ -923,7 +923,7 @@ extern char DESIGN_break[10];
 #define HTML_ENCODING_HEADER        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
         "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
         "<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
-        "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"%s?index=rss\" />"\
+        "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
 #define HTML_STYLE_HEADER "</head><body>\n"

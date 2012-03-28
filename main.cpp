@@ -720,7 +720,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         }
 
         // print output encoding (charset)
-        printf(HTML_ENCODING_HEADER, GetBoardUrl());
+        printf(HTML_ENCODING_HEADER/*, GetBoardUrl()*/);
 
         // print title
 #if STABLE_TITLE == 0

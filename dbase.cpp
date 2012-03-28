@@ -2475,11 +2475,11 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 // in the above order.
 char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, int print_body)
 {
-        DWORD parnum, index, tmp, i = 0;
+        DWORD parnum = 0, index, tmp, i = 0;
         const size_t maxpartnum = 51;
         size_t partnum, partlen[maxpartnum], len = 0;
         const char *part[maxpartnum];
-        char *s, *sp;
+        char *s = NULL, *sp;
         char num_s[sizeof(num)*8/3 + 1], parnum_s[sizeof(num)*8/3 + 1];
         size_t num_s_len;
         char *header = NULL, *body = NULL, *author = NULL, *author_coded = NULL;
@@ -2487,7 +2487,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         SMessage mes;
         int is_body;
 #if TOPICS_SYSTEM_SUPPORT
-        DWORD topicnum;
+        DWORD topicnum = 0;
 #endif
 
         // adjust flags
