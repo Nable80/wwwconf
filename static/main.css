@@ -109,7 +109,7 @@ div.g div, div.w div
 
 div.g > span, div.w > span, div.g div > span, div.w div > span
 {
-        display: table;
+        display: inline-table;
 }
 
 div.g, div.w

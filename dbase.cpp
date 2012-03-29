@@ -266,7 +266,7 @@ L_BVisible1:
                                         }
                                         else if (buf[i].Level > 0) {
                                                 // br before messages on one level, READING, 111!!
-                                                //printf("%s", DESIGN_break);
+                                                printf("%s", DESIGN_break);
                                         }
 
                                         if(buf[i].Level == 0)
