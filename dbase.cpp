@@ -2579,9 +2579,9 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                         author_coded = CodeHttpString(author_dec);
                 free(author_dec);
                 
-                strftime(ctime, sizeof(ctime)/sizeof(ctime[0]), "%Y-%m-%dT%H:%S:%MZ", gmtime(&mes.Date));
+                strftime(ctime, sizeof(ctime)/sizeof(ctime[0]), "%Y-%m-%dT%H:%M:%SZ", gmtime(&mes.Date));
                 if (mes.MDate)
-                        strftime(mtime, sizeof(mtime)/sizeof(mtime[0]), "%Y-%m-%dT%H:%S:%MZ", gmtime(&mes.MDate));
+                        strftime(mtime, sizeof(mtime)/sizeof(mtime[0]), "%Y-%m-%dT%H:%M:%SZ", gmtime(&mes.MDate));
         }
 
         is_body = mes.msize && print_body;
