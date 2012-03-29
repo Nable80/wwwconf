@@ -577,7 +577,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT                "новых потоков(сообщений): <a href=\"#n0\" "\
-        "style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %ld"
+        "style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %lu"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
                                 
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT        "новых сообщений нет, всего %ld"
@@ -921,8 +921,8 @@ extern char DESIGN_break[10];
 #define PLAIN_START  "Content-type: text/plain; charset=windows-1251\n\n"
 
 #define HTML_ENCODING_HEADER        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1251\" />"\
-        "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"\
-        "<link rel=\"stylesheet\" type=\"text/css\" href=\"/main.css\" />"\
+        "<link rel=\"shortcut icon\" href=\"favicon.ico\" />"\
+        "<link rel=\"stylesheet\" type=\"text/css\" href=\"main.css\" />"\
         "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"?index=rss\" />"\
         "<meta http-equiv=\"Page-Exit\" content=\"progid:DXImageTransform.Microsoft.Fade(Duration=0.2)\" />"
 
