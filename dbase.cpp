@@ -18,6 +18,7 @@
 #include "sendmail.h"
 #include "main.h"
 #include "messages.h"
+#include "dbaseutils.h"
 
 static int curcolor = 1;
 
@@ -73,59 +74,6 @@ char DESIGN_open_dl_white[20];
 char DESIGN_close_dl[10];
 char DESIGN_threads_divider[500];
 char DESIGN_break[10];
-
-int ReadDBMessage(DWORD midx, SMessage *mes)
-{
-        WCFILE *f;
-
-        if(midx == NO_MESSAGE_CODE) return 0;
-        if((f = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) return 0;
-        if(wcfseek(f, midx, SEEK_SET) != 0)
-        {
-                wcfclose(f);
-                return 0;
-        }
-        if(!fCheckedRead(mes, sizeof(SMessage), f))
-        {
-                wcfclose(f);
-                return 0;
-        }
-        wcfclose(f);
-        return 1;
-}
-
-int ReadDBMessageBody(char *buf, DWORD index, DWORD size)
-{
-        FILE *f;
-        if((f = fopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)return 0;
-        if(fseek(f, index, SEEK_SET) != 0) return 0;
-        if(fread(buf, 1, size, f) != size) return 0;
-        fclose(f);
-        return 1;
-}
-
-int WriteDBMessage(DWORD midx, SMessage *mes)
-{
-        WCFILE *f;
-        
-        if((f = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_RW)) == NULL) return 0;
-        lock_file(f);
-        if(wcfseek(f, midx, SEEK_SET) != 0)
-        {
-                unlock_file(f);
-                wcfclose(f);
-                return 0;
-        }
-        if(!fCheckedWrite(mes, sizeof(SMessage), f))
-        {
-                unlock_file(f);
-                wcfclose(f);
-                return 0;
-        }
-        unlock_file(f);
-        wcfclose(f);
-        return 1;
-}
 
 int IP2HostName(DWORD IP, char *hostname, int maxlen)
 {
@@ -2501,7 +2449,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
         num_s_len = strlen(num_s);
 
         index = TranslateMsgIndexDel(num);
-        if (index == 0) {
+         if (index == 0) {
                 char *r;
                 if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +
                                          strlen(XML_MES_STATUS_DELETED) + num_s_len + 1)) == NULL)
@@ -3424,33 +3372,7 @@ DWORD DB_Base::TranslateMsgIndex(DWORD root)
 // as TranslateMsgIndex() but return 0 if the message was deleted
 DWORD DB_Base::TranslateMsgIndexDel(DWORD root)
 {
-        DWORD i;
-        size_t n;
-        if (root == 0)
-                return NO_MESSAGE_CODE;
-        
-        if ( (fv = wcfopen(F_VINDEX, FILE_ACCESS_MODES_R)) == NULL)
-                printhtmlerror();
-
-        if (wcfseek(fv, root*sizeof(DWORD), SEEK_SET))
-                printhtmlerror();
-
-        n = fread(&i, 1, sizeof(i), fv);
-
-        if (ferror(fv))
-                printhtmlerror();
-
-        if (n != sizeof(i)) {
-                if (n == 0 && feof(fv))
-                        i = NO_MESSAGE_CODE;
-                else
-                        printhtmlerror();
-        } else if (i == NO_MESSAGE_CODE)
-                i = 0;
-        
-        wcfclose(fv);
-
-        return i;
+        return ::TranslateMsgIndexDel(root);
 }
 
 
@@ -3521,14 +3443,8 @@ int DB_Base::DeleteMsgIndex(DWORD root)
 }
 
 DWORD DB_Base::VIndexCountInDB()
-{        
-        DWORD fsize;
-        fsize = Fsize(F_VINDEX);
-        if (fsize > 0)
-                return ( (DWORD)(((DWORD)fsize) - 3) )/sizeof(DWORD);
-        else 
-                return 0;
-
+{
+        return ::VIndexCountInDB();
 }
 
 DWORD DB_Base::MessageCountInDB()
@@ -3607,27 +3523,6 @@ int DB_Base::DecrementMainThreadCount()
 
         return 1;
 }
-
-
-DWORD Fsize(const char *s)
-{
-        WCFILE *f;
-        register DWORD r;
-        if((f = wcfopen(s, FILE_ACCESS_MODES_R)) == NULL) {
-                        char ss[10000];
-                        sprintf(ss, LOG_GETFILESIZEFAILED, s);
-                        printhtmlerrormes(ss);
-        }
-        if(wcfseek(f, 0, SEEK_END) != 0) {
-                        char ss[10000];
-                        sprintf(ss, LOG_GETFILESIZEFAILED, s);
-                        printhtmlerrormes(ss);
-        }
-        r = wcftell(f);
-        wcfclose(f);
-        return r;
-}
-
 
 DWORD DB_Base::getparent(DWORD root)
 {

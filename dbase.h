@@ -73,12 +73,8 @@ extern CAltNamesParser AltNames;
  *  functions
  * ------------------------
  */
-DWORD Fsize(const char *s);
 char *ConvertTime(time_t t);
 char *ConvertFullTime(time_t t);
-int ReadDBMessage(DWORD midx, SMessage *mes);
-int ReadDBMessageBody(char *buf, DWORD index, DWORD size);
-int WriteDBMessage(DWORD midx, SMessage *mes);
 int IP2HostName(DWORD IP, char *hostname, int maxlen);
 
 class DB_Base

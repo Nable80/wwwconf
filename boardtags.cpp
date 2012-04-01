@@ -119,7 +119,7 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
                         if(*s == 'h') s++;
                         s+=6;
 
-                        while(*s != 0 && *s != 13 && *s != 10 && *s != ' ' && *s != ')' && *s != '(' 
+                        while(*s != 0 && *s != '\n' && *s != '\r' && *s != ' ' && *s != ')' && *s != '(' 
                                 && *s != '>' && *s != '<' && *s != ']' && *s != '[' && *s != ',' 
                                 && strncmp(s, "&quot;", 6) !=0 ) s++;
                         oldcs = *s;
@@ -140,12 +140,12 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
 }
 #endif
 
-/* Smart strcat() function. It removes all duplicated spaces, char #10 and all tabs.
+/* Smart strcat() function. It removes all duplicated spaces, char '\r' and all tabs.
  * The behavior depends of status. If status nonzero it works as usual strcat except
- * #10 char removing.
+ * '\r' char removing.
  * status meaning:
  *                0x01 - spaces and tabs elimination (DISABLING)
- *                0x02 - 13 -> BR parsing
+ *                0x02 - '\n' -> BR parsing
  *                0x04 - url parsing
  */
 int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
@@ -161,13 +161,13 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
                         if(fstat) *flg = 1;
 #endif
 
-                        if(*s != 10) {
-                                if(*s == 13 && (status & 2)) {
+                        if(*s != '\r') {
+                                if(*s == '\n' && (status & 2)) {
                                         // convert to <BR>
                                         memcpy(d, "<BR>", 4);
                                         d+=4;
                                 }
-                                else if(*s == 13 && (status & 0x10)) {
+                                else if(*s == '\n' && (status & 0x10)) {
                                                 // convert to <BR>
                                                 memcpy(d, "&lt;BR&gt;", 10);
                                                 d+=10;
@@ -189,19 +189,19 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
                         if(fstat) *flg = 1;
 #endif
 
-                        if( *s != 10 && (!(ws && (*s == 0x20 || *s == 0x09))) ) {
-                                if(*s == 0x20 || *s == 0x09) {
+                        if( *s != '\r' && (!(ws && (*s == ' ' || *s == '\t'))) ) {
+                                if(*s == ' ' || *s == '\t') {
                                         ws = 1;
-                                        *d = 0x20; // space
+                                        *d = ' ';
                                 }
                                 else {
                                         ws = 0;
-                                        if(*s == 13 && (status & 2)) {
+                                        if(*s == '\n' && (status & 2)) {
                                                 // convert to <BR>
                                                 memcpy(d, "<BR>", 4);
                                                 d+=3;
                                         }
-                                        else if(*s == 13 && (status & 0x10)) {
+                                        else if(*s == '\n' && (status & 0x10)) {
                                                 // convert to <BR>
                                                 memcpy(d, "&lt;BR&gt;", 10);
                                                 d+=9;
@@ -259,7 +259,7 @@ int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, D
                 }
 
 
-                if(*ss == 13 && (status & 2)) {
+                if(*ss == '\n' && (status & 2)) {
                         if(*dd == 0) *(dd+4) = 0;
                         // convert to <BR>
                         memcpy(dd, "<BR>", 4);
@@ -433,14 +433,14 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
 					} else if (i == COLOR_TAG_TYPE) {
 						if (tag2[0] == '#') {
 							for (size_t i = 1; i < 7; ++i)
-								if (!((tag2[i] >= 48 && tag2[i] <= 57) ||
-								      (tag2[i] >= 65 && tag2[i] <= 70) ||
-								      (tag2[i] >= 97 && tag2[i] <= 102)))
-									return 0;  // only 0-9, a-f, A-F are allowed
+								if (!((tag2[i] >= '0' && tag2[i] <= '9') ||
+								      (tag2[i] >= 'A' && tag2[i] <= 'F') ||
+								      (tag2[i] >= 'a' && tag2[i] <= 'f')))
+									return 0;
 						} else {
 							for (size_t i = 0; i < strlen(tag2); ++i)
-								if (!((tag2[i] >= 65 && tag2[i] <= 90) || 
-								      (tag2[i] >= 97 && tag2[i] <= 122)))
+								if (!((tag2[i] >= 'A' && tag2[i] <= 'Z') || 
+								      (tag2[i] >= 'a' && tag2[i] <= 'z')))
 									return 0;  // only letters are allowed
 						}
 					}
@@ -511,7 +511,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         SSavedTag OldTag[MAX_NESTED_TAGS];
         
         // ignore starting newline
-        while(*s == 10 || *s == 13)
+        while(*s == '\r' || *s == '\n')
                 ++s;
         
         // ignore ending newline
@@ -519,7 +519,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                 int sl = strlen(s);
                 register int k;
                 for(k = sl; k>0; k--) {
-                        if(!(s[k - 1] == 10 || s[k - 1] == 13))
+                        if(!(s[k - 1] == '\r' || s[k - 1] == '\n'))
                                 break;
                 }
                 s[k] = 0;
@@ -529,10 +529,10 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         *r = NULL;
 
         if(Flags & BOARDTAGS_EXPAND_ENTER)
-                status |= 0x02;        // 13 -> <BR> conversion
+                status |= 0x02;        // '\n' -> <BR> conversion
 
         if(Flags & BOARDTAGS_EXPAND_XMLEN)
-                status |= 0x10;        // 13 -> <BR> xml conversion
+                status |= 0x10;        // '\n' -> <BR> xml conversion
 
 
         if((Flags & BOARDTAGS_CUT_TAGS) || (Flags & BOARDTAGS_TAG_PREPARSE) || ((Flags & BOARDTAGS_PURL_ENABLE) == 0)) {

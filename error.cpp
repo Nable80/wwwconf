@@ -143,7 +143,7 @@ int printwidehtmlerror(const char *file, DWORD line, const char *s)
                         printf("<description>%s</description>", s);
                 printf("</error>");
                 exit(0);
-        } else if (error_type == ERROR_TYPE_XMLFP) {
+        } else if (error_type == ERROR_TYPE_XMLFP || error_type == ERROR_TYPE_PLAIN) {
                 printf(PLAIN_START "Error at %s:%lu", file, line);
                 if (s && *s)
                         printf(":%s.", s);

@@ -6,9 +6,12 @@
     email                : pricer@mail.ru
  ***************************************************************************/
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "basetypes.h"
 #include "profiles.h"
+#include "dbaseutils.h"
+#include "error.h"
 
 #define DIR_CREATION_MASK    511
 #define FILES_CREATION_MASK  511
@@ -29,7 +32,8 @@ void printusage(char *iam)
                " -d user         - delete user\n"
                " -np             - renew(delete) private messages database (in profiles)\n"
                " -r              - zero refresh count for all users\n"
-               " -vs             - set default view settings for all users\n",
+               " -vs             - set default view settings for all users\n"
+               " -fixcr          - replace '\\r' by '\\n' in all message bodies\n",
                iam);
 }
 
@@ -597,6 +601,60 @@ int main(int argc, char *argv[])
                 if(!CreateMessagesDatabase())
                         goto go_stop;
                 printf("Operation completed successfully\n");
+                goto go_stop;
+        }
+
+        if (argc == 2 && strcmp(argv[1], "-fixcr") == 0) {
+                DWORD i, max;
+                char *body;
+
+                error_type = ERROR_TYPE_PLAIN;
+
+                if ( (body = (char *) malloc(MAX_PARAMETERS_STRING)) == NULL) {
+                        printf("Error while allocating memory.\n");
+                        goto fixexit;
+                }
+
+                max = VIndexCountInDB();
+
+                for (i = 1; i <= max; ++i) {
+                        DWORD index;
+                        SMessage mes;
+                        size_t j;
+
+                        index = TranslateMsgIndexDel(i);
+                        if (index == 0) {
+                                printf("%lu is deleted.\n", i);
+                                continue;
+                        } else if (index == NO_MESSAGE_CODE) {
+                                printf("%lu is not existed. Fatal error.\n", i);
+                                goto fixexit;
+                        }
+
+                        if (!ReadDBMessage(index, &mes)) {
+                                printf("Error while reading message %lu.\n", i);
+                                goto fixexit;
+                        }
+
+                        if (!mes.msize)
+                                continue;
+                
+                        if (!ReadDBMessageBody(body, mes.MIndex, mes.msize)) {
+                                printf("Error while reading a body of message %lu.\n", i);
+                                goto fixexit;
+                        }
+                
+                        for (j = 0; j < mes.msize; ++j)
+                                if (body[j] == '\r')
+                                        body[j] = '\n';
+
+                        if (!WriteDBMessageBody(body, mes.MIndex, mes.msize)) {
+                                printf("Error while writing a body of message %lu.\n", i);
+                                goto fixexit;
+                        }
+                }
+        fixexit:
+                free(body);
                 goto go_stop;
         }
 

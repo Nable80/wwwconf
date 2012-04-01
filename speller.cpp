@@ -545,7 +545,7 @@ char *FilterControl(const char *s)
         sp = s;
         ssp = ss;
         while (*sp) {
-                if (*sp > 0 && (*sp < 32 || *sp == 127))
+                if (*sp != '\n' && *sp != '\t' && *sp != '\r' && *sp > 0 && (*sp < 32 || *sp == 127))
                         *ssp = ' ';
                 else
                         *ssp = *sp;

@@ -22,7 +22,7 @@
 #include "colornick.h"
 #include "activitylog.h"
 #include "statfs.h" 
-
+#include "dbaseutils.h"
 
 char *ConfTitle;
 
