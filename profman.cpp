@@ -627,7 +627,7 @@ int main(int argc, char *argv[])
                                 printf("%lu is deleted.\n", i);
                                 continue;
                         } else if (index == NO_MESSAGE_CODE) {
-                                printf("%lu is not existed. Fatal error.\n", i);
+                                printf("%lu doesn't exist. Fatal error.\n", i);
                                 goto fixexit;
                         }
 
