@@ -32,6 +32,7 @@ function doshowbody(body, req)
                 return;
         }
         
+        body.className = 'ibody';
         body.innerHTML = content;
 }
 
@@ -46,7 +47,7 @@ function showbody(id)
 
         body = document.createElement('div');
         body.id = 'b' + id;
-        body.className = 'ibody';
+        body.className = 'iload';
         body.innerHTML = 'loading...';
         e = document.getElementById('m' + id);
         e.parentNode.insertBefore(body, e.nextSibling);

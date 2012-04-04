@@ -177,14 +177,10 @@ span.close
 	text-decoration: line-through;
 }
 
-
-div.ibody
-{
+div.ibody {
         font-size: 133%;
-	border-top: 1px solid #999;
+        border-top: 1px solid #999;
         border-bottom: 1px solid #999;
-	/* font-size: 115%; */
-	/* background-color:#eee; */
 }
 
 div.ibody a {
@@ -193,8 +189,14 @@ div.ibody a {
 
 div.ierror {
         font-size: 133%;
-        border-top: 1px dashed red;
-        border-bottom: 1px dashed red;
+        border-top: 1px solid red;
+        border-bottom: 1px solid red;
+}
+
+div.iload {
+        font-size: 133%;
+        border-top: 1px dashed #999;
+        border-bottom: 1px dashed #999;
 }
 
 /* message */
