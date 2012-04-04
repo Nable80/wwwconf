@@ -2487,7 +2487,7 @@ int main()
                 PrintHTMLHeader(HEADERSTRING_REG_USER_LIST | HEADERSTRING_POST_NEW_MESSAGE |
                                 HEADERSTRING_CONFIGURE | HEADERSTRING_WELCOME_INFO |
                                 HEADERSTRING_ENABLE_RESETNEW | HEADERSTRING_DISABLE_END_TABLE |
-                                HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
+                                HEADERSTRING_ENABLE_REGISTER | HEADERSTRING_SHOWBODY_JS, MAINPAGE_INDEX);
 
                 //        Prepare information about new message count and dispaly mode */
                 char displaymode[500];                // display message mode
@@ -2706,7 +2706,8 @@ int main()
                                         else tmpxx = tmp;
 
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_ENABLE_TO_MESSAGE |
-                                                ((currentdsm & CONFIGURE_shrp) ? HEADERSTRING_ENABLE_REPLY_LINK : 0), tmpxx, tmp);
+                                                        ((currentdsm & CONFIGURE_shrp) ? HEADERSTRING_ENABLE_REPLY_LINK : 0) |
+                                                        HEADERSTRING_SHOWBODY_JS, tmpxx, tmp);
                                         
                                         PrintMessageThread(&DB, tmp, mes.Flag, mes.UniqUserID);
 

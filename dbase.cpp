@@ -857,7 +857,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
                 printf(" ");
         if (mes->Flag & MESSAGE_HAVE_BODY)
-                printf("(" TAG_MSG_HAVE_BODY ")");
+                printf("<span onclick=\"showbody(%lu); return false;\">(" TAG_MSG_HAVE_BODY ")</span>", mes->ViIndex);
         else
                 printf("(" TAG_MSG_HAVE_NO_BODY ")");
         printf("</span>");

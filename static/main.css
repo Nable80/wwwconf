@@ -6,6 +6,10 @@ span.nw {
         white-space: nowrap;
 }
 
+span.yw {
+        white-space: normal;
+}
+
 span.lro, span.rlo {
         unicode-bidi: bidi-override;
 }
@@ -176,10 +180,21 @@ span.close
 
 div.ibody
 {
+        font-size: 133%;
 	border-top: 1px solid #999;
-	border-bottom: 1px solid #999;
-	font-size: 115%;
-	background-color:#eee;
+        border-bottom: 1px solid #999;
+	/* font-size: 115%; */
+	/* background-color:#eee; */
+}
+
+div.ibody a {
+        font-size: 100%;
+}
+
+div.ierror {
+        font-size: 133%;
+        border-top: 1px dashed red;
+        border-bottom: 1px dashed red;
 }
 
 /* message */
