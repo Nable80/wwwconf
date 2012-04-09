@@ -38,19 +38,24 @@ function doshowbody(body, req)
 
 function showbody(id)
 {
-        var body, req;
+        var body, req, e, br, next;
 
         if (body = document.getElementById('b' + id)) {
                 body.parentNode.removeChild(body);
                 return;
         }
 
-        body = document.createElement('div');
+        br = document.createElement('br');
+
+        body = document.createElement('span');
         body.id = 'b' + id;
         body.className = 'iload';
         body.innerHTML = 'loading...';
+
         e = document.getElementById('m' + id);
-        e.parentNode.insertBefore(body, e.nextSibling);
+        next = e.nextSibling;
+        e.parentNode.insertBefore(br, next);
+        e.parentNode.insertBefore(body, next);
 
         req = createreq();
         req.open('GET', '?xmlbody=' + id, true);

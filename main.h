@@ -31,9 +31,7 @@
 #define HEADERSTRING_DISABLE_FAVOURITES    0x040000
 #define HEADERSTRING_DISABLE_END_TABLE     0x080000
 #define HEADERSTRING_ENABLE_REPLY_LINK     0x100000
-
-
-
+#define HEADERSTRING_POST_JS               0x200000
 
 // button codes
 #define ACTION_BUTTON_POST                        0x0001

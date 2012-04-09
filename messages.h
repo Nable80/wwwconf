@@ -184,7 +184,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_register_homepage                "Адрес Вашей домашней страницы:"
 #define MESSAGEMAIN_register_icq                        "ICQ :"
 #define MESSAGEMAIN_register_signature                "Если Вы хотите собственную подпись (будет появляться в" \
-                " новых сообщениях по умолчанию,<BR>и не может быть длиннее 255 символов), введите ее здесь," \
+                " новых сообщениях по умолчанию,<BR>и не может быть длиннее 254 символов), введите ее здесь," \
                 " или оставьте поле пустым"
 #define MESSAGEMAIN_register_selectedusers        "Выбраные пользователи, сообщения которых будут подсвечиваться<BR>" \
                 "(каждое имя пишется на новой строке, максимально можно ввести 184 символа)"
@@ -834,7 +834,7 @@ extern char DESIGN_break[10];
 
 /************************* ban list *************************/
 #define DESIGN_BAN_FORM        "<center><form action=\""MY_CGI_URL"?banlist=save\" method=\"post\">"\
-                                        "<textarea name=\"ban_list\" rows=\"30\" cols=\"70\" wrap=\"soft\">"
+                                        "<textarea name=\"ban_list\" rows=\"30\" cols=\"70\" wrap=\"soft\" maxlength=\"%d\">"
 
 #define DESIGN_BAN_FORM2        "</textarea><br /><input type=\"submit\" name=\"submit\" value=\"Save\">"\
                                         "</form></center>"
@@ -880,13 +880,7 @@ extern char DESIGN_break[10];
 #define DESIGN_FORM_MESSAGE_CHECKBOX "<tr><td colspan=\"2\" align=\"right\" class=\"cl\">%s"\
 "<input type=\"checkbox\" name=\"%s\" class=\"cl\" %s /></td></tr>"
 
-#define DESIGN_FORM_MESSAGE_BUTTON        "<INPUT TYPE=SUBMIT NAME=\"%s\" onClick=\"onSubmit(this)\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
-
-#define SCRIPT_FORM_MESSAGE_QEDIT "<script language=\"JavaScript\" type=\"text/javascript\" "\
-"src=\"qecode2.js\"></script>"
-
-#define SCRIPT_FORM_MESSAGE_BUTTON "<script language=\"JavaScript\" type=\"text/javascript\" "\
-"src=\"postcheck.js\"></script>"
+#define DESIGN_FORM_MESSAGE_BUTTON  "<INPUT TYPE=SUBMIT NAME=\"%s\" VALUE=\"%s\" class=\"fb\" tabindex=\"%d\">"
 
 #define XML_MES_STATUS_TEMPLATE   "<message id=\"%lu\"><status>%s</status></message>"
 #define XML_MES_STATUS_BASELEN    (strlen(XML_MES_STATUS_TEMPLATE) - strlen("%lu%s"))

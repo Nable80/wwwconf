@@ -177,23 +177,23 @@ span.close
 	text-decoration: line-through;
 }
 
-div.ibody {
+span.ibody {
         font-size: 133%;
         border-top: 1px solid #999;
         border-bottom: 1px solid #999;
 }
 
-div.ibody a {
+span.ibody a {
         font-size: 100%;
 }
 
-div.ierror {
+span.ierror {
         font-size: 133%;
         border-top: 1px solid red;
         border-bottom: 1px solid red;
 }
 
-div.iload {
+span.iload {
         font-size: 133%;
         border-top: 1px dashed #999;
         border-bottom: 1px dashed #999;

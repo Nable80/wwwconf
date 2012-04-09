@@ -116,7 +116,14 @@ int GlobalNewSession = 1;
 enum {
         ACTION_POST,
         ACTION_PREVIEW,
-        ACTION_EDIT
+        ACTION_EDIT,
+        ACTION_COUNT
+};
+
+const char *ACTIONS[] = {
+        "post",
+        "preview",
+        "edit"
 };
 
 char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing = true);
@@ -141,33 +148,27 @@ char* toupperstr(char *s)
 
 int getAction(char* par)
 {
-#define JS_POST_FIELD "jpost"
-        int i = -1;
-        const char* szActions[] = {
-                "post",
-                "preview",
-                "edit"
-        };
-        int cActions = sizeof(szActions) / sizeof(char*);
-        char* st = strget(par, JS_POST_FIELD"=", MAX_STRING, '&');
-        if(st && *st) {
-                for(i = 0; i < cActions; i++)
-                        if(!strcmp(st, szActions[i]))
-                                break;
-        } else {
-                char buf[MAX_STRING];
-                for(i = 0; i < cActions; i++)
-                {
-                        sprintf(buf, "%s=", szActions[i]);
-                        st = strget(par, buf, MAX_STRING, '&');
-                        if(st && *st)
-                                break;
+        size_t i;
+
+        for(i = 0; i < ACTION_COUNT; ++i) {
+                char *st, *tok;
+                size_t actlen;
+
+                actlen = strlen(ACTIONS[i]);
+
+                // +1 for '=' and +1 for '\0'
+                if ( (tok = (char*) malloc(actlen + 2)) == NULL)
+                        printhtmlerror();
+
+                strcpy(tok, ACTIONS[i]);
+                strcpy(tok + actlen, "=");
+
+                if ( (st = strget(par, tok, MAX_STRING, '&'))) {
+                        free(st);
+                        return i;
                 }
         }
-        if(st)
-                free(st);
-        if(i < cActions)
-                return i;
+
         return -1;
 }
 
@@ -194,7 +195,7 @@ static void PrintBanList()
         void *buf = malloc(MAX_HTML_FILE_SIZE);
         if((f = fopen(F_BANNEDIP, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
         if((readed = fread(buf, 1, MAX_HTML_FILE_SIZE, f)) == 0) printhtmlerror();
-        printf(DESIGN_BAN_FORM);
+        printf(DESIGN_BAN_FORM, MAX_PARAMETERS_STRING - 1);
         if(fwrite(buf, 1, readed, stdout) != readed) printhtmlerror();
         printf(DESIGN_BAN_FORM2);
         free(buf);
@@ -207,7 +208,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 {
         char tstr[2][100];
 
-        printf("<CENTER><FORM METHOD=POST NAME=\"postform\" onSubmit=\"return false;\" ACTION=\"%s?xpost=%lu\">",
+        printf("<CENTER><FORM METHOD=POST NAME=\"postform\" onsubmit=\"onSubmit(event);\" ACTION=\"%s?xpost=%lu\">",
                         MY_CGI_URL, s);
 
         printf(DESIGN_POST_NEW_MESSAGE_TABLE "<TR><TD COLSPAN=2 ALIGN=CENTER><BIG>");
@@ -340,7 +341,8 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         
 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "
-	       "CLASS=\"post\" tabindex=\"1\" onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", body);
+	       "CLASS=\"post\" tabindex=\"1\" maxlength=\"%d\" "
+               "onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", 65530, body);
 
         tstr[0][0] = tstr[1][0] = 0;
         if(flags & MSG_CHK_DISABLE_SMILE_CODES) strcpy(tstr[0], RADIO_CHECKED);
@@ -363,21 +365,17 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                                                                  
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER>");
 
-        printf(SCRIPT_FORM_MESSAGE_BUTTON);
-        printf(SCRIPT_FORM_MESSAGE_QEDIT);
-
         if(code & ACTION_BUTTON_EDIT) {
-                printf(DESIGN_FORM_MESSAGE_BUTTON, "edit", MESSAGEMAIN_post_edit_message, 1);
+                printf(DESIGN_FORM_MESSAGE_BUTTON, ACTIONS[ACTION_EDIT], MESSAGEMAIN_post_edit_message, 1);
         }
         else {
                 if(code & ACTION_BUTTON_PREVIEW) {
-                        printf(DESIGN_FORM_MESSAGE_BUTTON, "preview",MESSAGEMAIN_post_preview_message, 2);
+                        printf(DESIGN_FORM_MESSAGE_BUTTON, ACTIONS[ACTION_PREVIEW], MESSAGEMAIN_post_preview_message, 2);
                 }
                 if(code & ACTION_BUTTON_POST) {
-                        printf(DESIGN_FORM_MESSAGE_BUTTON, "post", MESSAGEMAIN_post_post_message, 1);
+                        printf(DESIGN_FORM_MESSAGE_BUTTON, ACTIONS[ACTION_POST], MESSAGEMAIN_post_post_message, 1);
                 }
         }
-        printf("<INPUT TYPE=HIDDEN NAME=\"jpost\" VALUE=\"%s\">", "");
 
         printf("</TD></TR></TABLE></FORM></CENTER><P>&nbsp;");
 }
@@ -414,7 +412,8 @@ static void PrintPrivateMessageForm(char *name, const char *body)
                 MESSAGEMAIN_privatemsg_send_msg_usr, PROFILES_MAX_USERNAME_LENGTH - 1,
                 name, MESSAGEMAIN_privatemsg_send_msg_bdy);
 
-        printf("<BR><TEXTAREA COLS=50 ROWS=7 NAME=\"body\" WRAP=VIRTUAL>%s</TEXTAREA></TD></TR>", body);
+        printf("<BR><TEXTAREA COLS=50 ROWS=7 NAME=\"body\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
+               PROFILE_PERSONAL_MESSAGE_LENGHT - 1, body);
 
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=80%% NOSHADE></TR><BR><TR><TD COLSPAN=2 ALIGN=CENTER>"
                 "<INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\">&nbsp;<INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\"></TD></TR></TABLE></FORM></CENTER>",
@@ -485,7 +484,7 @@ static void PrintConfig()
                 break;
         }
         printf("<INPUT TYPE=RADIO NAME=lsel VALUE=1 %s>%s" \
-                "<INPUT TYPE=TEXT NAME=\"tv\" SIZE=2 VALUE=%lu><SELECT NAME=\"tt\">" \
+                "<INPUT TYPE=TEXT NAME=\"tv\" SIZE=2 maxlength=\"3\" VALUE=%lu><SELECT NAME=\"tt\">" \
                 "<OPTION VALUE=\"1\"%s>%s<OPTION VALUE=\"2\"%s>%s<OPTION VALUE=\"3\" %s>" \
                 "%s<OPTION VALUE=\"4\"%s>%s</SELECT><BR>",
                 str1, MESSAGEHEAD_configure_msgslast, currenttv,
@@ -511,7 +510,7 @@ static void PrintConfig()
                 break;
         }
 
-        printf("<INPUT TYPE=RADIO NAME=lsel VALUE=2 %s>%s<INPUT TYPE=TEXT NAME=\"tc\" SIZE=3 VALUE=%lu>"
+        printf("<INPUT TYPE=RADIO NAME=lsel VALUE=2 %s>%s<INPUT TYPE=TEXT NAME=\"tc\" SIZE=3 maxlength=\"3\" VALUE=%lu>"
                 "<BR><BR>%s<BR><SELECT NAME=\"ss\"><OPTION VALUE=\"2\" %s>%s<OPTION VALUE=\"3\" %s>%s<OPTION VALUE=\"4\"%s>"
                 "%s</SELECT>",
                 str1, MESSAGEHEAD_configure_lastnum, currenttc, 
@@ -601,15 +600,12 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         if(c & HEADERSTRING_ENABLE_TO_MESSAGE) {
                 printf("<A HREF=\"#%ld\">%s</A>", ret, MESSAGEHEAD_to_message);
 
-        }
-
-        if((c & HEADERSTRING_ENABLE_TO_MESSAGE) || (c & HEADERSTRING_ENABLE_REPLY_LINK)) {
-                if((c & HEADERSTRING_ENABLE_REPLY_LINK))
+                if (c & HEADERSTRING_ENABLE_REPLY_LINK)
                         printf("<A HREF=\"%s?form=%ld\">%s</A>",
-                                MY_CGI_URL, ret, MESSAGEMAIN_post_replymessage);
-                else printf("<A HREF=\"#Reply\">%s</A>",
-                                MESSAGEMAIN_post_replymessage);
-
+                               MY_CGI_URL, ret, MESSAGEMAIN_post_replymessage);
+                else
+                        printf("<A HREF=\"#Reply\">%s</A>",
+                               MESSAGEMAIN_post_replymessage);
         }
 
         if(c & HEADERSTRING_RETURN_TO_MAIN_PAGE) {
@@ -715,12 +711,14 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
                         AUTO_REFRESH_TIME, MY_CGI_URL, curind);
         }
 
-        if (code & HEADERSTRING_SHOWBODY_JS) {
+        if (code & HEADERSTRING_SHOWBODY_JS)
                 printf("<script type=\"text/javascript\" src=\"showbody.js\"></script>");
-        }
+
+        if (code & HEADERSTRING_POST_JS)
+                printf("<script type=\"text/javascript\" src=\"post.js\"></script>");
 
         // print output encoding (charset)
-        printf(HTML_ENCODING_HEADER/*, GetBoardUrl()*/);
+        printf(HTML_ENCODING_HEADER);
 
         // print title
 #if STABLE_TITLE == 0
@@ -952,16 +950,16 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         fui->SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;        // FIX
    
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
-                "<TEXTAREA COLS=60 ROWS=3 NAME=\"about\" WRAP=VIRTUAL>%s</TEXTAREA></TD></TR>",
+                "<TEXTAREA COLS=60 ROWS=3 NAME=\"about\" WRAP=VIRTUAL maxlength=\"1000\">%s</TEXTAREA></TD></TR>",
                  MESSAGEMAIN_register_about, FilterHTMLTags(fui->AboutUser, 1000, 0));
                  
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
-                "<TEXTAREA COLS=60 ROWS=3 NAME=\"sign\" WRAP=VIRTUAL>%s</TEXTAREA></TD></TR>",
-                MESSAGEMAIN_register_signature, FilterHTMLTags(fui->Signature, 1000, 0));
+                "<TEXTAREA COLS=60 ROWS=3 NAME=\"sign\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
+               MESSAGEMAIN_register_signature, PROFILES_MAX_SIGNATURE_LENGTH - 1, FilterHTMLTags(fui->Signature, 1000, 0));
                 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
-                "<TEXTAREA COLS=30 ROWS=4 NAME=\"susr\" WRAP=VIRTUAL>%s</TEXTAREA></TD></TR>",
-                MESSAGEMAIN_register_selectedusers,  FilterHTMLTags(fui->SelectedUsers, 1000, 0));
+                "<TEXTAREA COLS=30 ROWS=4 NAME=\"susr\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
+               MESSAGEMAIN_register_selectedusers, PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1, FilterHTMLTags(fui->SelectedUsers, 1000, 0));
 
 
         if((ui->Flags & PROFILES_FLAG_INVISIBLE) == 0)
@@ -1850,7 +1848,7 @@ char inline parsesym(char s)
 }
 
 /* find and return key [find] in string [par] between [find] and "&"
-* par is limited to MAX_PARAMETERS_LENGTH - 1
+* par is limited to maxl+1 (including '\0')
 */
 char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing)
 {
@@ -2681,6 +2679,8 @@ int main()
                                         // change title
                                         char *an;
                                         DWORD xtmp;
+                                        int is_form = 0;
+
                                         if(FilterBoardTags(mes.MessageHeader, &an, 1,
 							   MAX_PARAMETERS_STRING, mes.Flag | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                                 an = mes.MessageHeader;
@@ -2705,20 +2705,22 @@ int main()
                                         }
                                         else tmpxx = tmp;
 
+                                        /* allow post to closed message only to SUPERUSER and USER  */
+                                        if ((((mes.Flag & MESSAGE_IS_CLOSED) == 0 &&
+                                              (ULogin.LU.right & USERRIGHT_CREATE_MESSAGE) )  ||
+                                             (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0 ) && 
+                                            ((currentfm < MAX_DELTA_POST_MESSAGE) || 
+                                             (tmp > (currentfm - MAX_DELTA_POST_MESSAGE)) || 
+                                             (tmp == 0)) && ((currentdsm & CONFIGURE_shrp) == 0))
+                                                is_form = 1;
+
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_ENABLE_TO_MESSAGE |
-                                                        ((currentdsm & CONFIGURE_shrp) ? HEADERSTRING_ENABLE_REPLY_LINK : 0) |
-                                                        HEADERSTRING_SHOWBODY_JS, tmpxx, tmp);
+                                                        (currentdsm & CONFIGURE_shrp ? HEADERSTRING_ENABLE_REPLY_LINK : 0) |
+                                                        HEADERSTRING_SHOWBODY_JS | (is_form ? HEADERSTRING_POST_JS : 0), tmpxx, tmp);
                                         
                                         PrintMessageThread(&DB, tmp, mes.Flag, mes.UniqUserID);
 
-                                        /* allow post to closed message only to SUPERUSER and USER  */
-                                        if( (((mes.Flag & MESSAGE_IS_CLOSED) == 0 &&
-                                                (ULogin.LU.right & USERRIGHT_CREATE_MESSAGE) )  ||
-                                                (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0 ) && 
-                                                ((currentfm < MAX_DELTA_POST_MESSAGE) || 
-                                                (tmp > (currentfm - MAX_DELTA_POST_MESSAGE)) || 
-                                                (tmp == 0)) && ((currentdsm & CONFIGURE_shrp) == 0))
-                                        {
+                                        if (is_form) {
                                                 strcpy(mes.AuthorName, cookie_name);
                                                 mes.MessageHeader[0] = 0;
                                                 mesb = (char*)malloc(1);
@@ -2952,7 +2954,7 @@ int main()
                 if(!repnum) Tittle_cat(TITLE_Form);
                 else Tittle_cat(TITLE_WriteReply);
 
-                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_POST_JS, MAINPAGE_INDEX);
                 
                 strcpy(mes.AuthorName, FilterHTMLTags(cookie_name, 1000, 0));
                 mes.MessageHeader[0] = 0;
@@ -3311,7 +3313,7 @@ int main()
                                 if(banreason) free(banreason);
 
                                 mes.Flag = rf;
-                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+                                PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_POST_JS, MAINPAGE_INDEX);
 
                                 printf(DESIGN_PREVIEW_PREVIEWMESSAGE, MESSAGEHEAD_preview_preview_message);
 
@@ -4010,7 +4012,7 @@ print2log("incor pass %s", par);
                                         if (aheader)
                                                 free(aheader);
 #endif
-                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, tmp);
+                                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_POST_JS, tmp);
 
                                         PrintMessageThread(&DB, tmp, mes.Flag, mes.UniqUserID);
 
