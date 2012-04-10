@@ -689,27 +689,36 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define LOG_UNABLETOCREATEFILE                "Unable to open/create file %s"
 #define LOG_WARN_UNABLETOOPENFILE        "WARNING: Unable to open/access file %s, feature connected to this file will not be used"
 
-// from design.h
 /*=====================================================================*/
-#define TAG_MSG_HAVE_BODY               "+"
-#define TAG_MSG_HAVE_NO_BODY            "-"
-#define TAG_MSG_HAVE_PIC                "pic"
-#define TAG_MSG_HAVE_URL                "url"
-#define TAG_MSG_HAVE_TEX                "tex"
-#define TAG_MSG_HAVE_TUB                "tub"
-#define TAG_MSG_CLOSED_THREAD        "<span class=\"close\" id=c%ld>(закрыто) </span>"
-#define TAG_MSG_ROLLED_THREAD "<br><span id=r%ld><span class=\"roll1\">свернуто: </span><span class=roll2>(ответов: <b>%lu</b>)</span><br></span>"
-#define TAG_MSG_ROLLED_THREAD_MARKNEW        "<br><span id=r%ld><span class=\"roll1\">свернуто: </span><span class=roll2>" \
-                                        "(ответов: <b>%lu</b>, новых: <b>%d</b>, последний ответ: <A HREF=%s?read=%ld>от %s, %s</A>)</span><br></span>"
-#define TAG_REPLY_PREFIX                "Re: "
-#define TAG_IP_NOT_DETECTED                "X.X.X.X"
-#define BAD_WORD_SYMBOL                        '#'
-#define TAG_NEW_MSG_MARK_HREF        "<span class=e id=p%ld><a name=n%ld href=\"#n%ld\">+</a> </span>"
-#define TAG_NEW_MSG_MARK                "<span class=e>+ </span>"
+#define TAG_MSG_HAVE_BODY              "+"
+#define TAG_MSG_HAVE_NO_BODY           "-"
 
-#define DESIGN_NOWRAP_START  "<span class=\"nw\">"
-#define DESIGN_NOWRAP_END    "</span>"
-#define DESIGN_WRAP "<span class=\"yw\"> </span>"
+#define TAG_MSG_HAVE_PIC               "pic"
+#define TAG_MSG_HAVE_URL               "url"
+#define TAG_MSG_HAVE_TEX               "tex"
+#define TAG_MSG_HAVE_TUB               "tub"
+
+#define TAG_MSG_CLOSED_THREAD          "<span class=\"close\" id=\"c%ld\">(закрыто) </span>"
+
+#define TAG_MSG_ROLLED_THREAD          "<div id=\"r%ld\"><span class=\"roll1\">свернуто: </span>" \
+        "<span class=roll2>(ответов: <b>%lu</b>)</span><br></div>"
+
+#define TAG_MSG_ROLLED_THREAD_MARKNEW  "<div id=\"r%ld\"><span class=\"roll1\">свернуто: </span>" \
+        "<span class=roll2>(ответов: <b>%lu</b>, новых: <b>%d</b>, последний ответ: " \
+        "<a href=\"%s?read=%ld\">от %s, %s</a>)</span><br></div>"
+
+#define TAG_IP_NOT_DETECTED  "X.X.X.X"
+
+#define BAD_WORD_SYMBOL  '#'
+
+#define TAG_NEW_MSG_MARK_HREF  "<span class=e id=p%ld><a name=n%ld href=\"#n%ld\">+</a>&nbsp;</span>"
+#define TAG_NEW_MSG_MARK       "<span class=e>+&nbsp;</span>"
+
+#define DESIGN_NOBR_START  "<span class=\"nobr\">"
+#define DESIGN_WBR_START   "<span class=\"wbr\">"
+#define DESIGN_BR_END      "</span>"
+#define DESIGN_WRAP        "<span> </span>"
+
 
 /******************** Unicode BiDi ************************/
 #define DESIGN_BIDI_LRO     "<span class=\"lro\">"
@@ -740,28 +749,22 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define DESIGN_THREADS_DIVIDER_IMG        ""
 #define DESIGN_THREADS_DIVIDER_HR        "\n<HR size=1>"
 #define DESIGN_THREADS_DIVIDER_grey        "#E9E9E9"
-extern char DESIGN_threads_divider[500];
 
-#define DESIGN_OP_DL                                "<DL><DD>"
-#define DESIGN_CL_DL                                "</DL>"
-#define DESIGN_OP_DIV                                "<DIV>"
-#define DESIGN_OP_DIV_grey                        "<DIV class=g>"
-#define DESIGN_OP_DIV_white                        "<DIV class=w>"
-#define DESIGN_CL_DIV                                "</DIV>"
 extern char DESIGN_open_dl[10];
 extern char DESIGN_open_dl_grey[20];
 extern char DESIGN_open_dl_white[20];
 extern char DESIGN_close_dl[10];
-
-#define DESIGN_BR                "<BR>"
-#define DESIGN_DD                "<DD>"
 extern char DESIGN_break[10];
+
+#define DESIGN_OP_UL        "<ul>"
+#define DESIGN_OP_UL_grey   "<ul class=\"g\">"
+#define DESIGN_OP_UL_white  "<ul class=\"w\">"
+#define DESIGN_CL_UL        "</ul>"
+#define DESIGN_BR           "<br>"
 
 #define DESIGN_BUTTONS_DIVIDER                        "&nbsp;&nbsp;"
 
 #define DESIGN_GLOBAL_BOARD_MESSAGE                "<P ALIGN=CENTER><BIG><STRONG>%s</STRONG></BIG><BR><BR>%s"
-
-#define DESING_INDEX_MSG_HEADER  "<span class=\"subject\">%s</span>"
 
 #define DESIGN_VIEW_THREAD_BODY                        "<br /><div class=\"body\">%s</div>"
 #define DESIGN_VIEW_THREAD_SIGN                        "<br /><div class=\"sign\">%s</div>"

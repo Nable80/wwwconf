@@ -72,7 +72,6 @@ char DESIGN_open_dl[10];
 char DESIGN_open_dl_grey[20];
 char DESIGN_open_dl_white[20];
 char DESIGN_close_dl[10];
-char DESIGN_threads_divider[500];
 char DESIGN_break[10];
 
 int IP2HostName(DWORD IP, char *hostname, int maxlen)
@@ -469,7 +468,8 @@ L_BVisible1:
                                         // delayed print done
                                         if((mode & PRINTMODE_XML) == 0) {
                                                 printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
-                                                printf("<div id=d%ld style=\"display: none;\">", pmes.ViIndex);
+                                                //printf(DESIGN_break);
+                                                printf(DESIGN_open_dl);
                                         }
                                         else printxmlmessage_in_index(&pmes);
                                         
@@ -483,17 +483,17 @@ L_BVisible1:
                                         if(buf[i].Level != (*ll)) {
                                                 if((*ll) > buf[i].Level) {
                                                         int x = (*ll) - buf[i].Level;
-                                                        for(int j = 0; j < x + 1 ; j++) printf("</div>");
+                                                        for(int j = 0; j < x + 1 ; j++) printf(DESIGN_close_dl);
                                                 }
                                                 (*ll) = buf[i].Level;
                                         }
                                         else {
-                                                printf("</div>");
+                                                printf(DESIGN_close_dl);
                                         }
                                 
 
                                         if(buf[i].Level == 0 && (*pr)) {
-                                                printf("%s%s",DESIGN_close_dl, DESIGN_threads_divider);
+                                                printf("%s",DESIGN_close_dl);
                                                 if(curcolor) printf("%s", DESIGN_open_dl_white);
                                                 else printf("%s", DESIGN_open_dl_grey);
                                                 curcolor = !curcolor;
@@ -504,7 +504,7 @@ L_BVisible1:
                                 if(!collapsed) {
                                         if((mode & PRINTMODE_XML) == 0) {
                                                 printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
-                                                printf("<div id=d%ld>", buf[i].ViIndex);
+                                                printf(DESIGN_open_dl);
                                         }
                                         else printxmlmessage_in_index(&buf[i]);
                                         
@@ -666,7 +666,8 @@ L_BVisible2:
 
                                         if((mode & PRINTMODE_XML) == 0) {
                                                 printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
-                                                printf("<div id=d%ld style=\"display: none;\">", pmes.ViIndex);
+                                                printf(DESIGN_open_dl);
+                                                //printf(DESIGN_break);
                                         }
                                         else printxmlmessage_in_index(&pmes);
                                         
@@ -681,16 +682,16 @@ L_BVisible2:
                                         if(buf[i].Level != (*ll)) {
                                                 if((*ll) > buf[i].Level) {
                                                         int x = (*ll) - buf[i].Level;
-                                                        for(int j = 0; j < x + 1; j++) printf("</div>");
+                                                        for(int j = 0; j < x + 1; j++) printf(DESIGN_close_dl);
                                                 }
                                                 (*ll) = buf[i].Level;
                                         }
                                         else {
-                                                printf("</div>");
+                                                printf(DESIGN_close_dl);
                                         }
 
                                         if(buf[i].Level == 0 && (*pr)) {
-                                                printf("%s%s", DESIGN_close_dl, DESIGN_threads_divider);
+                                                printf("%s", DESIGN_close_dl);
                                                 if(curcolor) printf("%s", DESIGN_open_dl_white);
                                                 else printf("%s", DESIGN_open_dl_grey);
                                                 curcolor = !curcolor;
@@ -701,7 +702,7 @@ L_BVisible2:
                                 if(!collapsed) {
                                         if((mode & PRINTMODE_XML) == 0) {
                                                 printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
-                                                printf("<div id=d%ld>", buf[i].ViIndex);
+                                                printf(DESIGN_open_dl);
                                         }
                                         else printxmlmessage_in_index(&buf[i]);
                                         
@@ -750,28 +751,17 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         // *******************************
         // BUG BUG with aname
         //////////////////////////////////
-        char *mp = NULL, aname[1000], *tm;
-        DWORD ff;
-        
-        printf("<span id=m%lu>", mes->ViIndex);
-
-#if ALLOW_MARK_NEW_MESSAGES == 2
-        if((currentdsm & CONFIGURE_plu) != 0) {
-                if(currentlm < mes->ViIndex || newmessmark) {
-                  printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref, newhref+1);
-                  ++newhref;
-                }
-        } else
-                if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
-#endif
-#if ALLOW_MARK_NEW_MESSAGES == 1
-        if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
-#endif
+        char *header_to_bidi, *header, aname[1000], *tm;
+        DWORD tmp;
 
         tm = ConvertTime(mes->Date);
 
-        if(!FilterBoardTags(mes->MessageHeader, &mp, 1, MAX_PARAMETERS_STRING, mes->Flag, &ff))
-                mp = mes->MessageHeader;
+        if (!FilterBoardTags(mes->MessageHeader, &header_to_bidi, 1, MAX_PARAMETERS_STRING, mes->Flag, &tmp))
+                header_to_bidi = mes->MessageHeader;
+        if ( (header = FilterBiDi(header_to_bidi)) == NULL)
+                printhtmlerror();
+        if (header_to_bidi != mes->MessageHeader)
+                free(header_to_bidi);
 
         // does this message posted by registred user ?
         if (mes->UniqUserID == 0) {
@@ -813,10 +803,26 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                         free(altnick_f);
         }
 
+        printf("<span id=m%lu>", mes->ViIndex);
+        printf(DESIGN_NOBR_START);
 
-        if(mes->Flag & MESSAGE_IS_CLOSED) printf(TAG_MSG_CLOSED_THREAD, mes->ViIndex);
+#if ALLOW_MARK_NEW_MESSAGES == 2
+        if((currentdsm & CONFIGURE_plu) != 0) {
+                if(currentlm < mes->ViIndex || newmessmark) {
+                  printf(TAG_NEW_MSG_MARK_HREF, mes->ViIndex, newhref, newhref+1);
+                  ++newhref;
+                }
+        } else
+                if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
+#endif
+#if ALLOW_MARK_NEW_MESSAGES == 1
+        if(currentlm < mes->ViIndex || newmessmark) printf(TAG_NEW_MSG_MARK);
+#endif
 
-        if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
+        if(mes->Flag & MESSAGE_IS_CLOSED)
+                printf(TAG_MSG_CLOSED_THREAD, mes->ViIndex);
+
+        if(mes->Flag & MESSAGE_IS_INVISIBLE)
                 printf("<strike>");
 
         printf("<A NAME=%ld", mes->ViIndex);
@@ -828,55 +834,57 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 printf("><B>");
         else
                 printf(">");
-#if        TOPICS_SYSTEM_SUPPORT
-        if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0) {
+#if TOPICS_SYSTEM_SUPPORT
+        if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0)
                 printf(DESIGN_TOPIC_TAG_OPEN "%s" DESIGN_TOPIC_TAG_CLOSE DESIGN_TOPIC_DIVIDER,Topics_List[mes->Topics]);
-        }
 #endif
-        // subject
-        char *aheader = FilterBiDi(mp);
-        printf(DESING_INDEX_MSG_HEADER, aheader);
-        if (aheader)
-                free(aheader);
+
+        printf(DESIGN_WBR_START "%s " DESIGN_BR_END, header);
+        free(header);
+
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
                 printf("</B>");
-        printf("</A>");
 
-        printf(DESIGN_WRAP DESIGN_NOWRAP_START);
-        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
-                printf("<a href=\"%s?read=%lu\">", MY_CGI_URL, mes->ViIndex);
-        printf("<span class=\"marker\">");
-        if (mes->Flag & MESSAGE_HAVE_URL)
-                printf("(" TAG_MSG_HAVE_URL ")");
-        if (mes->Flag & MESSAGE_HAVE_PICTURE)
-                printf("(" TAG_MSG_HAVE_PIC ")");
-        if (mes->Flag & MESSAGE_HAVE_TEX)
-                printf("(" TAG_MSG_HAVE_TEX ")");
-        if (mes->Flag & MESSAGE_HAVE_TUB)
-                printf("(" TAG_MSG_HAVE_TUB ")");
-        if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB))
-                printf(" ");
-        if (mes->Flag & MESSAGE_HAVE_BODY)
-                printf("<span onclick=\"showbody(%lu); return false;\">(" TAG_MSG_HAVE_BODY ")</span>", mes->ViIndex);
-        else
-                printf("(" TAG_MSG_HAVE_NO_BODY ")");
-        printf("</span>");
-        if (MESSAGE_INDEX_PRINT_ITS_URL & style)
-                printf("</a>");
+        if (mes->Flag & MESSAGE_HAVE_BODY) {
+                if (mes->Flag & (MESSAGE_HAVE_URL | MESSAGE_HAVE_PICTURE | MESSAGE_HAVE_TEX | MESSAGE_HAVE_TUB)) {
+                        printf("<span class=\"marker\">");
+                        if (mes->Flag & MESSAGE_HAVE_URL)
+                                printf("(" TAG_MSG_HAVE_URL ")");
+                        if (mes->Flag & MESSAGE_HAVE_PICTURE)
+                                printf("(" TAG_MSG_HAVE_PIC ")");
+                        if (mes->Flag & MESSAGE_HAVE_TEX)
+                                printf("(" TAG_MSG_HAVE_TEX ")");
+                        if (mes->Flag & MESSAGE_HAVE_TUB)
+                                printf("(" TAG_MSG_HAVE_TUB ")");
+                        printf("</span> ");
+                }
+                printf("</a><a href=\"%s?read=%lu\" onclick=\"showbody(%lu, event);\"><span class=\"marker\">("
+                       TAG_MSG_HAVE_BODY ")", MY_CGI_URL, mes->ViIndex, mes->ViIndex);
+        } else
+                printf("<span class=\"marker\">(" TAG_MSG_HAVE_NO_BODY ")");
+        
+        printf("</span></a>");
+
         if (mes->Readed)
                 printf(" (%d)", mes->Readed);
-        printf(" &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP);
+        printf(" &mdash;");
+
+        printf(DESIGN_BR_END);  // NOBR
+        
+        printf(DESIGN_WRAP);
 
         if (currentdsm & CONFIGURE_host)  // only name
-                printf(DESIGN_NOWRAP_START "%s &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP, aname);
+                printf(DESIGN_NOBR_START "%s &mdash;" DESIGN_BR_END, aname);
         else  // name and host
-                printf(DESIGN_NOWRAP_START "%s" DESIGN_NOWRAP_END DESIGN_WRAP
-                       DESIGN_NOWRAP_START "(%s) &mdash;" DESIGN_NOWRAP_END DESIGN_WRAP,
+                printf(DESIGN_NOBR_START "%s" DESIGN_BR_END DESIGN_WRAP
+                       DESIGN_NOBR_START "(%s) &mdash;" DESIGN_BR_END,
                        aname, mes->HostName);
-        
-        printf(DESIGN_NOWRAP_START "%s" DESIGN_NOWRAP_END, tm);
 
-        if((mes->Flag & MESSAGE_IS_INVISIBLE) != 0) 
+        printf(DESIGN_WRAP);
+
+        printf(DESIGN_NOBR_START "%s" DESIGN_BR_END, tm);
+
+        if (mes->Flag & MESSAGE_IS_INVISIBLE) 
                 printf("</strike>");
 
         printf("</span>");
@@ -930,7 +938,6 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                         printf(TAG_MSG_ROLLED_THREAD, mes->ViIndex, skipped);
         }
 
-        if(mp != mes->MessageHeader) free(mp);
         return 1;
 }
 
@@ -1239,7 +1246,7 @@ End_of_Prn:
                 for(int i = -1; i < LastLevel + 1; i++) printf("%s", DESIGN_close_dl);
 
                 // index ends
-                printf("</div>");
+                printf(DESIGN_close_dl);
         }
 
 

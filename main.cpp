@@ -2206,7 +2206,6 @@ int main()
         char *deal, *st, *mesb;
         char *par; // parameters string
         char *tmp;
-        int initok = 0;
         DB_Base DB;
         SMessage mes;
 
@@ -2236,36 +2235,11 @@ int main()
         }
 #endif
 
-#define UA_LINKS        "Links"
-#define UA_LYNX                "Lynx"
-#define UA_NN202        "Mozilla/2.02"
-        // will we use <DIV> or <DL>?
-        if( ((st = getenv("HTTP_USER_AGENT")) != NULL) && (*st != '\0') )
-        {
-                deal = (char*)malloc(strlen(st) + 2);
-                strcpy(deal, st);
-                if ( (strncmp(deal, UA_LINKS, strlen(UA_LINKS)) == 0) ||
-                         (strncmp(deal, UA_LYNX,  strlen(UA_LYNX))  == 0) ||
-                         (strncmp(deal, UA_NN202, strlen(UA_NN202)) == 0) ) {
-                        strcpy(DESIGN_open_dl, DESIGN_OP_DL);
-                        strcpy(DESIGN_open_dl_grey, DESIGN_OP_DL);
-                        strcpy(DESIGN_open_dl_white, DESIGN_OP_DL);
-                        strcpy(DESIGN_close_dl, DESIGN_CL_DL);
-                        strcpy(DESIGN_break, DESIGN_DD);
-                        strcpy(DESIGN_threads_divider, DESIGN_THREADS_DIVIDER_HR);
-                        initok = 1;
-                }
-                free(deal);
-        }
-        if (!initok) {
-                        strcpy(DESIGN_open_dl, DESIGN_OP_DIV);
-                        strcpy(DESIGN_open_dl_grey, DESIGN_OP_DIV_grey);
-                        strcpy(DESIGN_open_dl_white, DESIGN_OP_DIV_white);
-                        strcpy(DESIGN_close_dl, DESIGN_CL_DIV);
-                        strcpy(DESIGN_break, DESIGN_BR);
-                        strcpy(DESIGN_threads_divider, DESIGN_THREADS_DIVIDER_IMG);
-        }
-
+        strcpy(DESIGN_open_dl, DESIGN_OP_UL);
+        strcpy(DESIGN_open_dl_grey, DESIGN_OP_UL_grey);
+        strcpy(DESIGN_open_dl_white, DESIGN_OP_UL_white);
+        strcpy(DESIGN_close_dl, DESIGN_CL_UL);
+        strcpy(DESIGN_break, DESIGN_BR);
 
 #if USE_LOCALE
         /* set locale */

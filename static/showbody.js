@@ -36,26 +36,24 @@ function doshowbody(body, req)
         body.innerHTML = content;
 }
 
-function showbody(id)
+function showbody(id, event)
 {
-        var body, req, e, br, next;
+        var body, req, e;
+
+        event.preventDefault();
 
         if (body = document.getElementById('b' + id)) {
                 body.parentNode.removeChild(body);
                 return;
         }
 
-        br = document.createElement('br');
-
-        body = document.createElement('span');
+        body = document.createElement('div');
         body.id = 'b' + id;
         body.className = 'iload';
         body.innerHTML = 'loading...';
 
         e = document.getElementById('m' + id);
-        next = e.nextSibling;
-        e.parentNode.insertBefore(br, next);
-        e.parentNode.insertBefore(body, next);
+        e.parentNode.insertBefore(body, e.nextSibling);
 
         req = createreq();
         req.open('GET', '?xmlbody=' + id, true);
