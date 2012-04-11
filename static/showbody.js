@@ -40,7 +40,10 @@ function showbody(id, event)
 {
         var body, req, e;
 
-        event.preventDefault();
+        if (event.preventDefault)
+                event.preventDefault();
+        else
+                event.returnValue = false;
 
         if (body = document.getElementById('b' + id)) {
                 body.parentNode.removeChild(body);
