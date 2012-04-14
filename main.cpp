@@ -254,7 +254,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 // print edit name and ip
                 if(ULogin.LU.ID[0] != 0 && (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
                         printf("<TR><TD ALIGN=CENTER>%s &nbsp;" \
-                                "<INPUT TYPE=TEXT NAME=\"name\" SIZE=29 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"3\"></TD>" \
+                                "<INPUT TYPE=TEXT NAME=\"amen\" SIZE=29 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"3\"></TD>" \
                                 "<TD>%s &nbsp;<INPUT TYPE=TEXT NAME=\"host\" SIZE=40 MAXLENGTH=%d" \
                                 " VALUE=\"%s\"></TD></TR>", MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1,
                                 msg->AuthorName, MESSAGEMAIN_post_hostname, HOST_NAME_LENGTH - 1, msg->HostName);
