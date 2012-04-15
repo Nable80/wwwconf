@@ -320,400 +320,162 @@ L_BVisible2:
 /* this function could not print more than 32000 messages at once */
 int DB_Base::printhtmlbuffer(SMessage *buf, DWORD size, int p/*direction*/, int *ll, int *pr, DWORD mode, DWORD &shouldprint, DWORD &skipped)
 {
-        
-        if(p)
-        {
-                DWORD count = size/sizeof(SMessage);
-                for(DWORD i = 0; i < count; i++) {
+        int count = size/sizeof(SMessage);
+        for (int i = p ? 0 : count-1; p ? i < count : i >=0; p ? ++i : --i) {
+                if (buf[i].Level == 0) {
+                        invflag = -1;
+                        collapsed = 0;
 
-
-                        if(buf[i].Level == 0) {
-                                
-                                invflag = -1;
-                                collapsed = 0;
-
-                                // check should we stop printing because of data limitation
-                                if(buf[i].Date < current_minprntime && currentlsel == 1) {
-                                        return 0;
-                                }
+                        // check should we stop printing because of data limitation
+                        if (buf[i].Date < current_minprntime && currentlsel == 1)
+                                return 0;
 
 #if TOPICS_SYSTEM_SUPPORT
-                                // check for topic match our topic mask
-                                if( !((1 << buf[i].Topics) & currenttopics) ){
-                                        invflag = 0;
-                                        collapsed = 1;
-                                        skipped |= 0xf0000000;
-                                        continue;
-                                }
+                        // check for topic match our topic mask
+                        if (!((1 << buf[i].Topics) & currenttopics)) {
+                                invflag = 0;
+                                collapsed = 1;
+                                skipped |= 0xf0000000;
+                                continue;
+                        }
 #endif
 
-                        }
-
                         // check for view mode == all rolled
-                        if( ((mode & PRINTMODE_ALL_ROLLED) || (mode & PRINTMODE_XML)) && buf[i].Level == 0) {
+                        if ((mode & PRINTMODE_ALL_ROLLED) || (mode & PRINTMODE_XML)) {
                                 invflag = buf[i].Level;
                                 collapsed = 1;
                                 /* show first message of the thread */
-                                if(!(buf[i].Flag & MESSAGE_IS_INVISIBLE)) goto L_BVisible1;
-                        }
-
-                        if(invflag != -1 || (buf[i].Flag & MESSAGE_IS_INVISIBLE) ||
-                                (buf[i].Flag & MESSAGE_COLLAPSED_THREAD))
-                        {
-                                
-                                if((invflag == -1) && ((buf[i].Flag & MESSAGE_IS_INVISIBLE) ||
-                                        (buf[i].Flag & MESSAGE_COLLAPSED_THREAD)))
-                                {
-                                        //
-                                        //        Starting invsible/rolled message check
-                                        //
-                                        invflag = buf[i].Level;
-                                        if(buf[i].Flag & MESSAGE_COLLAPSED_THREAD)
-                                        {
-                                                collapsed = 1;
-                                                // can we show it ?
-                                                if((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0) {
-                                                        if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
-                                                                /* show first message of the rolled thread */
-                                                                goto L_BVisible1;
-                                                        }
-                                                }
-                                                else goto L_BVisible1;
-                                        }
-                                }
-                                else
-                                {
-                                        //
-                                        //        Check for stopping rolled/invisible thread
-                                        //
-                                        if(invflag >= buf[i].Level)
-                                        {
-                                                if(buf[i].Flag & MESSAGE_IS_INVISIBLE)
-                                                {
-                                                        /* next message invisible too */
-                                                        invflag = buf[i].Level;
-
-                                                        if((ULogin.LU.right & USERRIGHT_SUPERUSER)) {
-                                                                if((buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
-                                                                        collapsed = 1;
-                                                                        goto L_BVisible1;
-                                                                }
-                                                                else collapsed = 0;
-                                                        }
-                                                }
-                                                else
-                                                {
-                                                        /* invisible or collapsed message ended or not ?*/
-                                                        if((buf[i].Flag & MESSAGE_COLLAPSED_THREAD) == 0 && collapsed) {
-                                                                /* next message collapsed too */
-                                                                invflag = -1;
-                                                                collapsed = 0;
-                                                        }
-                                                        else if(collapsed == 0 && (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
-                                                                collapsed = 1;
-                                                        }
-                                                        else if(collapsed == 1 && (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
-                                                        }
-                                                        else {
-                                                            invflag = -1;
-                                                        }
-                                                        goto L_BVisible1;
-                                                }
-                                        }
-                                }
-
-                                /* if admin, show all invisible messages */
-                                if((ULogin.LU.right & USERRIGHT_SUPERUSER)  && (!collapsed))
+                                if (!(buf[i].Flag & MESSAGE_IS_INVISIBLE)) 
                                         goto L_BVisible1;
-#if ALLOW_MARK_NEW_MESSAGES
-                                /* check for new message mark */
-                                if((collapsed) && currentlm < buf[i].ViIndex && (skipped & 0xf0000000) == 0) {
-                                        if(newmessflag) {
-                                                if(lastmes.Date < buf[i].Date)
-                                                        memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
-                                        }
-                                        else memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
-                                         newmessflag++;
-                                }
-#endif
-                                if(buf[i].Level == 0) skipped |= 0xf0000000;
-                                if((skipped & 0xf0000000) == 0) skipped++;
-                        }
-                        else {
-L_BVisible1:
-                                /* check if it's end of thread and if it is increase already printed count
-                                * also check should we stop printing
-                                */
-                                
-                                if(currentlm < buf[i].ViIndex){
-                                        nm_counter ++;
-                                        if(buf[i].Level == 0)
-                                                nt_counter ++; 
-                                }
-                                
-                                if(buf[i].Level == 0)
-                                {
-                                        alrprn++;
-                                        // check should we stop printing
-                                        if( (currentlsel == 1 && buf[i].Date < current_minprntime) ||
-                                                (currentlsel == 2 && alrprn == currenttc + 1) )
-                                        {
-                                                return 0;
-                                        }
-                                }
-
-                                if(shouldprint != 0xFFFFFFFF) {
-                                
-                                        skipped &= (~0xf0000000);
-                                        // delayed print done
-                                        if((mode & PRINTMODE_XML) == 0) {
-                                                printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
-                                                //printf(DESIGN_break);
-                                                printf(DESIGN_open_dl);
-                                        }
-                                        else printxmlmessage_in_index(&pmes);
-                                        
-                                        newmessflag = 0;
-                                        shouldprint = 0xFFFFFFFF;
-                                        skipped = 0;
-                                }
-
-                                if((mode & PRINTMODE_XML) == 0) {
-                                        // there more than 1 message in thread, MAIN INDEX!
-                                        if(buf[i].Level != (*ll)) {
-                                                if((*ll) > buf[i].Level) {
-                                                        int x = (*ll) - buf[i].Level;
-                                                        for(int j = 0; j < x + 1 ; j++) printf(DESIGN_close_dl);
-                                                }
-                                                (*ll) = buf[i].Level;
-                                        }
-                                        else {
-                                                printf(DESIGN_close_dl);
-                                        }
-                                
-
-                                        if(buf[i].Level == 0 && (*pr)) {
-                                                printf("%s",DESIGN_close_dl);
-                                                if(curcolor) printf("%s", DESIGN_open_dl_white);
-                                                else printf("%s", DESIGN_open_dl_grey);
-                                                curcolor = !curcolor;
-                                        }
-                                        else (*pr) = 1;
-                                }
-
-                                if(!collapsed) {
-                                        if((mode & PRINTMODE_XML) == 0) {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
-                                                printf(DESIGN_open_dl);
-                                        }
-                                        else printxmlmessage_in_index(&buf[i]);
-                                        
-                                }
-                                else {
-                                        shouldprint = i;
-                                        skipped = 0;
-                                        newmessflag = 0;
-                                        memcpy(&pmes, &buf[i], sizeof(SMessage));
-                                }
                         }
                 }
-        }
-        else {
-                DWORD count = size/sizeof(SMessage) - 1;
-                for(signed long i = count; i >= 0; i--)
-                {
 
-                        if(buf[i].Level == 0) {
-                                
-                                collapsed = 0;
-                                invflag = -1;
-
-                                // check should we stop printing because of data limitation
-                                if(buf[i].Date < current_minprntime && currentlsel == 1) {
-                                        return 0;
-                                }
-
-#if TOPICS_SYSTEM_SUPPORT
-                                // check for topic match our topic mask
-                                if( !((1 << buf[i].Topics) & currenttopics) )
-                                {
-                                        invflag = 0;
-                                        collapsed = 1;
-                                        skipped |= 0xf0000000;
-                                        continue;
-                                }
-#endif
-
-                        }
-
-                        // check for view mode == all rolled
-                        if( ((mode & PRINTMODE_ALL_ROLLED) || (mode & PRINTMODE_XML)) && buf[i].Level == 0) {
+                if (invflag != -1 || (buf[i].Flag & MESSAGE_IS_INVISIBLE) || (buf[i].Flag & MESSAGE_COLLAPSED_THREAD)) {
+                        if (invflag == -1 && ((buf[i].Flag & MESSAGE_IS_INVISIBLE) || (buf[i].Flag & MESSAGE_COLLAPSED_THREAD))) {
+                                //
+                                //        Starting invsible/rolled message check
+                                //
                                 invflag = buf[i].Level;
-                                collapsed = 1;
-                                /* show first message of the thread */
-                                if(! (buf[i].Flag & MESSAGE_IS_INVISIBLE)) goto L_BVisible2;
-                        }
-
-                        if(invflag != -1 || (buf[i].Flag & MESSAGE_IS_INVISIBLE) ||
-                                (buf[i].Flag & MESSAGE_COLLAPSED_THREAD))
-                        {
-                                
-                                if((invflag == -1) && ((buf[i].Flag & MESSAGE_IS_INVISIBLE) ||
-                                        (buf[i].Flag & MESSAGE_COLLAPSED_THREAD)))
-                                {
-                                        //
-                                        //        Starting invsible/rolled message check
-                                        //
-                                        invflag = buf[i].Level;
-                                        if(buf[i].Flag & MESSAGE_COLLAPSED_THREAD)
-                                        {
-                                                collapsed = 1;
-                                                // can we show it ?
-                                                if((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0) {
-                                                        if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
-                                                                /* show first message of the rolled thread */
-                                                                goto L_BVisible2;
-                                                        }
-                                                }
-                                                else goto L_BVisible2;
-                                        }
+                                if (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) {
+                                        collapsed = 1;
+                                        // can we show it ?
+                                        if (!(buf[i].Flag & MESSAGE_IS_INVISIBLE) || ULogin.LU.right & USERRIGHT_SUPERUSER)
+                                                /* show first message of the rolled thread */
+                                                goto L_BVisible1;
                                 }
-                                else
-                                {
-                                        //
-                                        //        Check for stopping rolled/invsible thread
-                                        //
-                                        if(invflag >= buf[i].Level)
-                                        {
-                                                if(buf[i].Flag & MESSAGE_IS_INVISIBLE)
-                                                {
-                                                        /* next message invisible too */
-                                                        invflag = buf[i].Level;
-
-                                                        if((ULogin.LU.right & USERRIGHT_SUPERUSER)) {
-                                                                if((buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
-                                                                        collapsed = 1;
-                                                                        goto L_BVisible2;
-                                                                }
-                                                                else collapsed = 0;
-                                                        }
-                                                }
-                                                else
-                                                {
-                                                        /* invisible or collapsed message ended or not ?*/
-                                                        if((buf[i].Flag & MESSAGE_COLLAPSED_THREAD) == 0 && collapsed) {
-                                                                /* next message collapsed too */
-                                                                invflag = -1;
-                                                                collapsed = 0;
-                                                        }
-                                                        else if(collapsed == 0 && (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
+                        } else {
+                                //
+                                //        Check for stopping rolled/invisible thread
+                                //
+                                if (invflag >= buf[i].Level) {
+                                        if (buf[i].Flag & MESSAGE_IS_INVISIBLE) {
+                                                /* next message invisible too */
+                                                invflag = buf[i].Level;
+                                                        
+                                                if (ULogin.LU.right & USERRIGHT_SUPERUSER) {
+                                                        if (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) {
                                                                 collapsed = 1;
-                                                        }
-                                                        else if(collapsed == 1 && (buf[i].Flag & MESSAGE_COLLAPSED_THREAD) != 0) {
-                                                        }
-                                                        else {
-                                                            invflag = -1;
-                                                        }
-                                                        goto L_BVisible2;
+                                                                goto L_BVisible1;
+                                                        } else
+                                                                collapsed = 0;
                                                 }
+                                        } else {
+                                                /* invisible or collapsed message ended or not ?*/
+                                                if (!(buf[i].Flag & MESSAGE_COLLAPSED_THREAD) && collapsed) {
+                                                        /* next message collapsed too */
+                                                        invflag = -1;
+                                                        collapsed = 0;
+                                                } else if (collapsed == 0 && (buf[i].Flag & MESSAGE_COLLAPSED_THREAD)) 
+                                                        collapsed = 1;
+                                                else if (collapsed == 0 || !(buf[i].Flag & MESSAGE_COLLAPSED_THREAD))
+                                                        invflag = -1;
+                                                goto L_BVisible1;
                                         }
                                 }
-                                /* if admin, show all invisible messages */
-                                if((ULogin.LU.right & USERRIGHT_SUPERUSER) && (!collapsed))
-                                        goto L_BVisible2;
-#if ALLOW_MARK_NEW_MESSAGES
-                                /* check for new message mark */
-                                if((collapsed) && currentlm < buf[i].ViIndex && (skipped & 0xf0000000) == 0) {
-                                        if(newmessflag) {
-                                                if(lastmes.Date < buf[i].Date)
-                                                        memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
-                                        }
-                                        else memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
-                                        newmessflag++;
-                                }
-#endif
-                                if(buf[i].Level == 0) skipped |= 0xf0000000;
-                                if((skipped & 0xf0000000) == 0) skipped++;
                         }
-                        else
-                        {
-L_BVisible2:
-                                /* check if it's end of thread and if it is increase already printed count
-                                * also check should we stop printing 
-                                */
+
+                        /* if admin, show all invisible messages */
+                        if ((ULogin.LU.right & USERRIGHT_SUPERUSER) && !collapsed)
+                                goto L_BVisible1;
+#if ALLOW_MARK_NEW_MESSAGES
+                        /* check for new message mark */
+                        if (collapsed && currentlm < buf[i].ViIndex && !(skipped & 0xf0000000)) {
+                                if (newmessflag) {
+                                        if (lastmes.Date < buf[i].Date)
+                                                memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
+                                } else
+                                        memcpy(&lastmes, &(buf[i]), sizeof(SMessage));
+                                ++newmessflag;
+                        }
+#endif
+                        if (buf[i].Level == 0)
+                                skipped |= 0xf0000000;
+                        if (!(skipped & 0xf0000000))
+                                ++skipped;
+                } else {
+                L_BVisible1:
+                        /* check if it's end of thread and if it is increase already printed count
+                         * also check should we stop printing
+                         */
                                 
-                                if(currentlm < buf[i].ViIndex){
-                                        nm_counter ++;
-                                        if(buf[i].Level == 0)
-                                                nt_counter ++; 
-                                }
+                        if (currentlm < buf[i].ViIndex) {
+                                ++nm_counter;
+                                if (buf[i].Level == 0)
+                                        ++nt_counter;
+                        }
                                 
-                                if(buf[i].Level == 0)
-                                {
-                                        alrprn++;
-                                        // check should we stop printing
-                                        if( (currentlsel == 1 && buf[i].Date < current_minprntime) ||
-                                                (currentlsel == 2 && alrprn == currenttc + 1) )
-                                        {
-                                                return 0;
-                                        }
-                                }
+                        if(buf[i].Level == 0) {
+                                ++alrprn;
+                                // check should we stop printing
+                                if ((currentlsel == 1 && buf[i].Date < current_minprntime) ||
+                                    (currentlsel == 2 && alrprn == currenttc + 1))
+                                        return 0;
+                        }
 
-                                if(shouldprint != 0xFFFFFFFF) {
-
-                                        skipped &= (~0xf0000000);
-                                        // delayed print done
-
-                                        if((mode & PRINTMODE_XML) == 0) {
-                                                printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
-                                                printf(DESIGN_open_dl);
-                                                //printf(DESIGN_break);
-                                        }
-                                        else printxmlmessage_in_index(&pmes);
+                        if (shouldprint != 0xFFFFFFFF) {
+                                skipped &= ~0xf0000000;
+                                // delayed print done
+                                if (!(mode & PRINTMODE_XML))
+                                        printhtmlmessage_in_index(&pmes, MESSAGE_INDEX_PRINT_ITS_URL, skipped, newmessflag);
+                                else
+                                        printxmlmessage_in_index(&pmes);
                                         
-                                        newmessflag = 0;
-                                        shouldprint = 0xFFFFFFFF;
-                                        skipped = 0;
-                                }
-                                
-                                if((mode & PRINTMODE_XML) == 0) {
+                                newmessflag = 0;
+                                shouldprint = 0xFFFFFFFF;
+                                skipped = 0;
+                        }
 
-                                        // only one message in (sub) thread, could be collapsed, MAIN INDEX
-                                        if(buf[i].Level != (*ll)) {
-                                                if((*ll) > buf[i].Level) {
-                                                        int x = (*ll) - buf[i].Level;
-                                                        for(int j = 0; j < x + 1; j++) printf(DESIGN_close_dl);
-                                                }
-                                                (*ll) = buf[i].Level;
-                                        }
-                                        else {
-                                                printf(DESIGN_close_dl);
-                                        }
-
-                                        if(buf[i].Level == 0 && (*pr)) {
+                        if (!(mode & PRINTMODE_XML)) {
+                                WORD cl = buf[i].Level;
+                                if (cl <= *ll) {
+                                        WORD j;
+                                        for (j = 0; j < *ll - cl; ++j)
                                                 printf("%s", DESIGN_close_dl);
-                                                if(curcolor) printf("%s", DESIGN_open_dl_white);
-                                                else printf("%s", DESIGN_open_dl_grey);
-                                                curcolor = !curcolor;
-                                        }
-                                        else (*pr) = 1;
-                                }
 
-                                if(!collapsed) {
-                                        if((mode & PRINTMODE_XML) == 0) {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
-                                                printf(DESIGN_open_dl);
-                                        }
-                                        else printxmlmessage_in_index(&buf[i]);
-                                        
-                                }
-                                else {
-                                        shouldprint = i;
-                                        skipped = 0;
-                                        newmessflag = 0;
-                                        memcpy(&pmes, &buf[i], sizeof(SMessage));
-                                }
+                                        if (cl == 0) {
+                                                if (!*pr) {
+                                                        printf("%s%s", DESIGN_close_dl, curcolor ? DESIGN_open_dl_white : DESIGN_open_dl_grey);
+                                                        curcolor = !curcolor;
+                                                } else
+                                                        *pr = 0;
+                                        } else if (cl == *ll)
+                                                printf("%s", DESIGN_break);   
+                                } else
+                                        printf("%s", DESIGN_open_dl);
 
+                                *ll = cl;
+                        }
+
+                        if (!collapsed) {
+                                if (!(mode & PRINTMODE_XML))
+                                        printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL);
+                                else
+                                        printxmlmessage_in_index(&buf[i]);
+                        } else {
+                                shouldprint = i;
+                                skipped = 0;
+                                newmessflag = 0;
+                                memcpy(&pmes, &buf[i], sizeof(SMessage));
                         }
                 }
         }
@@ -1142,8 +904,8 @@ int DB_Base::printhtmlindexhron_bythreads(DWORD mode)
         SMessage *msgs;
         DWORD rr, fmpos, shouldprint = 0xFFFFFFFF, skipped = 0;
         DWORD fipos;
-        int LastLevel = -1;
-        int firprn = 0;
+        int LastLevel = 0;
+        int firprn = 1;
         
         // initializing
         alrprn = 0;
