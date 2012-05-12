@@ -21,7 +21,7 @@ int HPrinted = 0;
 void printusage(char *iam)
 {
         printf("Usage %s <arg>\n"
-               "Possible arguments:"
+               "Possible arguments:\n"
                " -n              - create/renew database (create new messages and profiles database)\n"
                " -nu             - create/renew ONLY profiles database (delete all profiles)\n"
                " -nm             - create/renew ONLY messages database (delete all forum messages)\n"

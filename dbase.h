@@ -102,7 +102,7 @@ protected:
         
         int printhtmlbuffer(SMessage *buf, DWORD size, int p, int *ll, int *pr, DWORD mode, DWORD &shouldprint, DWORD &skipped);
         int printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, int ll, int *czero, DWORD selected, DWORD root, int *bp);
-        int printhtmlindexhron_bythreads(DWORD mode);
+        void printhtmlindexhron_bythreads(DWORD mode);
         int printhtmlindexhron_wothreads();
         int printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped = 0xffffffff, int newmessmark = 0);
         int printxmlmessage_in_index(SMessage *mes);
@@ -149,7 +149,7 @@ public:
         int DB_ChangeRollThreadFlag(DWORD tmp);
         int DB_ChangeCloseThread(DWORD root, int code);
         int DB_PrintMessageThread(DWORD root);
-        int DB_PrintHtmlIndex(DWORD mtc);
+        void DB_PrintHtmlIndex(DWORD mtc);
         int DB_PrintMessageBody(DWORD root);
         void Profile_UserName(char *name, char *tostr, int reg, int doparsehtml = 1);
 	DWORD getparent(DWORD);

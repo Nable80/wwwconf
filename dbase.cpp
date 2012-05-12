@@ -158,159 +158,58 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
 
 /* this function could not print more than 32000 messages at once */
 int DB_Base::printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, int ll,
-                                                          int *czero, DWORD selected, DWORD root, int *bp)
+                               int *czero, DWORD selected, DWORD root, int *bp)
 {
-        if(p) {
-                DWORD count = size/sizeof(SMessage);
-                for(DWORD i = 0; i < count; i++) {
-                        
-                        if(fmpos + i*sizeof(SMessage) == root) (*bp) = 1;
-                        if((*bp)){
-                                if(invflag != -1 || ((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0))
-                                {
-                                        if(((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0) && (invflag == -1))
-                                        {
+        int count = size/sizeof(SMessage);
+        for (int i = p ? 0 : count-1; p ? i < count : i >=0; p ? ++i : --i) {
+                if (fmpos + i*sizeof(SMessage) == root)
+                        (*bp) = 1;
+                if(*bp) {
+                        if(invflag != -1 || ((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0)) {
+                                if ((buf[i].Flag & MESSAGE_IS_INVISIBLE) && invflag == -1)
+                                        invflag = buf[i].Level;
+                                else if (invflag >= buf[i].Level) {
+                                        // seems that invisibility was already started
+                                        if(!(buf[i].Flag & MESSAGE_IS_INVISIBLE)) {
+                                                // invisible message ended
+                                                invflag = -1;
+                                                goto L_BVisible1;
+                                        } else
+                                                // next message invisible too
                                                 invflag = buf[i].Level;
-                                        }
-                                        else
-                                        {        // (buf[i].Flag & MESSAGE_IS_INVISIBLE) == TRUE, invflag != -1
-                                                // seems that invisibility was already started
-                                                if(invflag >= buf[i].Level)
-                                                {
-                                                        if((buf[i].Flag & MESSAGE_IS_INVISIBLE) == 0)
-                                                        {
-                                                                // invisible message ended
-                                                                invflag = -1;
-                                                                goto L_BVisible1;
-                                                        }
-                                                        else
-                                                        {
-                                                                // next message invisible too
-                                                                invflag = buf[i].Level;
-                                                        }
-                                                }
-                                        }
-                                        // if admin, show all
-                                        if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) goto L_BVisible1;
                                 }
-                                else {
-L_BVisible1:
-                                        // we are printing content of a thread, READING THREAD
-                                        if(buf[i].Level != ll)
-                                        {
-                                                if(ll > buf[i].Level)
-                                                {
-                                                        int x = ll - buf[i].Level;
-                                                        for(int j = 0; j < x ; j++) printf("%s", DESIGN_close_dl);
-                                                        ll = buf[i].Level;
-                                                }
-                                                else
-                                                {
-                                                        // only 1 level increase allowed
-                                                        printf("%s", DESIGN_open_dl);
-                                                        ll = buf[i].Level;
-                                                }
+                                // if admin, show all
+                                if (ULogin.LU.right & USERRIGHT_SUPERUSER)
+                                        goto L_BVisible1;
+                        } else {
+                        L_BVisible1:
+                                // we are printing content of a thread, READING THREAD
+                                if (buf[i].Level != ll) {
+                                        if (ll > buf[i].Level) {
+                                                int x = ll - buf[i].Level;
+                                                for (int j = 0; j < x; ++j)
+                                                        printf("%s", DESIGN_close_dl);
+                                                ll = buf[i].Level;
+                                        } else {
+                                                // only 1 level increase allowed
+                                                printf("%s", DESIGN_open_dl);
+                                                ll = buf[i].Level;
                                         }
-                                        else if (buf[i].Level > 0) {
-                                                // br before messages on one level, READING, 111!!
-                                                printf("%s", DESIGN_break);
-                                        }
+                                } else if (buf[i].Level > 0) {
+                                        // br before messages on one level, READING, 111!!
+                                        printf("%s", DESIGN_break);
+                                }
 
-                                        if(buf[i].Level == 0)
-                                        {
-                                                (*czero)++;
-                                                if(*czero == 2)
-                                                {
-                                                        return ll;
-                                                }
-                                        }
-                                
-                                        if(selected != buf[i].ViIndex)
-                                        {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_DISABLE_ROLLED);
-                                        }
-                                        else
-                                        {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_DISABLE_ROLLED);
-                                        }
+                                if (buf[i].Level == 0) {
+                                        ++*czero;
+                                        if (*czero == 2)
+                                                return ll;
                                 }
-                        }
-                }
-        }
-        else {
-                DWORD count = size/sizeof(SMessage) - 1;
-                for(signed long i = count; i >= 0; i--)
-                {
-                        
-                        if(fmpos + i*sizeof(SMessage) == root) (*bp) = 1;
-                        if(*bp)
-                        {
-                                if(invflag != -1 || ((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0))
-                                {
-                                        if(((buf[i].Flag & MESSAGE_IS_INVISIBLE) != 0) && (invflag == -1))
-                                        {
-                                                invflag = buf[i].Level;
-                                        }
-                                        else
-                                        {
-                                                if(invflag >= buf[i].Level)
-                                                {
-                                                        if((buf[i].Flag & MESSAGE_IS_INVISIBLE) == 0)
-                                                        {
-                                                                // invisible message ended
-                                                                invflag = -1;
-                                                                goto L_BVisible2;
-                                                        }
-                                                        else
-                                                        {
-                                                                // next message invisible too
-                                                                invflag = buf[i].Level;
-                                                        }
-                                                }
-                                        }
-                                        // if superuser, show all
-                                        if(ULogin.LU.right & USERRIGHT_SUPERUSER) goto L_BVisible2;
-                                }
+
+                                if (selected != buf[i].ViIndex)
+                                        printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_DISABLE_ROLLED);
                                 else
-                                {
-L_BVisible2:
-                                        if(buf[i].Level != ll)
-                                        {
-                                                if(ll > buf[i].Level)
-                                                {
-                                                        int x = ll - buf[i].Level;
-                                                        for(int j = 0; j < x ; j++) printf("%s", DESIGN_close_dl);
-                                                        ll = buf[i].Level;
-                                                }
-                                                else
-                                                {
-                                                        // only 1 level increase allowed
-                                                        printf("%s", DESIGN_open_dl);
-                                                        ll = buf[i].Level;
-                                                }
-                                        }
-                                        else if (buf[i].Level > 0) {
-                                                // br before messages on one level, READING, 111!!
-                                                printf("%s", DESIGN_break);
-                                        }
-
-                                        if(buf[i].Level == 0)
-                                        {
-                                                (*czero)++;
-                                                if(*czero == 2)
-                                                {
-                                                        return ll;
-                                                }
-                                        }
-                                        if(selected != buf[i].ViIndex)
-                                        {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_PRINT_ITS_URL | MESSAGE_INDEX_DISABLE_ROLLED);
-                                        }
-                                        else
-                                        {
-                                                printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_DISABLE_ROLLED);
-                                        }
-                                }
+                                        printhtmlmessage_in_index(&buf[i], MESSAGE_INDEX_DISABLE_ROLLED);
                         }
                 }
         }
@@ -482,29 +381,33 @@ int DB_Base::printhtmlbuffer(SMessage *buf, DWORD size, int p/*direction*/, int 
         return 1;
 }
 
-int DB_Base::DB_PrintHtmlIndex(DWORD mtc)
+void DB_Base::DB_PrintHtmlIndex(DWORD mtc)
 {
-        curcolor = (mtc % 2);
-
 #if TOPICS_SYSTEM_SUPPORT
         // if we have NULL topics - stop printing
-        if(currenttopics == 0)
-                return 0;
+        if (currenttopics == 0)
+                return;
 #endif
 
-        switch(currentss) {
+        curcolor = (mtc % 2);
+
+        switch (currentss) {
         case 1:
-                return printhtmlindexhron_bythreads(PRINTMODE_NULL);
+                printhtmlindexhron_bythreads(PRINTMODE_NULL);
+                break;
         case 2:
-                return printhtmlindexhron_bythreads(PRINTMODE_NULL);
+                printhtmlindexhron_bythreads(PRINTMODE_NULL);
+                break;
         case 3:
-                return printhtmlindexhron_wothreads();
+                printhtmlindexhron_wothreads();
+                break;
         case 4:
-                return printhtmlindexhron_bythreads(PRINTMODE_ALL_ROLLED);
+                printhtmlindexhron_bythreads(PRINTMODE_ALL_ROLLED);
+                break;
         case 5:
-                return printhtmlindexhron_bythreads(PRINTMODE_XML);
+                printhtmlindexhron_bythreads(PRINTMODE_XML);
+                break;
         }
-        return 1;
 }
 
 int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, int newmessmark)
@@ -898,12 +801,13 @@ int DB_Base::printhtmlindexhron_wothreads()
         return 1;
 }
 
-int DB_Base::printhtmlindexhron_bythreads(DWORD mode)
+void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
 {
-        SMessageTable *buf;
+        SMessageTable *tbls;
         SMessage *msgs;
-        DWORD rr, fmpos, shouldprint = 0xFFFFFFFF, skipped = 0;
-        DWORD fipos;
+        DWORD shouldprint = 0xFFFFFFFF, skipped = 0;
+        long size;
+        size_t lefttoread;
         int LastLevel = 0;
         int firprn = 1;
         
@@ -916,107 +820,80 @@ int DB_Base::printhtmlindexhron_bythreads(DWORD mode)
         nm_counter = 0;
         maxm_counter = 0;
         
-        if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL)
+        if ( (tbls = (SMessageTable*) malloc(READ_MESSAGE_TABLE * sizeof(SMessageTable))) == NULL)
+                printhtmlerror();
+        if ( (msgs = (SMessage*) malloc(READ_MESSAGE_HEADER * sizeof(SMessage))) == NULL)
+                printhtmlerror();
+
+        if ( (fm = fopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL)
                 printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGINDEX);
-        if((fi = wcfopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL)
+        if ( (fi = fopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL)
                 printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_INDEX);
 
-        if(wcfseek(fi, 0, SEEK_END) != 0) printhtmlerror();
+        if (fseek(fi, 0, SEEK_END))
+                printhtmlerror();
+        if ( (size = ftell(fi)) == -1)
+                printhtmlerror();
+        // for unknown reason ftell() returns long
+        // which is not comroftable to use
+        lefttoread = size;
+        if (lefttoread % sizeof(SMessageTable))
+                printhtmlerror();
         
-        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE + 1);
-        msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER + 1);
-
-        fipos = wcftell(fi);
-
         // beginning thread envelope - div
-        if((mode & PRINTMODE_XML) == 0) {
-                if (curcolor) printf("%s", DESIGN_open_dl_white);
-                else printf("%s", DESIGN_open_dl_grey);
-                curcolor=!curcolor;
+        if (!(mode & PRINTMODE_XML)) {
+                printf("%s", curcolor ? DESIGN_open_dl_white : DESIGN_open_dl_grey);
+                curcolor = !curcolor;
         }
 
-        for(;;) {
-                DWORD tord;
-                if(fipos == 0) break;
-                else {
-                        if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-                                fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                                tord = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                        }
-                        else {
-                                tord = fipos;
-                                fipos = 0;
+        while (lefttoread) {
+                ssize_t i;
+                size_t toread = lefttoread > READ_MESSAGE_TABLE*sizeof(SMessageTable) ?
+                        READ_MESSAGE_TABLE*sizeof(SMessageTable) :
+                        lefttoread;
+                lefttoread -= toread;
+
+                if (fseek(fi, lefttoread, SEEK_SET))
+                        printhtmlerror();
+                if (!fCheckedRead(tbls, toread, fi))
+                        printhtmlerror();
+                
+                for (i = toread / sizeof(SMessageTable) - 1; i >= 0; --i) {
+                        int dir = tbls[i].begin < tbls[i].end;
+                        size_t lefttoread = 1 + (dir ? tbls[i].end - tbls[i].begin : tbls[i].begin - tbls[i].end);
+
+                        if (dir)  // forward direction
+                                if (fseek(fm, tbls[i].begin, SEEK_SET))
+                                        printhtmlerror();
+                        while (lefttoread) {
+                                size_t toread;
+                                toread = lefttoread > READ_MESSAGE_HEADER*sizeof(SMessage) ?
+                                        READ_MESSAGE_HEADER*sizeof(SMessage) :
+                                        lefttoread;
+                                lefttoread -= toread;
+
+                                if (!dir)  // backward direction
+                                        if (fseek(fm, tbls[i].end + lefttoread, SEEK_SET))
+                                                printhtmlerror();
+                                
+                                if (!fCheckedRead(msgs, toread, fm))
+                                        printhtmlerror();
+
+                                if (printhtmlbuffer(msgs, toread, dir, &LastLevel, &firprn, mode, shouldprint, skipped) == 0)
+                                        goto end;
                         }
                 }
-                
-                if(wcfseek(fi, fipos, SEEK_SET) != 0) printhtmlerror();
-                if((rr = wcfread(buf, 1, tord, fi))  != tord) printhtmlerror();
-                
-                signed long i = rr / sizeof(SMessageTable) - 1;
-                
-                while(i >= 0) {
-                        if(buf[i].begin < buf[i].end ) {
-                                // forward direction
-                                fmpos = buf[i].begin;
-                                if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
-                                while(fmpos != (buf[i].end + 1)) {
-                                        DWORD toread;
-                                        if(buf[i].end - fmpos < READ_MESSAGE_HEADER*sizeof(SMessage)) {
-                                                toread = buf[i].end - fmpos + 1;
-                                                fmpos = fmpos + toread;
-                                        }
-                                        else {
-                                                toread = READ_MESSAGE_HEADER*sizeof(SMessage);
-                                                fmpos = fmpos + toread;
-                                        }
-                                        if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-                                        
-                                        if(printhtmlbuffer(msgs, toread, PRINT_FORWARD, &LastLevel, &firprn, mode, shouldprint, skipped) == 0) {
-                                                goto End_of_Prn;
-                                        }
-                                        
-                                }
-                        }
-                        else {
-                                // backward direction
-                                DWORD toread;
-                                fmpos = buf[i].begin + 1;
-                                while(fmpos != buf[i].end) {
-                                        if( fmpos - buf[i].end > READ_MESSAGE_HEADER*sizeof(SMessage)) {
-                                                fmpos = fmpos - READ_MESSAGE_HEADER*sizeof(SMessage);
-                                                toread = READ_MESSAGE_HEADER*sizeof(SMessage);
-                                        }
-                                        else {
-                                                toread = fmpos - buf[i].end;
-                                                fmpos = buf[i].end;
-                                        }
-                                        
-                                        if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
-                                        if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-                                        
-                                        if(printhtmlbuffer(msgs, toread, PRINT_BACKWARD, &LastLevel, &firprn, mode, shouldprint, skipped) == 0) {
-                                                goto End_of_Prn;
-                                        }
-                                }
-                        }
-                        i--;
-                }
-        }
-End_of_Prn:
-        
-        if((mode & PRINTMODE_XML) == 0) {
-                for(int i = -1; i < LastLevel + 1; i++) printf("%s", DESIGN_close_dl);
-
-                // index ends
-                printf(DESIGN_close_dl);
         }
 
+ end:        
+        if (!(mode & PRINTMODE_XML))
+                for (int i = 0; i < LastLevel + 1; ++i)
+                        printf("%s", DESIGN_close_dl);
 
-        free(buf);
+        free(tbls);
         free(msgs);
-        wcfclose(fi);
-        wcfclose(fm);
-        return 1;        
+        fclose(fi);
+        fclose(fm);
 }
 
 DB_Base::DB_Base()
@@ -1029,9 +906,7 @@ DB_Base::DB_Base()
 }
 
 DB_Base::~DB_Base()
-{
-        
-}
+{}
 
 /* insert message "mes" with body "body" acording CFlags to board
  * REMARKS: mes->Host should be IP address, not a DNS name,
@@ -1039,7 +914,7 @@ DB_Base::~DB_Base()
  * returns 0 if successfull, otherwise error code returned
  */
 int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body,
-                                                          DWORD CFlags, char *passw, char **banreason)
+                              DWORD CFlags, char *passw, char **banreason)
 {
         DWORD fp,fl;
         DWORD ri,fisize, rd;
