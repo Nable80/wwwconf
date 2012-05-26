@@ -15,9 +15,9 @@ enum {
         WWW_LOG_LEVEL_OFF
 };
 
-void www_log(int level, const char *fmt, ...)
+void www_log(int level, const char *format, ...)
         __attribute__ ((format(printf, 2, 3)));
-void www_vlog(int level, const char *fmt, va_list ap);
+void www_vlog(int level, const char *format, va_list ap);
 
 #define WWW_LOG_FORMAT_LEN  1000
 

@@ -38,7 +38,7 @@ function doshowbody(body, req)
 
 function showbody(id, event)
 {
-        var body, req, e;
+        var body, req, e, ref;
 
         if (event.preventDefault)
                 event.preventDefault();
@@ -50,13 +50,15 @@ function showbody(id, event)
                 return;
         }
 
-        body = document.createElement('div');
+        body = document.createElement('span');
         body.id = 'b' + id;
         body.className = 'iload';
         body.innerHTML = 'loading...';
 
         e = document.getElementById('m' + id);
-        e.parentNode.insertBefore(body, e.nextSibling);
+        ref = e.nextSibling;
+        e.parentNode.insertBefore(document.createElement('br'), ref);
+        e.parentNode.insertBefore(body, ref);
 
         req = createreq();
         req.open('GET', '?xmlbody=' + id, true);
