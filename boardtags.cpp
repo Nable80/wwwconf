@@ -99,6 +99,16 @@ int inline ParseToOpenSmileTagorHttp(char *s)
         return i;
 }
 
+static int _isurlend(char c)
+{
+        return isspace(c) || c == '\0';
+}
+
+static int _ispunct(char c)
+{
+        return c == '.' || c == ',' || c == '?' || c == '!' || c == ':' || c == ';';
+}
+
 #if TRY_AUTO_URL_PREPARSE
 /* return 1 if url was parsed, 0 otherwise */
 static int ReparseUrl(char **ss, char **dd, DWORD status)
@@ -119,9 +129,8 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
                         if(*s == 'h') s++;
                         s+=6;
 
-                        while(*s != 0 && *s != '\n' && *s != '\r' && *s != ' ' && *s != ')' && *s != '(' 
-                                && *s != '>' && *s != '<' && *s != ']' && *s != '[' && *s != ',' 
-                                && strncmp(s, "&quot;", 6) !=0 ) s++;
+                        while (!_isurlend(*s) && !(_ispunct(*(s)) && _isurlend(*(s+1))))
+                                ++s;
                         oldcs = *s;
                         *s = 0;
                         dtmp = (char*)malloc(strlen(olds)*2+strlen(PARSED_URL_TMPL));
