@@ -39,6 +39,8 @@ DWORD currentlann;
 DWORD topicsoverride;
 int currenttz;
 
+DWORD currenttopics_map;
+
 DWORD cookie_lsel;
 DWORD cookie_tc;
 DWORD cookie_tt;
@@ -231,7 +233,7 @@ int DB_Base::printhtmlbuffer(SMessage *buf, DWORD size, int p/*direction*/, int 
 
 #if TOPICS_SYSTEM_SUPPORT
                         // check for topic match our topic mask
-                        if (!((1 << buf[i].Topics) & currenttopics)) {
+                        if (!((1 << buf[i].Topics) & currenttopics_map)) {
                                 invflag = 0;
                                 collapsed = 1;
                                 skipped |= 0xf0000000;
@@ -500,7 +502,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
         else
                 printf(">");
 #if TOPICS_SYSTEM_SUPPORT
-        if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0)
+        if(mes->Topics <= TOPICS_NUM - 1 && mes->Level == 0 && mes->Topics  != 0)
                 printf(DESIGN_TOPIC_TAG_OPEN "%s" DESIGN_TOPIC_TAG_CLOSE DESIGN_TOPIC_DIVIDER,Topics_List[mes->Topics]);
 #endif
 
@@ -674,7 +676,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
 
         char *aheader = FilterBiDi(mp);
 #if        TOPICS_SYSTEM_SUPPORT
-        if(mes->Topics <= TOPICS_COUNT - 1 && mes->Level == 0 && mes->Topics  != 0) {
+        if(mes->Topics <= TOPICS_NUM - 1 && mes->Level == 0 && mes->Topics  != 0) {
                 printf( "<category>%s</category>\n" ,Topics_List[mes->Topics]);
                 printf("<title><![CDATA[%s]]></title>\n", aheader);
         }
@@ -1937,7 +1939,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 #endif
 
 #if TOPICS_SYSTEM_SUPPORT
-        if (parmes.Topics < TOPICS_COUNT)
+        if (parmes.Topics < TOPICS_NUM)
                 printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[parmes.Topics]);
         else
                 printf(DESIGN_VIEW_THREAD_TOPIC, Topics_List[0]);
@@ -1987,11 +1989,11 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                         if(Topics_List_map[i] == msg->Topics) {
                                 // define default choise
                                 printf("<OPTION VALUE=\"%lu\"" LISTBOX_SELECTED ">%s\n", 
-                                        Topics_List_map[i], Topics_List[Topics_List_map[i]]);
+                                       i, Topics_List[Topics_List_map[i]]);
                         }
                         else {
                                 printf("<OPTION VALUE=\"%lu\">%s\n", 
-                                        Topics_List_map[i], Topics_List[Topics_List_map[i]]);
+                                       i, Topics_List[Topics_List_map[i]]);
                         }
                 }
                 printf("</SELECT>&nbsp;&nbsp;<INPUT TYPE=SUBMIT NAME=\"ChangeTopic\" VALUE=\"Change\"></FORM>\n");

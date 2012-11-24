@@ -46,6 +46,8 @@ extern DWORD                currentlt;        // last threads
 extern DWORD                currentft;        // first threads
 extern int                currenttz;        
 
+extern DWORD                currenttopics_map;
+
 extern DWORD cookie_lsel;
 extern DWORD cookie_tc;
 extern DWORD cookie_tt;

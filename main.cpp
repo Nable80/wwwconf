@@ -42,7 +42,7 @@ unsigned LENGTH_timetypes_hours[4] = {
 
 
 #if TOPICS_SYSTEM_SUPPORT
-const char *Topics_List[TOPICS_COUNT] = {
+const char *Topics_List[] = {
         "без темы",
         "Мурзилка",
         "Программирование",
@@ -61,28 +61,30 @@ const char *Topics_List[TOPICS_COUNT] = {
         "Новости",
         "Голосование",
         "Потеряно/Найдено",
-        "Спорт"
+        "Спорт",
+        "hb"
 };
 DWORD Topics_List_map[TOPICS_COUNT] = {
         0, //"без темы",
-        4, //"Учеба",
-        3, //"Работа",
-        1, //"Мурзилка",
-        5, //"Обсуждение",
+        19, //hb
         15,//"Новости"
-        18, //"Спорт"
         8, //"Развлечения",
+        5, //"Обсуждение",
         7, //"Движок борды",
-        2, //"Программирование",
-        6, //"Куплю",
-        9, //"Продам",
-        11,//"Услуги",
-        13,//"Windows",
         12,//"BSD/Linux",
-        14,//"Проблемы сети",
-        16,//"Голосование",
-        17,//"lost/found",
         10,//"Temp",
+        18, //"Спорт"
+        2, //"Программирование",
+        // 4, //"Учеба",
+        // 3, //"Работа",
+        // 1, //"Мурзилка",
+        // 6, //"Куплю",
+        // 9, //"Продам",
+        // 11,//"Услуги",
+        // 13,//"Windows",
+        // 14,//"Проблемы сети",
+        // 16,//"Голосование",
+        // 17,//"lost/found",
 };
 #endif
 
@@ -274,10 +276,10 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                         if(Topics_List_map[i] == msg->Topics) {
                                 // define default choise
                                 printf("<OPTION VALUE=\"%lu\"" LISTBOX_SELECTED ">%s\n",
-                                        Topics_List_map[i], Topics_List[Topics_List_map[i]]);
+                                        i, Topics_List[Topics_List_map[i]]);
                         }
                         else {
-                                printf("<OPTION VALUE=\"%lu\">%s\n", Topics_List_map[i], Topics_List[Topics_List_map[i]]);
+                                printf("<OPTION VALUE=\"%lu\">%s\n", i, Topics_List[Topics_List_map[i]]);
                         }
                 }
                 printf("</SELECT>");
@@ -532,11 +534,11 @@ static void PrintConfig()
 <TR><TD ALIGN=RIGHT>" DESIGN_CONFIGURE_CHECKALL "</TD></TR><TR><TD ALIGN=RIGHT>");
         for(DWORD i = 0; i < TOPICS_COUNT; i++)
         {
-                if(currenttopics & (1<<Topics_List_map[i]))
+                if(currenttopics & (1<<i))
                         strcpy(str4, RADIO_CHECKED);
                 else str4[0] = 0;
                 printf("%s <INPUT TYPE=CHECKBOX NAME=\"topic%lu\" %s><br>\n",
-                        Topics_List[Topics_List_map[i]], Topics_List_map[i], str4);
+                        Topics_List[Topics_List_map[i]], i, str4);
         }
         printf("</TD></TR></TABLE>");
 #endif
@@ -2430,7 +2432,7 @@ int main()
 #if TOPICS_SYSTEM_SUPPORT && STABLE_TITLE == 0
                 // add current topic to index title
                 if (topicsoverride > 0 && topicsoverride <= TOPICS_COUNT) {
-                        Tittle_cat(Topics_List[topicsoverride-1]);
+                        Tittle_cat(Topics_List[Topics_List_map[topicsoverride-1]]);
                 } else if (topicsoverride > (TOPICS_COUNT + 1)) {
                         Tittle_cat(MESSAGEMAIN_WELCOME_ALLTOPICS);
                 }
@@ -2498,9 +2500,9 @@ int main()
                 if(topicsoverride > TOPICS_COUNT) strcpy(sel2, LISTBOX_SELECTED);
                 sprintf(topicselect, DESIGN_WELCOME_QUICKNAV, sel, MESSAGEMAIN_WELCOME_YOURSETTINGS, sel2, MESSAGEMAIN_WELCOME_ALLTOPICS);
                 for(DWORD i = 0; i < TOPICS_COUNT; i++) {
-                        if(Topics_List_map[i] == (topicsoverride - 1)) strcpy(sel, LISTBOX_SELECTED);
+                        if(i == (topicsoverride - 1)) strcpy(sel, LISTBOX_SELECTED);
                         else sel[0] = 0; // ""
-                        sprintf(tmp, "<OPTION VALUE=\"?index=%lu\"%s>%s</OPTION>\n", Topics_List_map[i]+1, sel, Topics_List[Topics_List_map[i]]);
+                        sprintf(tmp, "<OPTION VALUE=\"?index=%lu\"%s>%s</OPTION>\n", i+1, sel, Topics_List[Topics_List_map[i]]);
                         strcat(topicselect, tmp);
                 }
                 strcat(topicselect, "</SELECT>");
@@ -2603,6 +2605,10 @@ int main()
                         else currenttopics = (1<<(topicsoverride-1));
                 }
 #endif
+                int i;
+                for (i = 0; i < TOPICS_COUNT; ++i)
+                        if (currenttopics & (1 << i))
+                                currenttopics_map |= (1 << Topics_List_map[i]);
 
                 DB.DB_PrintHtmlIndex(mtc);
 
@@ -3130,7 +3136,7 @@ int main()
                                         // default topic
                                         mes.Topics = TOPICS_DEFAULT_SELECTED;
                                 }
-                                mes.Topics = topicID;
+                                mes.Topics = Topics_List_map[topicID];
                                 free(ss);
                         }
                 }
@@ -4453,8 +4459,8 @@ print2log("incor pass %s", par);
                                 //        Do real job (change the topic)
                                 SMessage mes;
                                 if(ReadDBMessage(MsgNum, &mes)) {
-                                        DWORD oldTopic = mes.Topics;
-                                        mes.Topics = Topic;
+                                        DWORD oldTopic = Topics_List_map[mes.Topics];
+                                        mes.Topics = Topics_List_map[Topic];
                                         if(WriteDBMessage(MsgNum, &mes)) {
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
                                                                 mes.ViIndex, mes.ViIndex);

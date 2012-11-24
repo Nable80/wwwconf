@@ -499,10 +499,11 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 
 /******************* topic support *********************/
 #if TOPICS_SYSTEM_SUPPORT
-#define TOPICS_COUNT        19
+#define TOPICS_NUM          20
+#define TOPICS_COUNT        10
 #define TOPICS_DEFAULT_SELECTED        0
 // this variable should be defined in main.cpp
-extern const char *Topics_List[TOPICS_COUNT];
+extern const char *Topics_List[TOPICS_NUM];
 extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
