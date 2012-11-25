@@ -2164,7 +2164,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 } else
                         topicnum = mes.Topics;
                 
-                if (topicnum >= TOPICS_COUNT)
+                if (topicnum >= TOPICS_NUM)
                         topicnum = 0;
 #endif
                 author_dec = DefilterHTMLTags(mes.AuthorName);
