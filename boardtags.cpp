@@ -12,27 +12,29 @@
 #include "dbase.h"
 
 STagConvert TagConvTable[BoardTagCount] = {
-        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 1},
-        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 1},
-        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 1},
-        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 0},
-        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 1},
-        {"RED", "<span style=\"color:red\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1},
-        {"COLOR", "<span style=\"color:%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 1},
-        {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 0},
-        {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0},
-        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 0},
+        {"B", "<B>", WC_TAG_TYPE_1, "</B>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"I", "<I>", WC_TAG_TYPE_1, "</I>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"U", "<U>", WC_TAG_TYPE_1, "</U>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"H", "<B><FONT SIZE=4>", WC_TAG_TYPE_1, "</FONT></B>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"S", "<FONT SIZE=1>", WC_TAG_TYPE_1, "</FONT>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"RED", "<span style=\"color:red\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"COLOR", "<span style=\"color:%s\">", WC_TAG_TYPE_2, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 0, NULL, NULL},
         {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>", 
-	 WC_TAG_TYPE_1, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_1, 0},
-        {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 0},
-        {"PRE", "<PRE style=\"display:inline\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 0},
-        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 1},
-        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 0},
-        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 0},
-        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0},
+         WC_TAG_TYPE_12, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_12, 0,
+         "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>",
+         "<div align=\"right\"><i>%s</i><span class=\"inquote\">[/q]</span></div></blockquote>"},
+        {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"PRE", "<PRE style=\"display:inline\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 1, NULL, NULL},
+        {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"TEX", "<img src=\"http://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
 	{"TUB", "<iframe class=\"youtube-player\" type=\"text/html\" width=\"640\" height=\"390\" src=\"http://www.youtube.com/embed/",
-	 WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0},
-	{"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1}
+	 WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0, NULL, NULL},
+	{"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL}
 };
 
 SPicConvert PicConvTable[BoardPicCount] = {
@@ -392,7 +394,7 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                 tagdirection = 1;
                 tag1++;
         }
-        
+
         *restag = NULL;
         
         for(int i=0; i < BoardTagCount; i++) {
@@ -404,11 +406,20 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                         int tagt;
                         if(tagdirection) tagt = TagConvTable[i].typeclose;
                         else tagt = TagConvTable[i].typeopen;
+
+                        *tagtype = tagt;
+
+                        if (tagt == WC_TAG_TYPE_12) {
+                                if (tag2)
+                                        tagt = WC_TAG_TYPE_2;
+                                else
+                                        tagt = WC_TAG_TYPE_1;
+                        }
+
                         switch(tagt) {
                         case WC_TAG_TYPE_1:
-                                *tagtype = WC_TAG_TYPE_1;
                                 /* check for valid param count */
-                                if(tag2 != NULL) return 0;
+                                //if(tag2 != NULL) return 0;
                                 if(tagdirection) {
                                         /* closing */
                                         *restag = (char*)malloc(strlen(TagConvTable[i].tclosetag) + 1);
@@ -422,11 +433,10 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                                 return 1;
                                 
                         case WC_TAG_TYPE_2:
-                                *tagtype = WC_TAG_TYPE_2;
                                 /* check for valid param count
                                 */
                                 if(tag2 == NULL)
-					return 0;
+				 	return 0;
                                 if(!tagdirection) {
                                         /* opening */
                                         char *parsedtag2 = NULL;
@@ -465,8 +475,16 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                                         *restag = (char*)realloc(*restag, strlen(*restag) + 1);
                                         if(parsedtag2 != tag2) free(parsedtag2);
                                 } else {
-                                        /* closing - not currently supported */
-                                        return 0;
+                                        /* closing */
+                                        const char *tclosetag;
+                                        if (TagConvTable[i].typeclose == WC_TAG_TYPE_12)
+                                                tclosetag = TagConvTable[i].tclosetag2;
+                                        else
+                                                tclosetag = TagConvTable[i].tclosetag;
+					*restag = (char*)malloc(strlen(tclosetag) + 1 + strlen(tag2));
+                                        sprintf(*restag, tclosetag, tag2);
+                                        *restag = (char*)realloc(*restag, strlen(*restag) + 1);
+                                        return 1;
                                 }
                                 return 1;
                                 
@@ -476,7 +494,6 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                                 return 0;
                                 
                         case WC_TAG_TYPE_ONLYOPEN:
-                                *tagtype = WC_TAG_TYPE_ONLYOPEN;
                                 /* check for valid param count
                                 */
                                 if(tag2 != NULL) return 0;
@@ -518,7 +535,9 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         DWORD opentag, reff, status = 0x04, urldisable = 0;        // http preparse
         int i, StringTooLong = 0;
         SSavedTag OldTag[MAX_NESTED_TAGS];
-        
+        char *params[MAX_NESTED_TAGS + 1] = {NULL};
+        char *param;
+
         // ignore starting newline
         while(*s == '\r' || *s == '\n')
                 ++s;
@@ -582,20 +601,26 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                         s[i] = si;
                         s += i;
                 }
-                i = ParseBoardTag(s, &tag1, &tag2);
-
+                if ( (i = ParseBoardTag(s, &tag1, &tag2))) {
+                        if (tag1[0] == '/') {
+                                if (tag2 || !opentag)
+                                        goto ignore_tag;
+                                param = params[opentag - 1];
+                        } else {
+                                param = tag2;
+                                params[opentag] = tag2 ? strdupa(tag2) : NULL;
+                        }
+                }
                 if((Flags & MESSAGE_ENABLED_TAGS) == 0)
                         goto ignore_tag;
 
                 if(i) {
                         int tt = 0, tl = 0;
-
                         /* we have tag, parse  it! */
-                        if(!ExpandTag(tag1, tag2, &res, &tt, &tl, index)) {
+                        if(!ExpandTag(tag1, param, &res, &tt, &tl, index)) {
                                 /* invalid tag */
                                 goto ignore_tag;
                         }
-
                         if(tl == WC_TAG_TYPE_ONLYOPEN) {
                                 *RF = *RF | MESSAGE_ENABLED_TAGS;
                                 if((status & 1) == 0 && ((Flags & BOARDTAGS_TAG_PREPARSE) == 0)) {
@@ -610,12 +635,8 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                 // already have open tag - so try to interpret it as closing tag
                                 if(tag1[0] == '/') {
                                         if(opentag) {
-                                                /* closing tag - check for conformity */
-                                                if( tl != 1 || OldTag[opentag - 1].tt != tt) {
-                                                        /* incompartable tags - ignore it */
-                                                        goto ignore_tag;
-                                                }
-
+                                                /* closing tag */
+                                                
                                                 if (tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE
 						 || tt == TEX_TAG_TYPE || tt == TUB_TAG_TYPE) // allow tag and space parsing again
                                                         status &= 0xFFFFFFFE;

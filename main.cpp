@@ -285,7 +285,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 printf("</SELECT>");
         }
 
-        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=%d MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
+        printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=%d MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\" "
 	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", s ? 88 : 62, MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #else
         printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""

@@ -32,6 +32,7 @@
 #define COLOR_TAG_TYPE  6
 #define URL_TAG_TYPE    7
 #define PIC_TAG_TYPE    8
+#define Q_TAG_TYPE      10
 #define PRE_TAG_TYPE    12
 #define TEX_TAG_TYPE    16
 #define TUB_TAG_TYPE    17
@@ -55,6 +56,8 @@ struct STagConvert {
          * as they are printed in index
          */
         BYTE index;
+        const char *topentag2;
+        const char *tclosetag2;
 };
 
 struct SPicConvert {
