@@ -299,7 +299,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("b", "30px", "b", "жирный текст: [b]текст[/b] (alt+b)", "[b]", "[/b]", 1)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("i", "30px", "i", "курсивный текст: [i]текст[/i] (alt+i)", "[i]", "[/i]", 1)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("u", "30px", "u", "подчеркнутый текст: [u]текст[/u] (alt+u)", "[u]", "[/u]", 1)
-                DESIGN_STYLE_BUTTONS_ADD_WRAP("q", "30px", "q", "цитата: [q]текст[/q] (alt+q)", "[q]", "[/q]", 0)
+                DESIGN_STYLE_BUTTONS_ADD_WRAP("q", "30px", "q", "цитата: [q|q=автор]текст[/q] (alt+q)", "[q]", "[/q]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("p", "40px", "pic", "изображение: [pic]http://ссылка[/pic] (alt+p)", "[pic]", "[/pic]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("w", "40px", "url", "ссылка: [url=http://ссылка]название[/url] (alt+w)", "[url=", "]ссылка[/url]", 0)
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("h", "30px", "h", "заголовок: [h]текст[/h] (alt+h)", "[h]", "[/h]", 0)
