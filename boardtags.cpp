@@ -25,7 +25,7 @@ STagConvert TagConvTable[BoardTagCount] = {
         {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>", 
          WC_TAG_TYPE_12, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_12, 0,
          "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>",
-         "<div align=\"right\"><i>%s</i><span class=\"inquote\">[/q]</span></div></blockquote>"},
+         "<div align=\"right\"><i>%s</i><span class=\"inquote\"> [/q]</span></div></blockquote>"},
         {"CENTER", "<CENTER>", WC_TAG_TYPE_1, "</CENTER>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"PRE", "<PRE style=\"display:inline\">", WC_TAG_TYPE_1, "</PRE>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 1, NULL, NULL},
@@ -364,7 +364,7 @@ int inline ParseBoardTag(char *s, char **par1, char **par2)
                 s++;
                 j = ParseToCloseWC_TAG(s);
                 if(j == 0) {
-                        goto ParseBoardTag_Faild;
+                        //goto ParseBoardTag_Faild;
                 }
                 if(s[j] == WC_TAG_CLOSE) {
                         *par2=(char*)malloc(j + 1);
@@ -375,7 +375,7 @@ int inline ParseBoardTag(char *s, char **par1, char **par2)
                         return s - ss + j + 1;
                 }
         }
-ParseBoardTag_Faild:
+        //ParseBoardTag_Faild:
         free(*par1);
         *par1 = NULL;
         *par2 = NULL;
@@ -419,7 +419,13 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
                         switch(tagt) {
                         case WC_TAG_TYPE_1:
                                 /* check for valid param count */
-                                //if(tag2 != NULL) return 0;
+                                if (tag2) {
+                                        if (!tagdirection)
+                                                return 0;
+                                        else if (TagConvTable[i].typeopen != WC_TAG_TYPE_12 && TagConvTable[i].typeopen != WC_TAG_TYPE_2)
+                                                return 0;
+                                }
+                                //if(tag2 != NULL && tagdirection) return 0;
                                 if(tagdirection) {
                                         /* closing */
                                         *restag = (char*)malloc(strlen(TagConvTable[i].tclosetag) + 1);
@@ -536,7 +542,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         int i, StringTooLong = 0;
         SSavedTag OldTag[MAX_NESTED_TAGS];
         char *params[MAX_NESTED_TAGS + 1] = {NULL};
-        char *param;
+        char *param = NULL;
 
         // ignore starting newline
         while(*s == '\r' || *s == '\n')

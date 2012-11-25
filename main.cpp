@@ -64,6 +64,9 @@ const char *Topics_List[] = {
         "Спорт",
         "hb"
 };
+DWORD blanktopics = (1 << 1) | (1 << 3) | (1 << 4) | (1 << 6) |
+                    (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) |
+                    (1 << 16) | (1 << 17);
 DWORD Topics_List_map[TOPICS_COUNT] = {
         0, //"без темы",
         19, //hb
@@ -2609,6 +2612,8 @@ int main()
                 for (i = 0; i < TOPICS_COUNT; ++i)
                         if (currenttopics & (1 << i))
                                 currenttopics_map |= (1 << Topics_List_map[i]);
+                if (currenttopics_map & 1)
+                        currenttopics_map |= blanktopics;
 
                 DB.DB_PrintHtmlIndex(mtc);
 

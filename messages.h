@@ -504,6 +504,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 #define TOPICS_DEFAULT_SELECTED        0
 // this variable should be defined in main.cpp
 extern const char *Topics_List[TOPICS_NUM];
+extern DWORD blanktopics;
 extern DWORD Topics_List_map[TOPICS_COUNT];
 #endif
 
