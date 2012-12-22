@@ -2607,13 +2607,13 @@ int main()
                         if(topicsoverride > TOPICS_COUNT) currenttopics = 0xffffffff;        // all
                         else currenttopics = (1<<(topicsoverride-1));
                 }
-#endif
-                int i;
-                for (i = 0; i < TOPICS_COUNT; ++i)
+
+                for (int i = 0; i < TOPICS_COUNT; ++i)
                         if (currenttopics & (1 << i))
                                 currenttopics_map |= (1 << Topics_List_map[i]);
                 if (currenttopics_map & 1)
                         currenttopics_map |= blanktopics;
+#endif
 
                 DB.DB_PrintHtmlIndex(mtc);
 
