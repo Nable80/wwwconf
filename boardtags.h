@@ -16,6 +16,7 @@
 
 #define TRY_AUTO_URL_PREPARSE        1
 #define PARSED_URL_TMPL                "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>%s</A>"
+#define PARSED_URL_TMPL_IDX            "<A HREF=\"%s\" TARGET=_blank><span class=\"marker\">(url)</span></A><u>%s</u>"
 
 #define MAX_NESTED_TAGS                        8
 

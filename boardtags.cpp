@@ -113,7 +113,7 @@ static int _ispunct(char c)
 
 #if TRY_AUTO_URL_PREPARSE
 /* return 1 if url was parsed, 0 otherwise */
-static int ReparseUrl(char **ss, char **dd, DWORD status)
+static int ReparseUrl(char **ss, char **dd, int index, DWORD status)
 {
         int rf = 0;
         char *d = *dd, *s = *ss;
@@ -135,8 +135,11 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
                                 ++s;
                         oldcs = *s;
                         *s = 0;
-                        dtmp = (char*)malloc(strlen(olds)*2+strlen(PARSED_URL_TMPL));
-                        sprintf(dtmp, PARSED_URL_TMPL, olds, olds);
+                        dtmp = (char*)malloc(strlen(olds)*2+100);
+			if (index)
+				sprintf(dtmp, PARSED_URL_TMPL_IDX, olds, olds);
+                        else
+				sprintf(dtmp, PARSED_URL_TMPL, olds, olds);
                         strcpy(d, dtmp);
                         d+=strlen(dtmp);
                         free(dtmp);
@@ -159,7 +162,7 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
  *                0x02 - '\n' -> BR parsing
  *                0x04 - url parsing
  */
-int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
+int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
 {
         char *od = d;
         d += strlen(d);
@@ -167,7 +170,7 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
         if(status & 1) {
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-                        if (ReparseUrl(&s, &d, status))
+		        if (ReparseUrl(&s, &d, index, status))
 				*flg = 1;
 #endif
 
@@ -195,7 +198,7 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
                 register int ws = 0; // was space or tab
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-                        if (ReparseUrl(&s, &d, status)) {
+                        if (ReparseUrl(&s, &d, index, status)) {
 				*flg = 1;
 				ws = 0;
 			}
@@ -244,14 +247,14 @@ int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, D
                 if (i) {
                         char si = ss[i];
                         ss[i] = 0;
-                        dd += smartstrcat(dd, ss, status, flg);
+                        dd += smartstrcat(dd, ss, index, status, flg);
                         ss[i] = si;
                         ss += i;
                 }
                 if(*ss == 0) break;
 
 #if TRY_AUTO_URL_PREPARSE
-                fstat = ReparseUrl(&ss, &dd, status);
+                fstat = ReparseUrl(&ss, &dd, index, status);
                 if(fstat) *flg = 1;
 #endif
 
@@ -601,7 +604,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                 if (reff && ((status & 0x80) == 0))
                                         *RF |= MESSAGE_HAVE_URL;
                         } else {
-                                smartstrcat(st, s, status, &reff);
+			        smartstrcat(st, s, index, status, &reff);
                                 if (reff && ((status & 0x80) == 0))
                                         *RF |= MESSAGE_HAVE_URL;
                         }
