@@ -28,7 +28,7 @@ void print2log(const char *s, ...)
         // POTENTIAL BUG HERE
         //
         char xx[100];
-        char *ss = (char*)malloc(100*strlen(s));
+        char *ss = (char*)malloc(500*strlen(s));
         ss[0] = 0;
         va_list marker;
         

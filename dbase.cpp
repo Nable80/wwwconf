@@ -423,7 +423,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
 
         tm = ConvertTime(mes->Date);
 
-        if (!FilterBoardTags(mes->MessageHeader, &header_to_bidi, 1, MAX_PARAMETERS_STRING, mes->Flag, &tmp))
+        if (!FilterBoardTags(mes->MessageHeader, &header_to_bidi, 1, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_PURL_ENABLE, &tmp))
                 header_to_bidi = mes->MessageHeader;
         if ( (header = FilterBiDi(header_to_bidi)) == NULL)
                 printhtmlerror();
@@ -506,7 +506,36 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, 
                 printf(DESIGN_TOPIC_TAG_OPEN "%s" DESIGN_TOPIC_TAG_CLOSE DESIGN_TOPIC_DIVIDER,Topics_List[mes->Topics]);
 #endif
 
-        printf(DESIGN_WBR_START "%s " DESIGN_BR_END, header);
+
+	printf(DESIGN_WBR_START);
+
+	char *p = header;
+	for(;;) {
+		char *pp = strstr(p, "<A");
+		if (!pp)
+			break;
+		printf("%.*s", (int) (pp - p), p);
+		p = pp;
+
+		printf("</A>");
+
+		pp = strstr(p, "</A>");
+		printf("%.*s", (int) (pp - p), p);
+		p = pp;
+		printf("</A>");
+		p += 4;
+
+		printf("<A NAME=%ld", mes->ViIndex);
+		if(MESSAGE_INDEX_PRINT_ITS_URL & style)
+			printf(" HREF=\"%s?read=%lu\"",MY_CGI_URL, mes->ViIndex);
+		if(MESSAGE_INDEX_PRINT_BLANK_URL & style)
+			printf(" TARGET=\"_blank\"");
+		printf(">");
+	}
+
+	printf("%s ", p);
+
+        //printf(DESIGN_WBR_START "%s " DESIGN_BR_END, header);
         free(header);
 
         if ((MESSAGE_INDEX_PRINT_ITS_URL & style) == 0)
@@ -1898,7 +1927,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         if((currentdsm & CONFIGURE_dsm) == 0)
                 esm = MESSAGE_ENABLED_SMILES;
 
-        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, msg->Flag, &tmp))
+        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, msg->Flag | BOARDTAGS_PURL_ENABLE, &tmp))
                 an = msg->MessageHeader;
 
         if(msg->msize > 0)

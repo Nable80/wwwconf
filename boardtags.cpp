@@ -162,14 +162,13 @@ static int ReparseUrl(char **ss, char **dd, DWORD status)
 int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
 {
         char *od = d;
-        int fstat;
         d += strlen(d);
         *flg = 0;
         if(status & 1) {
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-                        fstat = ReparseUrl(&s, &d, status);
-                        if(fstat) *flg = 1;
+                        if (ReparseUrl(&s, &d, status))
+				*flg = 1;
 #endif
 
                         if(*s != '\r') {
@@ -196,11 +195,13 @@ int inline smartstrcat(char *d, char *s, DWORD status, DWORD *flg)
                 register int ws = 0; // was space or tab
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-                        fstat = ReparseUrl(&s, &d, status);
-                        if(fstat) *flg = 1;
+                        if (ReparseUrl(&s, &d, status)) {
+				*flg = 1;
+				ws = 0;
+			}
 #endif
 
-                        if( *s != '\r' && (!(ws && (*s == ' ' || *s == '\t'))) ) {
+                        if (*s != '\r' && !(ws && (*s == ' ' || *s == '\t'))) {
                                 if(*s == ' ' || *s == '\t') {
                                         ws = 1;
                                         *d = ' ';
