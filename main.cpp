@@ -722,6 +722,8 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         if (code & HEADERSTRING_POST_JS)
                 printf("<script type=\"text/javascript\" src=\"post.js\"></script>");
 
+	printf("<script type=\"text/javascript\" src=\"link.js\"></script>");
+
         // print output encoding (charset)
         printf(HTML_ENCODING_HEADER);
 

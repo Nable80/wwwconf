@@ -135,10 +135,12 @@ static int ReparseUrl(char **ss, char **dd, int index, DWORD status)
                                 ++s;
                         oldcs = *s;
                         *s = 0;
-                        dtmp = (char*)malloc(strlen(olds)*2+100);
-			if (index)
-				sprintf(dtmp, PARSED_URL_TMPL_IDX, olds, olds);
-                        else
+                        dtmp = (char*)malloc(strlen(olds)*2+strlen(PARSED_URL_TMPL_IDX));
+			if (index) {
+				static int id;
+				++id;
+				sprintf(dtmp, PARSED_URL_TMPL_IDX, olds, id, id, id, olds);
+                        } else
 				sprintf(dtmp, PARSED_URL_TMPL, olds, olds);
                         strcpy(d, dtmp);
                         d+=strlen(dtmp);
