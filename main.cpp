@@ -359,7 +359,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                MESSAGEMAIN_post_disable_wwwconf_tags, tstr[1],
                MESSAGEMAIN_post_disable_smile_tags, tstr[0]);
                                                   
-        if(ULogin.LU.ID != 0) {
+        if (ULogin.LU.ID[0] != 0) {
                 tstr[0][0] = 0;
                 if(flags & MSG_CHK_ENABLE_EMAIL_ACKNL) strcpy(tstr[0], RADIO_CHECKED);
                 printf("<BR>%s<INPUT TYPE=CHECKBOX NAME=\"wen\"%s class=cl>",

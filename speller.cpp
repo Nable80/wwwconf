@@ -319,7 +319,7 @@ int CheckIPinSubnet(char *IP, char *mask)
 int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags)
 {
         DWORD tmp;
-        char *st;
+        char *st = NULL;
         int memalloc = 0;
         int spfl = SPELLER_FILTER_HTML | SPELLER_PARSE_TAGS;
 

@@ -78,12 +78,8 @@ void print2log(const char *s, ...)
                                                                 fhex = true;
                                                                 i++;
                                                         }
-                                                        BYTE x = (BYTE)va_arg(marker, int);
-                                                        if(!fhex) sprintf(xx,"%hu", x);
-                                                        else {
-                                                                sprintf(xx,"%hx", x);
-                                                                strcat(ss, "0x");
-                                                        }
+                                                        unsigned x = va_arg(marker, unsigned);
+                                                        sprintf(xx, fhex ? "0x%x" : "%u", x & 0xFF);
                                                         strcat(ss, xx);
                                                         break;
                                                 }
