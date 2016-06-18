@@ -248,7 +248,8 @@ typedef unsigned long DWORD;
 ///////////////////////////////////////////////////////////////////////////////
 
 #define FILE_ACCESS_MODES_RW        "rb+"        // read-write mode
-#define        FILE_ACCESS_MODES_R                "rb"        // read mode
+#define FILE_ACCESS_MODES_R         "rb"         // read mode
+#define FILE_ACCESS_MODES_W         "wb"         // write-only mode
 #define FILE_ACCESS_MODES_CW        "wb+"        // create new (overwrite)
 
 //        Environment params name

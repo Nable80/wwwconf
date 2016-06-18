@@ -249,18 +249,20 @@ int wcSendMail(char *to, char *subj, char *body)
 
 int wcSendMail(char *to, char *subj, char *body)
 {
-    
+        int result = 0;
         struct buffer_st subj_base64;
+        FILE* sendmail_pipe;
+
         base64_encode(&subj_base64, subj, strlen(subj));
         
-        FILE* MA_SEND;
-        MA_SEND=popen(MA_SENDER, FILE_ACCESS_MODES_RW);
-        fprintf(MA_SEND, MAIL_SEND_DATA, MA_FROM, to, subj_base64.data, body);
-        pclose(MA_SEND);
-         
+        if ((sendmail_pipe = popen(MA_SENDER, FILE_ACCESS_MODES_W))) {
+                fprintf(sendmail_pipe, MAIL_SEND_DATA, MA_FROM, to, subj_base64.data, body);
+                if (pclose(sendmail_pipe) == 0)
+                        result = 1;
+        }
+
         buffer_delete(&subj_base64);
-        
-        return 1;
+        return result;
 }
 
 
