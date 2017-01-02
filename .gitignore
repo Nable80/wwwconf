@@ -1,0 +1,5 @@
+*.o
+.depend
+dbtool
+index.cgi
+/data
