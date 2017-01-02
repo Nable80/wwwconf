@@ -421,11 +421,11 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
                         {
                                 if(fProxy)
                                         strncat(reason, "[PROXY]", MAX_STRING - 1);
-                                        *Reason = reason;
+                                *Reason = reason;
                                 return MSG_CHK_ERROR_BANNED;
                         }
                         if(CheckIPinSubnet(Cip, ip) && t == '=') {
-                            break;
+                                break;
                         }
                 }
                 fclose(f);

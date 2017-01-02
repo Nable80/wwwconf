@@ -478,7 +478,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 
 #define MESSAGEHEAD_configure_saving_to_profile "Настройки сохраняются в профайле и будут доступны с любого браузера"
 #define MESSAGEHEAD_configure_saving_to_browser "Настройки сохраняются в браузере и доступны только с данного компьютера"
-#define MESSAGEHEAD_configure_view_saving    "Изменить способ хранения настроек можно на <a href=\""MY_CGI_URL"?register=form\" style=\"text-decoration:underline;\"  >странице редактирования профайла</a>"
+#define MESSAGEHEAD_configure_view_saving    "Изменить способ хранения настроек можно на <a href=\"" MY_CGI_URL "?register=form\" style=\"text-decoration:underline;\"  >странице редактирования профайла</a>"
 
 // coded as "1"
 //#define MESSAGEHEAD_configure_showhronforward        "По потокам в хронологическом виде, по возрастанию"
@@ -557,7 +557,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
         "<div style=\"clear: both; height: 0px; overflow: hidden;\"><br/></div></div>"
 
 #define MESSAGEMAIN_WELCOME_START        "<div class=\"info\"><div class=\"left_info\">"\
-        "<form method=post action=\""MY_CGI_URL "?login=action\">"\
+        "<form method=post action=\"" MY_CGI_URL "?login=action\">"\
         WELCOME_CONFERENCE_HEADER MESSAGEMAIN_login_loginname \
         "<INPUT TYPE=TEXT NAME=\"mname\" SIZE=15 " \
         "MAXLENGTH=%d VALUE=\"%s\">&nbsp;&nbsp;&nbsp;" MESSAGEMAIN_login_password \
@@ -584,7 +584,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
                                 
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT        "новых сообщений нет, всего %ld"
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS "<span id=\"new_count\">"\
-                        MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT"</span>"
+                        MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT "</span>"
 
 #define MESSAGEMAIN_WELCOME_DISPLAYTIME                ", показаны сообщения за %lu %s"
 #define MESSAGEMAIN_WELCOME_DISPLAYTHREADS        ", показаны последние %lu потоков"
@@ -622,7 +622,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MAIL_SEND_GREETING        "<HTML>Здравствуйте, <bold><font color=#009000>"\
                 "<strong>%s</strong></font></bold>.<br />"
                 
-#define MAIL_SEND_SIGNING        "Это письмо послано автоматически форумом "WWWCONF_FULL_NAME \
+#define MAIL_SEND_SIGNING        "Это письмо послано автоматически форумом " WWWCONF_FULL_NAME \
                 ".<br />Вам <b>не</b> следует отвечать на него.<br /></HTML>"
 
 //        reply notification
@@ -838,7 +838,7 @@ extern char DESIGN_break[10];
 
 
 /************************* ban list *************************/
-#define DESIGN_BAN_FORM        "<center><form action=\""MY_CGI_URL"?banlist=save\" method=\"post\">"\
+#define DESIGN_BAN_FORM        "<center><form action=\"" MY_CGI_URL "?banlist=save\" method=\"post\">"\
                                         "<textarea name=\"ban_list\" rows=\"30\" cols=\"70\" wrap=\"soft\" maxlength=\"%d\">"
 
 #define DESIGN_BAN_FORM2        "</textarea><br /><input type=\"submit\" name=\"submit\" value=\"Save\">"\

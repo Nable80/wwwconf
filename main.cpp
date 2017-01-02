@@ -1044,20 +1044,20 @@ void PrintSessionsList(DWORD Uid)
                                 else
                                         seqdate = (char*)ConvertFullTime(seqtime);
 
-                                printf("<TR><TD ALIGN=RIGHT>%ld. "MESSAGEMAIN_session_ip"</TD><TD"
+                                printf("<TR><TD ALIGN=RIGHT>%ld. " MESSAGEMAIN_session_ip "</TD><TD"
                                         " ALIGN=LEFT><STRONG>%u.%u.%u.%u</STRONG> %s</TD></TR>",
                                         i+1, seqip[0] & 0xff, seqip[1] & 0xff, seqip[2] & 0xff, seqip[3] & 0xff, 
                                         userid & SEQUENCE_IP_CHECK_DISABLED ? MESSAGEMAIN_session_ip_nocheck : MESSAGEMAIN_session_ip_check );
                                          
-                                printf("<TR><TD ALIGN=RIGHT>"MESSAGEMAIN_session_date"</TD><TD ALIGN=LEFT>"
+                                printf("<TR><TD ALIGN=RIGHT>" MESSAGEMAIN_session_date "</TD><TD ALIGN=LEFT>"
                                         " <STRONG>%s</STRONG></TD></TR>", seqdate);
-                                printf("<TR><TD ALIGN=RIGHT>"MESSAGEMAIN_session_state"</TD><TD ALIGN=LEFT><STRONG>");
+                                printf("<TR><TD ALIGN=RIGHT>" MESSAGEMAIN_session_state "</TD><TD ALIGN=LEFT><STRONG>");
 
                                 if( seqtime > time(NULL) ) {
                                         printf(MESSAGEMAIN_session_state_active);
 
                                         if( (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0  || ( ULogin.LU.UniqID == Uid && ( ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) != 0 ) )
-                                                printf(" [<a href=\"%s?clsession1=%ld&clsession2=%ld\">"MESSAGEMAIN_session_state_toclose"</a>]", MY_CGI_URL, seqid[0], seqid[1]);
+                                                printf(" [<a href=\"%s?clsession1=%ld&clsession2=%ld\">" MESSAGEMAIN_session_state_toclose "</a>]", MY_CGI_URL, seqid[0], seqid[1]);
                                 }
                                 else  printf(MESSAGEMAIN_session_state_closed);
                                 printf("</STRONG></TD></TR><TR><TD><BR></TD></TR>");
