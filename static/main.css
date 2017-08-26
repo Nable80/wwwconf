@@ -174,24 +174,23 @@ span.close
 	text-decoration: line-through;
 }
 
-span.ibody {
+div.ibody {
         font-size: 133%;
         border-top: 1px solid #999;
         border-bottom: 1px solid #999;
-        width: 100%;
 }
 
-span.ibody a {
+div.ibody a {
         font-size: 100%;
 }
 
-span.ierror {
+div.ierror {
         font-size: 133%;
         border-top: 1px solid red;
         border-bottom: 1px solid red;
 }
 
-span.iload {
+div.iload {
         font-size: 133%;
         border-top: 1px dashed #999;
         border-bottom: 1px dashed #999;
@@ -290,4 +289,9 @@ button.smile {
         padding: 0;
         background: transparent;
         width: 26px;
+}
+
+.youtube-player {
+	width: 640px;
+	height: 390px;
 }
