@@ -340,6 +340,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 
 #define MESSAGEMAIN_privatemsg_fromuser                "От пользователя:"
 #define MESSAGEMAIN_privatemsg_touser                "Пользователю:"
+#define MESSAGEMAIN_privatemsg_self                "myself"
 
 #define MESSAGEMAIN_privatemsg_showall     "Просмотреть все сообщения"
 
@@ -816,6 +817,7 @@ extern char DESIGN_break[10];
                                                                                 "%s</A><div class=\"%s\">%s</div></div>"
 #define DESIGN_PRIVATEMSG_FRAME_IN                "pr_from"
 #define DESIGN_PRIVATEMSG_FRAME_OUT                "pr_to"
+#define DESIGN_PRIVATEMSG_FRAME_SELF                "pr_self"
 
 /********************** announces ***********************/
 #define DESIGN_GLOBALANN_FRAME                "<div class=\"an\">%s<BR>%s %s (%s) %s</div>"

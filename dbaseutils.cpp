@@ -2,6 +2,7 @@
 #include "basetypes.h"
 #include "error.h"
 #include "messages.h"
+#include <sqlite3.h>
 
 DWORD Fsize(const char *s)
 {
@@ -127,4 +128,29 @@ DWORD TranslateMsgIndexDel(DWORD root)
         wcfclose(f);
 
         return i;
+}
+
+/** Executes SQL query on the given database. Query updates database and does not return column data. */
+int execute_update(char *dbname, char *query) {
+    sqlite3 *db;
+    int rc;
+    char *zErrMsg = 0;
+
+    rc = sqlite3_open(dbname, &db);
+    if( rc ){
+        print2log("Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return(1);
+    } 
+
+    rc = sqlite3_exec(db, query, NULL, 0, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+        print2log("SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+        return 1;
+    }
+    
+    sqlite3_close(db);
+    
+    return 0;
 }

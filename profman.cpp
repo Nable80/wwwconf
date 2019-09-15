@@ -31,6 +31,7 @@ void printusage(char *iam)
                " -au user passwd - create user (spec. username and password)\n"
                " -d user         - delete user\n"
                " -np             - renew(delete) private messages database (in profiles)\n"
+               " -npriv          - drop/create table for private messages (in SQLite3 database profiles)\n"
                " -r              - zero refresh count for all users\n"
                " -vs             - set default view settings for all users\n"
                " -fixcr          - replace '\\r' by '\\n' in all message bodies\n",
@@ -120,6 +121,7 @@ void printerror(DWORD er)
         switch(er) {
         case PROFILE_RETURN_ALLOK:
                 printf("All ok\n");
+                // fall through
         case PROFILE_RETURN_ALREADY_EXIST:
                 printf("User already exits\n");
                 break;
@@ -373,6 +375,33 @@ int main(int argc, char *argv[])
                 goto go_stop;
         }
 
+        if(argc == 2 && strcmp(argv[1], "-npriv") == 0) {
+                printf("Drop/create private messages database...\n");
+                
+                char sql[1000];
+                char dbname[32];
+    
+				sprintf(dbname, "profiles");
+                
+                sprintf(sql, "drop table PersonalMessage");
+                int rc = execute_update(dbname, sql);
+                if ( rc != 0 ) {
+					printf("Can't drop private message table\n");
+				}
+				
+                sprintf(sql, "create table PersonalMessage (MsgId INTEGER PRIMARY KEY AUTOINCREMENT, NameFrom TEXT, UIdFrom INT, NameTo TEXT, UIdTo INT, MsgDate INT, DelForSender INT, DelForRecipient INT, Msg TEXT)");
+                rc = execute_update(dbname, sql);
+                if ( rc != 0 ) {
+					printf("Can't create preivate message table\n");
+				}
+				else {
+					printf("Private message table successfully created\n");
+				}
+
+                goto go_stop;
+        }
+
+
         if(argc == 2 && strcmp(argv[1], "-np") == 0) {
                 printf("Renewing private messages database...\n");
                 if((fw = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_CW)) != NULL) {
@@ -500,56 +529,43 @@ int main(int argc, char *argv[])
         }
 
         if(argc == 3 && strcmp(argv[1], "-vp") == 0) {
-                SPersonalMessage *topm, *frompm;
+                SPersonalMessage *topm;
                 CProfiles prof;
                 int code;
                 if((code = prof.GetUserByName(argv[2], &ui, NULL, NULL)) != PROFILE_RETURN_ALLOK) {
                         printf("User not found!\n");
                         exit(0);
                 }
-                if((code = prof.ReadPersonalMessages(argv[2], 0, &topm, NULL, &frompm, NULL)) == PROFILE_RETURN_ALLOK) {
+                if((code = prof.ReadPersonalMessages(argv[2], 0, &topm, NULL, 0)) == PROFILE_RETURN_ALLOK) {
+						// TODO private messages
+						// frompm = topm;
                         char tostr[1000], newm[100];
                         char *ss;
                         SPersonalMessage *pmsg;
                         int i = 0;
-                        int j = 0;
+                        //int j = 0;
                         int received = 0;        // posted or received
-                        int cnt = 0, postedcnt = 0;
+                        int cnt = 0;
                         if(topm) {
                                 while(topm[cnt].Prev != 0xffffffff) cnt++;
                                 cnt++;
                         }
-                        if(frompm) {
-                                while(frompm[postedcnt].Prev != 0xffffffff) postedcnt++;
-                                postedcnt++;
-                        }
+                        //if(frompm) {
+                        //        while(frompm[postedcnt].Prev != 0xffffffff) postedcnt++;
+                        //        postedcnt++;
+                        //}
                         printf("        Messages for user %s\n", argv[2]);
                         for(;;) {
                                 // check exit expression
-                                if(i == cnt && j == postedcnt) break;
-                                if(i == cnt) {
-                                        pmsg = &(frompm[j]);
-                                        j++;
-                                        received = 0;
-                                } else {
-                                        if(j == postedcnt) {
-                                                pmsg = &(topm[i]);
-                                                i++;
-                                                received = 1;
-                                        }
-                                        else {
-                                                if(frompm[j].Date > topm[i].Date) {
-                                                        pmsg = &(frompm[j]);
-                                                        j++;
-                                                        received = 0;
-                                                }
-                                                else {
-                                                        pmsg = &(topm[i]);
-                                                        i++;
-                                                        received = 1;
-                                                }
-                                        } 
-                                }
+                                if(i == cnt) break;
+								pmsg = &(topm[i]);
+								i++;
+								if (strcmp(pmsg->NameTo, argv[2]) == 0) {
+										received = 1;
+								}
+								else {
+										received = 0;
+								}
         
                                 if(!received) {
                                         strcpy(tostr, pmsg->NameTo);

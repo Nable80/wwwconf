@@ -21,6 +21,9 @@ SRCS=$(INDEX_SRCS) $(DBTOOL_SRCS)
 INDEX_OBJS=$(INDEX_SRCS:.cpp=.o)
 DBTOOL_OBJS=$(DBTOOL_SRCS:.cpp=.o)
 
+INDEX_LIBS=-lsqlite3 
+DBTOOL_LIBS=-lsqlite3 
+
 .SUFFIXES: .cpp .o
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c $*.cpp
@@ -37,10 +40,10 @@ all: index.cgi dbtool
 	@echo Compiling Done
 
 index.cgi: $(INDEX_OBJS) .depend
-	$(CXX) $(CXXFLAGS) -o index.cgi -Wl,-\( $(INDEX_OBJS) -Wl,-\)
+	$(CXX) $(CXXFLAGS) -o index.cgi -Wl,-\( $(INDEX_OBJS) -Wl,-\) $(INDEX_LIBS)
 
 dbtool: $(DBTOOL_OBJS) .depend
-	$(CXX) $(CXXFLAGS) -o dbtool -Wl,-\( $(DBTOOL_OBJS) -Wl,-\)
+	$(CXX) $(CXXFLAGS) -o dbtool -Wl,-\( $(DBTOOL_OBJS) -Wl,-\) $(DBTOOL_LIBS)
 
 clean:
 	@rm -f *.o .depend

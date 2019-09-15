@@ -11,6 +11,8 @@
 #include "profiles.h"
 #include "freedb.h"
 #include "error.h"
+#include "dbaseutils.h"
+#include <sqlite3.h>
 
 /* return 1 if valid, 0 otherwise
  */
@@ -24,6 +26,102 @@ int isLoginStrValid(register char *s)
         }
         if(strlen(s) > PROFILES_MAX_USERNAME_LENGTH - 1) return 0;
         return 1;
+}
+
+int read_messages_from_db(char *query, SPersonalMessage **messages){
+
+    SPersonalMessage *msg;
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    DWORD i;
+    
+    int rc = sqlite3_open("profiles", &db);
+    if( rc ){
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return(1);
+    } 
+    
+    rc = sqlite3_prepare_v2(db, query, -1, &res, 0);
+    
+    if (rc != SQLITE_OK) {        
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        
+        return 1;
+    }    
+    
+    msg = (SPersonalMessage*)malloc(sizeof(SPersonalMessage));    
+    
+    rc = sqlite3_step(res);
+    
+    //struct tm tm;
+    for(i = 0; ; i++) {
+        if (rc == SQLITE_ROW) {
+            
+            if (i > 0){ 
+                msg = (SPersonalMessage*)realloc(msg, (i+1)*sizeof(SPersonalMessage));
+            }
+            
+            msg[i].Prev = 0;//flag
+            msg[i].Id = sqlite3_column_int64(res, 0);
+            msg[i].DeletedForSender = sqlite3_column_int(res, 1);
+            msg[i].DeletedForRecipient = sqlite3_column_int(res, 2);
+            sprintf(msg[i].NameFrom, "%s", sqlite3_column_text(res, 3));
+            msg[i].UIdFrom = sqlite3_column_int64(res, 4);
+            sprintf(msg[i].NameTo, "%s", sqlite3_column_text(res, 5));
+            msg[i].UIdTo = sqlite3_column_int64(res, 6);
+            msg[i].Date = sqlite3_column_int64(res, 7);
+            sprintf(msg[i].Msg, "%s", sqlite3_column_text(res, 8));
+            
+        }
+        else {
+            break;
+        }
+        
+        rc = sqlite3_step(res);
+    }
+    msg[i - 1].Prev = 0xffffffff;        // last message mark
+    print2log("fetched %d object(s)", i);
+    
+    sqlite3_finalize(res);    
+    sqlite3_close(db);
+    
+    if (i > 0) {
+			*messages = msg;
+	}
+	else {
+		*messages = NULL;
+	}
+    msg = NULL;
+
+    return 0;
+}
+
+int insert_message(SPersonalMessage mes){
+    char insert[1000];
+    char dbname[32];
+    
+    sprintf(dbname, "profiles");
+	
+    sprintf(insert, "insert into PersonalMessage (NameFrom, UIdFrom, NameTo, UIdTo, MsgDate, DelForSender, DelForRecipient, Msg) values ('%s', %lu, '%s', %lu, %lu, %u, %u, '%s')",
+        mes.NameFrom, // 30
+        mes.UIdFrom,
+        mes.NameTo, // 30
+        mes.UIdTo,
+        mes.Date,
+        mes.DeletedForSender,
+        mes.DeletedForRecipient,
+        mes.Msg); // 385
+    print2log(insert);
+
+    int rc = execute_update(dbname, insert);
+    if( rc != 0){
+        print2log("Can't insert personal message\n");
+        return(1);
+    } 
+
+    return 0;
 }
 
 /* constructor */
@@ -749,7 +847,6 @@ int CProfiles::PostPersonalMessage(char *username, DWORD userindex, char *messag
 {
         SProfile_UserInfo ui, poster_ui;
         int ret;
-        WCFILE *fp;
 
         // load recipient user profile
         if(username != NULL && strcmp(username, "") != 0) {
@@ -777,28 +874,24 @@ int CProfiles::PostPersonalMessage(char *username, DWORD userindex, char *messag
 
         // prepare personal message structure
         SPersonalMessage mes;
-        DWORD pos;
+        //DWORD pos;
+        mes.Id = 0;
         mes.Date = time(NULL);
         strcpy(mes.NameFrom, poster_ui.username);
         mes.UIdFrom = poster_ui.UniqID;
         strcpy(mes.NameTo, ui.username);
         mes.UIdTo = ui.UniqID;
         strcpy(mes.Msg, message);
-        mes.Prev = ui.persmsg;
-        mes.PosterPrev = poster_ui.postedpersmsg;
+        mes.DeletedForSender = mes.DeletedForRecipient = 0;
+        mes.Prev = 0;
+        mes.PosterPrev = 0;
 
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_RW)) == NULL)
-                return PROFILE_RETURN_DB_ERROR;
-        lock_file(fp);
-        // write to the file
-        if(wcfseek(fp, 0, SEEK_END) != 0)
-                goto PostPersMsg_Error;
-        pos = wcftell(fp);
-        if(!fCheckedWrite(&mes, sizeof(mes), fp))
-                goto PostPersMsg_Error;
-
+        if (insert_message(mes) != 0){
+            goto PostPersMsg_Error;
+        }
         // update recipient user profile
-        ui.persmsg = pos;
+        
+        ui.persmsg = 0;// avoid 0xffffffff
         ui.persmescnt++;
         SetUInfo(userindex, &ui);
 
@@ -807,29 +900,24 @@ int CProfiles::PostPersonalMessage(char *username, DWORD userindex, char *messag
                 memcpy(&poster_ui, &ui, sizeof(SProfile_UserInfo));
 
         // update sender user profile
-        poster_ui.postedpersmsg = pos;
+        poster_ui.postedpersmsg = 0;// avoid 0xffffffff
         poster_ui.postedmescnt++;
         SetUInfo(userindexfrom, &poster_ui);
+        
+        printf("return PROFILE_RETURN_ALLOK");
 
-        unlock_file(fp);
-        wcfclose(fp);
         return PROFILE_RETURN_ALLOK;
 
 PostPersMsg_Error:
-        unlock_file(fp);
-        wcfclose(fp);
+        printf("PostPersMsg_Error");
         return PROFILE_RETURN_DB_ERROR;
 }
 
-int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
-                                                                        SPersonalMessage **tomessages, DWORD *tocount,
-                                                                        SPersonalMessage **frommessages, DWORD *fromcount)
+int CProfiles::ReadPersonalMessages(char *username, DWORD userindex, SPersonalMessage **tomessages, DWORD *tocount, DWORD offset)
 {
         SProfile_UserInfo ui;
         int ret;
-        WCFILE *fp;
-        SPersonalMessage *msg;
-        DWORD toread, i, fromread, curpos;
+        DWORD toread;
 
         if(username != NULL && strcmp(username, "") != 0) {
                 // use username
@@ -842,12 +930,12 @@ int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
                         return PROFILE_RETURN_DB_ERROR;
         }
 
-        msg = *tomessages = *frommessages = NULL;
+        *tomessages = NULL;
 
-        // if we really need read to messages
+        // if we really need read all messages
         if(tocount == NULL) {
                 // all messages
-                toread = ui.persmescnt;
+                toread = ui.persmescnt + ui.postedmescnt;
         }
         else {
                 if(*tocount == 0) {
@@ -856,204 +944,36 @@ int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
                 }
                 else {
                         // selected count
-                        if(*tocount > ui.persmescnt)
-                                *tocount = ui.persmescnt;
+                        if(*tocount > ui.persmescnt + ui.postedmescnt)
+                                *tocount = ui.persmescnt + ui.postedmescnt;
                         toread = *tocount;
                 }
         }
         if(!toread) {
                 *tomessages = NULL;
-                goto skip_to_msg_read;
+				return PROFILE_RETURN_ALLOK;
         }
 
-        msg = (SPersonalMessage*)malloc(toread*sizeof(SPersonalMessage));
+        char sql[1000];
 
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
-                return PROFILE_RETURN_DB_ERROR;
-        curpos = ui.persmsg;
-        for(i = 0; i < toread; i++) {
-                if(wcfseek(fp, curpos, SEEK_SET) != 0)
-                        goto PostPersMsg_Error;
-                if(!fCheckedRead(&(msg[i]), sizeof(SPersonalMessage), fp))
-                        goto PostPersMsg_Error;
-                curpos = msg[i].Prev;
-                // this situation should not happen, but...
-                if(curpos == 0xffffffff) break;
+        sprintf(sql, "select MsgId, DelForSender, DelForRecipient, NameFrom, UIdFrom, NameTo, UIdTo, MsgDate, Msg from PersonalMessage where (NameTo = '%s' and DelForRecipient = 0) or (NameFrom = '%s' and DelForSender = 0) order by MsgDate desc LIMIT %lu OFFSET %lu", ui.username, ui.username, toread, offset);
+        print2log(sql);    
+        
+        if (read_messages_from_db(sql, tomessages) != 0){
+            goto PostPersMsg_Error;
         }
-        msg[toread - 1].Prev = 0xffffffff;        // last message mark
-        wcfclose(fp);
-        *tomessages = msg;
-        msg = NULL;
-
-skip_to_msg_read:
-
-        // if we really need read from messages
-        if(fromcount == NULL) {
-                // all messages
-                fromread = ui.postedmescnt;
-        }
-        else {
-                // selected count
-                if(*fromcount > ui.postedmescnt)
-                        *fromcount = ui.postedmescnt;
-                fromread = *fromcount;
-        }
-        if(!fromread) {
-                *frommessages = NULL;
-                return PROFILE_RETURN_ALLOK;
-        }
-
-        msg = (SPersonalMessage*)malloc(fromread*sizeof(SPersonalMessage));
-
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
-                return PROFILE_RETURN_DB_ERROR;
-        curpos = ui.postedpersmsg;
-        for(i = 0; i < fromread; i++) {
-                if(wcfseek(fp, curpos, SEEK_SET) != 0)
-                        goto PostPersMsg_Error;
-                if(!fCheckedRead(&(msg[i]), sizeof(SPersonalMessage), fp))
-                        goto PostPersMsg_Error;
-                curpos = msg[i].PosterPrev;
-                msg[i].Prev = 0;
-                // this situation should not happen, but...
-                if(curpos == 0xffffffff) {
-                        break;
-                }
-        }
-        msg[i].Prev = 0xffffffff;        // last message mark
-        wcfclose(fp);
-        *frommessages = msg;
+        
+        if (*tomessages != NULL) {
+			(*tomessages)[toread - 1].Prev = 0xffffffff;        // last message mark
+		}
 
         return PROFILE_RETURN_ALLOK;
 
 PostPersMsg_Error:
-        if(msg) free(msg);
         if(*tomessages){
                 free(*tomessages);
                 *tomessages = NULL;
         }
-        if(*frommessages){
-                free(*frommessages);
-                *frommessages = NULL;
-        }
-        wcfclose(fp);
-        return PROFILE_RETURN_DB_ERROR;
-}
-
-int CProfiles::ReadPersonalMessagesByDate(char *username, DWORD userindex,
-                                                                                  SPersonalMessage **tomessages, time_t todate,
-                                                                                  SPersonalMessage **frommessages, time_t fromdate)
-{
-        SProfile_UserInfo ui;
-        int ret;
-        WCFILE *fp;
-        SPersonalMessage *msg;
-        DWORD i, curpos;
-
-        if(username != NULL && strcmp(username, "") != 0) {
-                // use username
-                if((ret = GetUserByName(username, &ui, NULL, &userindex)) != PROFILE_RETURN_ALLOK)
-                        return ret;
-        }
-        else {
-                // use userindex
-                if(!GetUInfo(userindex, &ui))
-                        return PROFILE_RETURN_DB_ERROR;
-        }
-
-        msg = *tomessages = *frommessages = NULL;
-
-        // if we really need read "to" messages ?
-        if(!todate) {
-                *tomessages = NULL;
-                goto skip_to_msg_read;
-        }
-
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
-                return PROFILE_RETURN_DB_ERROR;
-        msg = (SPersonalMessage*)malloc(sizeof(SPersonalMessage));
-        if(!msg) {
-                wcfclose(fp);
-                return PROFILE_RETURN_UNKNOWN_ERROR;
-        }
-        curpos = ui.persmsg;
-        i = 0;
-        if(curpos != 0xffffffff) {
-                for(;;) {
-                        if(wcfseek(fp, curpos, SEEK_SET) != 0)
-                                goto PostPersMsg_Error;
-                        if(!fCheckedRead(&(msg[i]), sizeof(SPersonalMessage), fp))
-                                goto PostPersMsg_Error;
-                        curpos = msg[i].Prev;
-                        if(msg[i].Date < todate)
-                                break;
-                        i++;
-                        if(curpos == 0xffffffff) break;
-                        msg = (SPersonalMessage*)realloc(msg, (i+1)*sizeof(SPersonalMessage));
-                }
-        }
-        if(!i) {
-                free(msg);
-                msg = NULL;
-        }
-        else msg[i-1].Prev = 0xffffffff;        // last message mark
-        wcfclose(fp);
-        *tomessages = msg;
-        msg = NULL;
-
-skip_to_msg_read:
-
-        // if we really need read from messages
-        if(!fromdate) {
-                *frommessages = NULL;
-                return PROFILE_RETURN_ALLOK;
-        }
-
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
-                return PROFILE_RETURN_DB_ERROR;
-        msg = (SPersonalMessage*)malloc(sizeof(SPersonalMessage));
-        if(!msg) {
-                wcfclose(fp);
-                return PROFILE_RETURN_UNKNOWN_ERROR;
-        }
-        curpos = ui.postedpersmsg;
-        i = 0;
-        if(curpos != 0xffffffff) {
-                for(;;) {
-                        if(wcfseek(fp, curpos, SEEK_SET) != 0)
-                                goto PostPersMsg_Error;
-                        if(!fCheckedRead(&(msg[i]), sizeof(SPersonalMessage), fp))
-                                goto PostPersMsg_Error;
-                        curpos = msg[i].PosterPrev;
-                        msg[i].Prev = 0;
-                        if(msg[i].Date < fromdate)
-                                break;
-                        i++;
-                        if(curpos == 0xffffffff) break;
-                        msg = (SPersonalMessage*)realloc(msg, (i+1)*sizeof(SPersonalMessage));
-                }
-        }
-        if(!i) {
-                free(msg);
-                msg = NULL;
-        }
-        else msg[i - 1].Prev = 0xffffffff;        // last message mark
-        wcfclose(fp);
-        *frommessages = msg;
-
-        return PROFILE_RETURN_ALLOK;
-
-PostPersMsg_Error:
-        if(msg) free(msg);
-        if(*tomessages){
-                free(*tomessages);
-                *tomessages = NULL;
-        }
-        if(*frommessages){
-                free(*frommessages);
-                *frommessages = NULL;
-        }
-        wcfclose(fp);
         return PROFILE_RETURN_DB_ERROR;
 }
 

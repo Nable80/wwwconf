@@ -60,16 +60,18 @@
 #define PROFILE_PERSONAL_MESSAGE_LENGHT        385
 
 struct SPersonalMessage {
-        DWORD Prev;
-        DWORD PosterPrev;
+		DWORD Id;
+        DWORD Prev;// used as flag
+        DWORD PosterPrev;// not used anymore
         char NameFrom[PROFILES_MAX_USERNAME_LENGTH];
         DWORD UIdFrom;
         char NameTo[PROFILES_MAX_USERNAME_LENGTH];
         DWORD UIdTo;
         time_t Date;
+        unsigned char DeletedForSender;
+        unsigned char DeletedForRecipient;
         char Msg[PROFILE_PERSONAL_MESSAGE_LENGHT];
 };
-
 
 #pragma pack(1)
 
@@ -177,10 +179,10 @@ public:
         // personal messages
         int PostPersonalMessage(char *username, DWORD userindex, char *message, char *from, DWORD userindexfrom);
         int ReadPersonalMessages(char *username, DWORD userindex,
-                        SPersonalMessage **tomessages, DWORD *tocount, SPersonalMessage **frommessages, DWORD *fromcount);
+                        SPersonalMessage **tomessages, DWORD *tocount, DWORD offset);
 
-        int ReadPersonalMessagesByDate(char *username, DWORD userindex,
-                        SPersonalMessage **tomessages, time_t todate, SPersonalMessage **frommessages, time_t fromdate);
+        //int ReadPersonalMessagesByDate(char *username, DWORD userindex,
+        //               SPersonalMessage **tomessages, time_t todate, SPersonalMessage **frommessages, time_t fromdate);
 
         int GenerateUserList(char ***buf, DWORD *cnt);
 
