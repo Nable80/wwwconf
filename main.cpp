@@ -4886,11 +4886,12 @@ print2log("incor pass %s", par);
                 printf("<div style=\"text-align:center; width:100%%\">");
                 if (offset > 0) {
 						DWORD new_offset = offset < limit ? 0 : offset - limit;
-						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Recent messages</A><BR>", new_offset);
+						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Более свежие</A><BR>", new_offset);
 				}
+                printf("&nbsp;...&nbsp;");
                 if (offset + limit < ULogin.pui->persmescnt + ULogin.pui->postedmescnt) {
 						DWORD new_offset = offset + limit;
-						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Later messages</A><BR>", new_offset);
+						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Более ранние</A><BR>", new_offset);
 				}
                 printf("</div>");
                 
@@ -5363,7 +5364,7 @@ print2log("incor pass %s", par);
                 printf("<BR><BR><center>");
                 printf("<font color=\"red\">%s</font><br>\n",
                        fDelete ?
-                       "Следующие пользователи были успешно удалены:" : 
+                       "Следующие пользователи были успешно удалены:" :
                        "Список пользователей подлежащих удалению:"
                        );
 
