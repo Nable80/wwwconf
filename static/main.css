@@ -261,6 +261,13 @@ div.pr_from{
 	border: 1px solid #777;
 }
 
+div.pr_self{
+	padding: 3px;
+	margin: 1px 10px 20px 10px;
+	background-color: #bbffbb;
+	border: 1px solid #777;
+}
+
 div.pr_info{
 	margin-left: 20px;
 }
