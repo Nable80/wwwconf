@@ -37,7 +37,7 @@ int read_messages_from_db(char *query, SPersonalMessage **messages){
     
     int rc = sqlite3_open("profiles", &db);
     if( rc ){
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        print2log("Can't open database: %s", sqlite3_errmsg(db));
         sqlite3_close(db);
         return(1);
     } 
@@ -45,7 +45,7 @@ int read_messages_from_db(char *query, SPersonalMessage **messages){
     rc = sqlite3_prepare_v2(db, query, -1, &res, 0);
     
     if (rc != SQLITE_OK) {        
-        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        print2log("Failed to fetch data: %s", sqlite3_errmsg(db));
         sqlite3_close(db);
         
         return 1;
@@ -99,28 +99,79 @@ int read_messages_from_db(char *query, SPersonalMessage **messages){
 }
 
 int insert_message(SPersonalMessage mes){
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
     char insert[1000];
-    char dbname[32];
     
-    sprintf(dbname, "profiles");
-	
-    sprintf(insert, "insert into PersonalMessage (NameFrom, UIdFrom, NameTo, UIdTo, MsgDate, DelForSender, DelForRecipient, Msg) values ('%s', %lu, '%s', %lu, %lu, %u, %u, '%s')",
-        mes.NameFrom, // 30
-        mes.UIdFrom,
-        mes.NameTo, // 30
-        mes.UIdTo,
-        mes.Date,
-        mes.DeletedForSender,
-        mes.DeletedForRecipient,
-        mes.Msg); // 385
+    sprintf(insert, "insert into PersonalMessage (NameFrom, UIdFrom, NameTo, UIdTo, MsgDate, DelForSender, DelForRecipient, Msg) values (?, ?, ?, ?, ?, ?, ?, ?)");
     print2log(insert);
 
-    int rc = execute_update(dbname, insert);
-    if( rc != 0){
-        print2log("Can't insert personal message\n");
+    int rc = sqlite3_open("profiles", &db);
+    if( rc ){
+        print2log("Can't open database: %s", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return(1);
+    } 
+    
+    rc = sqlite3_prepare_v2(db, insert, -1, &stmt, 0);    
+    if (rc != SQLITE_OK) {        
+        print2log("Failed to prepare stmt: %s", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }    
+    
+    int n = 0;// param index
+    int err = 0;
+    if (sqlite3_bind_text(stmt, ++n, mes.NameFrom, strlen(mes.NameFrom), SQLITE_STATIC) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }print2log("binded # %d", n);
+    if (sqlite3_bind_int64(stmt, ++n, mes.UIdFrom) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_text(stmt, ++n, mes.NameTo, strlen(mes.NameTo), SQLITE_STATIC) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_int64(stmt, ++n, mes.UIdTo) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_int64(stmt, ++n, mes.Date) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_int(stmt, ++n, mes.DeletedForSender) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_int(stmt, ++n, mes.DeletedForRecipient) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    if (sqlite3_bind_text(stmt, ++n, mes.Msg, strlen(mes.Msg), SQLITE_STATIC) != SQLITE_OK){
+        print2log("Failed to bind # %d param: %s", n, sqlite3_errmsg(db));
+        err++;
+    }
+    
+    if (err > 0){
+        print2log("Failed to bind parameters");
+        sqlite3_close(db);
+        return 1;
+    }
+    
+    rc = sqlite3_step(stmt);
+    if( rc != SQLITE_DONE){
+        print2log("Can't insert personal message: %s", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);    
         return(1);
     } 
 
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    
     return 0;
 }
 
