@@ -179,7 +179,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_register_full_name                "Ваше полное имя:"
 #define MESSAGEMAIN_register_validemail_req        "Вы должны указать действующий E-Mail адрес <BR>(он будет использоваться для получения пароля и сводок по конференции)"
 #define MESSAGEMAIN_register_bot "Внимание!<br>Если вы видите два поля, то введите e-mail только<br>во второе, оставьте первое пустым!<br>Attention!<br>If you see two fields, fill with e-mail only<br>the second one, leave the first one blank!"
-#define MESSAGEMAIN_register_email  "E-Mail адрес (*):"        
+#define MESSAGEMAIN_register_email  "E-Mail адрес (*):"
 #define MESSAGEMAIN_register_email_pub                "Публичный доступ к Вашему E-Mail"
 #define MESSAGEMAIN_register_homepage                "Адрес Вашей домашней страницы:"
 #define MESSAGEMAIN_register_icq                        "ICQ :"
@@ -340,6 +340,7 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 
 #define MESSAGEMAIN_privatemsg_fromuser                "От пользователя:"
 #define MESSAGEMAIN_privatemsg_touser                "Пользователю:"
+#define MESSAGEMAIN_privatemsg_self                "Своё сообщение:"
 
 #define MESSAGEMAIN_privatemsg_showall     "Просмотреть все сообщения"
 
@@ -816,6 +817,7 @@ extern char DESIGN_break[10];
                                                                                 "%s</A><div class=\"%s\">%s</div></div>"
 #define DESIGN_PRIVATEMSG_FRAME_IN                "pr_from"
 #define DESIGN_PRIVATEMSG_FRAME_OUT                "pr_to"
+#define DESIGN_PRIVATEMSG_FRAME_SELF                "pr_self"
 
 /********************** announces ***********************/
 #define DESIGN_GLOBALANN_FRAME                "<div class=\"an\">%s<BR>%s %s (%s) %s</div>"

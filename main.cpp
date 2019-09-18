@@ -1619,12 +1619,14 @@ cleanup_and_parseerror:
                 print2log("Profiles database error: DB ERROR, deal=%s", deal);
 #endif 
                 printhtmlerror();
+                // fall through
 
         case PROFILE_RETURN_INVALID_FORMAT:
 #if ENABLE_LOG >= 1
                 print2log("Profiles database error: INVALID FORMAT, deal=%s", deal);
 #endif
                 printhtmlerror();
+                // fall through
 
         case PROFILE_RETURN_INVALID_LOGIN:
                 if(op == 1 || op == 2)
@@ -2187,6 +2189,7 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
         case MSG_CHK_ERROR_INVISIBLE:
                 *c_par1 = MESSAGEMAN_invisible;
                 *c_par2 = MESSAGEMAN_invisible2;
+                // fall through
         default:
                 *c_par1 = MESSAGEMAIN_unknownerr;
                 *c_par2 = MESSAGEMAIN_unknownerr2;
@@ -4746,75 +4749,49 @@ print2log("incor pass %s", par);
         }
 
         if(strncmp(deal, "persmsg", 7) == 0) {
-                if(ULogin.LU.UniqID != 0) {
+            if(ULogin.LU.UniqID != 0) {
                 // personal messages
                 char *sn;
-                DWORD type = 0;
+                DWORD type = 0;// show either limited num of messages (0) or all messages (1)
+                DWORD limit = 10;// show no more messages than limit
+                DWORD offset = 0;// show N messages starting from 'offset'
                 if((sn = strget(deal, "persmsg=", 255 - 1, '&')) != NULL) {
                         if(strcmp(sn, "all") == 0) {
                                 type = 1;
                         }
-                        free(sn);
+                        //free(sn);
                 }
+                if((sn = strget(deal, "from=", 255 - 1, '&')) != NULL) {
+						offset = strtoul(sn, NULL, 10);
+                        //free(sn);
+                }
+                free(sn);
+                print2log("offset = %d", offset);
 
                 CProfiles prof;
-                SPersonalMessage *msg, *frommsg;
-                DWORD *tt, *ft;
+                SPersonalMessage *msg;
+                DWORD *tt;
                 if(type) {
                         tt = NULL;
-                        ft = NULL;
                 }
                 else {
                         tt = (DWORD*)malloc(sizeof(DWORD));
-                        *tt = 10;
-                        ft = (DWORD*)malloc(sizeof(DWORD));
-                        *ft = 0;
+                        *tt = limit;
                 }
-                // let's read to messages (maybe from too)
-                if(prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, tt, &frommsg, ft) != PROFILE_RETURN_ALLOK)
+                // let's read messages
+                int itt = tt ? *tt : -1;
+                print2log("ReadPersonalMessages tt = %d", itt);
+                if(prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, tt, offset) != PROFILE_RETURN_ALLOK)
                         printhtmlerror();
 
                 // let's get received message count
-                DWORD cnt = 0, postedcnt = 0;
+                DWORD cnt = 0;
                 if(msg) {
                         while(msg[cnt].Prev != 0xffffffff) cnt++;
                         cnt++;
                 }
-
-                if(ft) {
-                        if(cnt) {
-                                SPersonalMessage *msg1;
-                                time_t ld = msg[cnt-1].Date;
-
-                                if(prof.ReadPersonalMessagesByDate(NULL, ULogin.LU.SIndex, &msg1, 0, &frommsg, ld) != PROFILE_RETURN_ALLOK)
-                                        printhtmlerror();
-
-                                // let's get posted message count
-                                if(frommsg) {
-                                        while(frommsg[postedcnt].Prev != 0xffffffff) postedcnt++;
-                                        postedcnt++;
-                                }
-                        }
-                        else {
-                                *ft = 10;
-                                // let's read to messages (maybe from too)
-                                if(prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, NULL, &frommsg, ft) != PROFILE_RETURN_ALLOK)
-                                        printhtmlerror();
-                                // let's get posted message count
-                                if(frommsg) {
-                                        while(frommsg[postedcnt].Prev != 0xffffffff) postedcnt++;
-                                        postedcnt++;
-                                }
-                        }
-                }
-                else {
-                        // let's get posted message count
-                        if(frommsg) {
-                                while(frommsg[postedcnt].Prev != 0xffffffff) postedcnt++;
-                                postedcnt++;
-                        }
-                }
-
+                print2log("cnt = %d", cnt);
+				// render priv messages //
                 Tittle_cat(TITLE_PrivateMsg);
 
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_PRIVATEMSG, MAINPAGE_INDEX);
@@ -4838,34 +4815,25 @@ print2log("incor pass %s", par);
                 char *ss;
                 SPersonalMessage *pmsg;
                 DWORD i = 0;
-                DWORD j = 0;
                 int received = 0;        // posted or received
+                int self = 0;			// message from user to himself
                 for(;;) {
                         // check exit expression
-                        if(i == cnt && j == postedcnt) break;
-                        if(i == cnt) {
-                                pmsg = &(frommsg[j]);
-                                j++;
+                        if(i == cnt) break;
+						pmsg = &(msg[i]);
+						print2log("NameTo = %s, NameFrom = %s, ui.name = %s", pmsg->NameTo, pmsg->NameFrom, ULogin.pui->username);
+						i++;
+                        if(strcmp(pmsg->NameTo, pmsg->NameFrom) == 0) {
+                                self = 1;
                                 received = 0;
-                        } else {
-                                if(j == postedcnt) {
-                                        pmsg = &(msg[i]);
-                                        i++;
-                                        received = 1;
-                                }
-                                else {
-                                        if(frommsg[j].Date > msg[i].Date) {
-                                                pmsg = &(frommsg[j]);
-                                                j++;
-                                                received = 0;
-                                        }
-                                        else {
-                                                pmsg = &(msg[i]);
-                                                i++;
-                                                received = 1;
-                                        }
-                                } 
+                        } else if (strcmp(pmsg->NameTo, ULogin.pui->username) == 0) {
+								received = 1;
+								self = 0;
                         }
+                        else {
+							received = 0;
+							self = 0;
+						}
 
                         if(!received) {
                                 DB.Profile_UserName(pmsg->NameTo, tostr, 1);
@@ -4898,35 +4866,50 @@ print2log("incor pass %s", par);
                         
                         st1_f = FilterBiDi(st1);
                         
-                        if(!received) {        
+                        if (self) {
+                                printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_self, tostr, CodeHttpString(pmsg->NameTo, 0),
+                                        MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_SELF, st1_f);
+						}
+                        else if(!received) {        
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(pmsg->NameTo, 0),
                                         MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1_f);
-                        }else{
+                        } else {
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_fromuser, tostr, CodeHttpString(pmsg->NameFrom, 0),
                                         MESSAGEMAIN_privatemsg_answer, DESIGN_PRIVATEMSG_FRAME_IN, st1_f);
                         }                
 
                         if(st) free(st);
                         if(st1) free(st1);
-                        if (st1_f)
-                                free(st1_f);
-                }
+                        if (st1_f) free(st1_f);
+                }//for
+                
+                printf("<div style=\"text-align:center; width:100%%\">");
+                if (offset > 0) {
+						DWORD new_offset = offset < limit ? 0 : offset - limit;
+						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Более свежие</A><BR>", new_offset);
+				}
+                printf("&nbsp;...&nbsp;");
+                if (offset + limit < ULogin.pui->persmescnt + ULogin.pui->postedmescnt) {
+						DWORD new_offset = offset + limit;
+						printf("<A HREF=\"" MY_CGI_URL "?persmsg&from=%lu\" STYLE=\"text-decoration:underline;\">Более ранние</A><BR>", new_offset);
+				}
+                printf("</div>");
+                
 
                 ULogin.pui->readpersmescnt = ULogin.pui->persmescnt;
                 prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
 
                 PrintBottomLines();
                 if(msg) free(msg);
-                if(frommsg) free(frommsg);
-                }
-                else {
-                        Tittle_cat(TITLE_Error);
+			}// if UniqID
+			else {
+					Tittle_cat(TITLE_Error);
 
-                        PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
-                        PrintBoardError(MESSAGEMAIN_privatemsg_denyunreg, MESSAGEMAIN_privatemsg_denyunreg2, 0);
-                        PrintBottomLines();
-                }
-                goto End_part;
+					PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
+					PrintBoardError(MESSAGEMAIN_privatemsg_denyunreg, MESSAGEMAIN_privatemsg_denyunreg2, 0);
+					PrintBottomLines();
+			}
+			goto End_part;
         }
 
         if(strncmp(deal, "globann", 7) == 0) {
@@ -5381,7 +5364,7 @@ print2log("incor pass %s", par);
                 printf("<BR><BR><center>");
                 printf("<font color=\"red\">%s</font><br>\n",
                        fDelete ?
-                       "Следующие пользователи были успешно удалены:" : 
+                       "Следующие пользователи были успешно удалены:" :
                        "Список пользователей подлежащих удалению:"
                        );
 

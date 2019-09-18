@@ -10,5 +10,6 @@ int WriteDBMessage(DWORD midx, SMessage *mes);
 int WriteDBMessageBody(char *buf, DWORD index, DWORD size);
 DWORD VIndexCountInDB();
 DWORD TranslateMsgIndexDel(DWORD root);
+int execute_update(char *dbname, char *query);
 
 #endif
