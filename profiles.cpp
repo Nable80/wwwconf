@@ -14,7 +14,7 @@
 
 /* return 1 if valid, 0 otherwise
  */
-int isLoginStrValid(register char *s)
+int isLoginStrValid(char *s)
 {
         while(*s != 0) {
                 if(((unsigned char)(*s)) < 32) {
@@ -630,7 +630,7 @@ int CProfiles::GetUInfo(DWORD idx, SProfile_UserInfo *FI)
 {
         if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_R)) == NULL)
                 return 0;
-        register DWORD x = (ReadUInfo(idx, FI) != 1);
+        DWORD x = (ReadUInfo(idx, FI) != 1);
         wcfclose(Fp_i);
         if(x) return 0;
         return 1;
@@ -641,7 +641,7 @@ int CProfiles::SetUInfo(DWORD idx, SProfile_UserInfo *FI)
         if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 return 0;
         lock_file(Fp_i);
-        register DWORD x = (WriteUInfo(idx, FI) != 1);
+        DWORD x = (WriteUInfo(idx, FI) != 1);
         unlock_file(Fp_i);
         wcfclose(Fp_i);
         if(x) return 0;
@@ -652,7 +652,7 @@ int CProfiles::GetFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
 {
         if((Fp_b = wcfopen(F_PROF_BODY, FILE_ACCESS_MODES_R)) == NULL)
                 return 0;
-        register DWORD x = (ReadFullInfo(idx, FI) != 1);
+        DWORD x = (ReadFullInfo(idx, FI) != 1);
         wcfclose(Fp_b);
         if(x) return 0;
         return 1;

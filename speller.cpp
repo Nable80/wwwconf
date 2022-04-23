@@ -80,8 +80,8 @@ int FilterBadWords(char *s)
                         toupperstr(dic);
                         while ((dic[0] != 0 ) && ((sx = strstr(ss, dic)) != NULL)) {
                                 x = 1;
-                                register DWORD tm = (DWORD)strlen(dic); 
-                                for(register DWORD j = 0; j < tm; j++) {
+                                DWORD tm = (DWORD)strlen(dic);
+                                for(DWORD j = 0; j < tm; j++) {
                                         s[sx - ss + j] = BAD_WORD_SYMBOL;
                                         sx[j] = BAD_WORD_SYMBOL;
                                 }
@@ -307,7 +307,7 @@ char* FilterWhitespaces(char *s)
 // return 1 if successfull, 0 otherwise
 int CheckIPinSubnet(char *IP, char *mask)
 {
-        register DWORD i = 0, sl = (DWORD)strlen(mask);
+        DWORD i = 0, sl = (DWORD)strlen(mask);
         if(sl == 0) return 1;
         while(strlen(IP) > i && sl > i && IP[i] == mask[i]) {
                 i++;

@@ -89,7 +89,7 @@ SPicConvert PicConvTable[BoardPicCount] = {
 /* parse string to nearest ';' or ':' */
 int inline ParseToOpenSmileTagorHttp(char *s)
 {
-        register unsigned int i = 0;
+        unsigned int i = 0;
 #if TRY_AUTO_URL_PREPARSE
         // find smile, ftp or http start
         while (s[i] != 0 && s[i] != ':' && s[i] != ';' && s[i] != 'h' && s[i] != 'f')
@@ -197,7 +197,7 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
                 *d = *s;
         }
         else {
-                register int ws = 0; // was space or tab
+                int ws = 0; // was space or tab
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
                         if (ReparseUrl(&s, &d, index, status)) {
@@ -260,7 +260,7 @@ int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, D
                 if(fstat) *flg = 1;
 #endif
 
-                for(register unsigned int j = 0; j < BoardPicCount; j++) {
+                for(unsigned int j = 0; j < BoardPicCount; j++) {
                         if(strlen(PicConvTable[j].tag) <= strlen(ss) && !index &&
                                 strncmp(ss, PicConvTable[j].tag, strlen(PicConvTable[j].tag)) == 0 && ((status & 1) == 0) ) {
                                 wassmile = 1;
@@ -299,10 +299,10 @@ next_sym: ;
  */
 char* strins(char *d, const char *s, int index)
 {
-        register char *p = d + index; // from
-        register char *t = d + index + strlen(s); // to
-        register unsigned int x = strlen(d) - index; // count
-        for(register int j = x; j >= 0; j--) t[j] = p[j];
+        char *p = d + index; // from
+        char *t = d + index + strlen(s); // to
+        unsigned int x = strlen(d) - index; // count
+        for(int j = x; j >= 0; j--) t[j] = p[j];
         t[x+1] = 0;
         strncpy(p, s, strlen(s));
         return d;
@@ -312,7 +312,7 @@ char* strins(char *d, const char *s, int index)
 /* parse string up to nearest =, WC_TAG_OPEN/CLOSE */
 int inline ParseRegExp(char *s)
 {
-        register int i = 0;
+        int i = 0;
         while(s[i] != 0 && s[i] != '=' && s[i] != WC_TAG_CLOSE && s[i] != WC_TAG_OPEN) i++;
         return i;
 }
@@ -320,7 +320,7 @@ int inline ParseRegExp(char *s)
 /* parse to nearest WC_TAG_OPEN */
 int inline ParseToOpenWC_TAG(char *s)
 {
-        register int i = 0;
+        int i = 0;
         while (s[i] && s[i] != WC_TAG_OPEN)
                 ++i;
         return i;
@@ -329,7 +329,7 @@ int inline ParseToOpenWC_TAG(char *s)
 /* parse to nearest WC_TAG_CLOSE */
 int inline ParseToCloseWC_TAG(char *s)
 {
-        register int i = 0;
+        int i = 0;
         while(s[i] != 0 && s[i] != WC_TAG_CLOSE) i++;
         return i;
 }
@@ -557,7 +557,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         // ignore ending newline
         {
                 int sl = strlen(s);
-                register int k;
+                int k;
                 for(k = sl; k>0; k--) {
                         if(!(s[k - 1] == '\r' || s[k - 1] == '\n'))
                                 break;
@@ -776,7 +776,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                 goto parse_next;
 ignore_tag:
                 if((*s) != 0) {
-                        register char si;
+                        char si;
                         si = *(s + 1);
                         *(s +1 ) = 0;
                         strcat(st, s);
@@ -801,14 +801,14 @@ parse_next:
         if(StringTooLong) {
                 /* too long string */
                 free(st);
-                for(register DWORD i = 0; i<opentag; i++) {
+                for(DWORD i = 0; i<opentag; i++) {
                         free(OldTag[i].oldexp);
                         free(OldTag[i].tagexp);
                 }
                 return 0;
         }
         if(opentag) {
-                register DWORD k;
+                DWORD k;
                 for(k = opentag; k > 0; k--)
                         strins(st, OldTag[k - 1].oldexp, OldTag[k - 1].index);
 

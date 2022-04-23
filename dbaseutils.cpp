@@ -6,7 +6,7 @@
 DWORD Fsize(const char *s)
 {
         WCFILE *f;
-        register DWORD r;
+        DWORD r;
         if((f = wcfopen(s, FILE_ACCESS_MODES_R)) == NULL) {
                         char ss[10000];
                         sprintf(ss, LOG_GETFILESIZEFAILED, s);

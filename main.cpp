@@ -138,8 +138,8 @@ char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing = 
 char* toupperstr(char *s)
 {
         if(s == NULL) return s;
-        register DWORD k = (DWORD)strlen(s);
-        for(register DWORD i = 0; i < k; i++) {
+        DWORD k = (DWORD)strlen(s);
+        for(DWORD i = 0; i < k; i++) {
                 if(s[i] >= 'à' && s[i] <= 'ÿ') {
                         s[i] -= ('à' - 'À');
                 }
@@ -2295,7 +2295,7 @@ int main()
         char *tst, *tms;
         tst = Cip;
         {
-                for(register DWORD i = 0; i < 4; i++)
+                for(DWORD i = 0; i < 4; i++)
                 {
                         if((tms = strchr(tst,'.')) != NULL || (tms = strchr(tst,'\0')) != NULL)
                         {
