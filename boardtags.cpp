@@ -294,19 +294,18 @@ next_sym: ;
         return wassmile;
 }
 
-/* insert string s to string d at position index
- * return d, DOES NOT CONTROL ANY ERRORS
+/* insert string 'src' into string 'dst' at position 'index'
+ * returns 'dst', DOES NOT CONTROL ANY ERRORS
  */
-char* strins(char *d, const char *s, int index)
+char* strins(char *dst, const char *src, int index)
 {
-        char *p = d + index; // from
-        char *t = d + index + strlen(s); // to
-        unsigned int x = strlen(d) - index; // count
-        for(int j = x; j >= 0; j--) t[j] = p[j];
-        t[x+1] = 0;
-        strncpy(p, s, strlen(s));
-        return d;
-        
+        char *insert_pos = dst + index;
+        size_t insert_len = strlen(src);
+        // move tail (including '\0' terminator) to the right:
+        memmove(insert_pos + insert_len, insert_pos, strlen(dst) + 1 - index);
+        // copy inserted bytes:
+        memcpy(insert_pos, src, insert_len);
+        return dst;
 }
 
 /* parse string up to nearest =, WC_TAG_OPEN/CLOSE */
