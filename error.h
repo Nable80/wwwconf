@@ -17,7 +17,7 @@
         printwidehtmlerror(__FILE__, __LINE__, ss); }
 
 void print2log(const char *s, ...);
-int printwidehtmlerror(const char *file, DWORD line, const char *s);
+[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s);
 
 extern int error_type;
 

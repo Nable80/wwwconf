@@ -126,7 +126,7 @@ void print2log(const char *s, ...)
 
 
 /* print error to file [file] at line [line] and message then immediately exit */
-int printwidehtmlerror(const char *file, DWORD line, const char *s)
+[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s)
 {
 #if ENABLE_LOG
         print2log(LOG_UNHANDLED, file, line, getenv(REMOTE_ADDR),

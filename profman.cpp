@@ -120,6 +120,7 @@ void printerror(DWORD er)
         switch(er) {
         case PROFILE_RETURN_ALLOK:
                 printf("All ok\n");
+                break;
         case PROFILE_RETURN_ALREADY_EXIST:
                 printf("User already exits\n");
                 break;

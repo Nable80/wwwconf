@@ -2187,6 +2187,7 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
         case MSG_CHK_ERROR_INVISIBLE:
                 *c_par1 = MESSAGEMAN_invisible;
                 *c_par2 = MESSAGEMAN_invisible2;
+                break;
         default:
                 *c_par1 = MESSAGEMAIN_unknownerr;
                 *c_par2 = MESSAGEMAIN_unknownerr2;
