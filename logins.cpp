@@ -194,7 +194,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
                 /* read error */
                         free(buf);
                         for(i = 0; i < cn; i++)  free((*buflist)[i]);
-                        free(buflist);
+                        free(*buflist);
                         *buflist = NULL;
                         unlock_and_logins_io_error();
                 }

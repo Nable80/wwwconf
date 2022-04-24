@@ -1,5 +1,6 @@
 *.o
 .depend
+tags
 dbtool
 index.cgi
 /data

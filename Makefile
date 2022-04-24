@@ -1,17 +1,16 @@
-#
-# Makefile for wwwconf, version by alec@3ka.mipt.ru
-# Created 24.01.2003
-#
+#!/usr/bin/make -f
 
-.PHONY: debug
-
-debug: all
+.PHONY: debug release all
 
 CXX ?= g++
-ifeq ($(MAKECMDGOALS), debug)
-CXXFLAGS=-m32 -ggdb3 -O0 -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic -Wno-invalid-source-encoding
-else
-CXXFLAGS=-m32 -O2 -fomit-frame-pointer -fno-exceptions -Wall -Wextra -Werror -Wfatal-errors -pedantic -Wno-invalid-source-encoding
+CXXFLAGS = -m32 -fno-exceptions -pedantic $(OPT_FLAGS)
+CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef
+
+# TODO: enable these options and fix tons of uncovered problems
+#CXXFLAGS += -Wcast-qual -Wconversion
+
+ifeq ($(CXX), clang++)
+CXXFLAGS += -Wno-invalid-source-encoding -Wno-error=pragma-pack
 endif
 
 INDEX_SRCS=statfs.cpp dbaseutils.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp profiles.cpp logins.cpp hashindex.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp
@@ -20,6 +19,15 @@ SRCS=$(INDEX_SRCS) $(DBTOOL_SRCS)
 
 INDEX_OBJS=$(INDEX_SRCS:.cpp=.o)
 DBTOOL_OBJS=$(DBTOOL_SRCS:.cpp=.o)
+
+debug: OPT_FLAGS=-ggdb3 -O0
+debug: all
+
+release: OPT_FLAGS=-g -O2 -fomit-frame-pointer -flto
+release: all
+
+all: index.cgi dbtool
+	@echo Compiling Done
 
 .SUFFIXES: .cpp .o
 .cpp.o:
@@ -32,9 +40,6 @@ DBTOOL_OBJS=$(DBTOOL_SRCS:.cpp=.o)
 ifneq ($(MAKECMDGOALS), clean)
 include .depend
 endif
-
-all: index.cgi dbtool
-	@echo Compiling Done
 
 index.cgi: $(INDEX_OBJS) .depend
 	$(CXX) $(CXXFLAGS) -o index.cgi -Wl,-\( $(INDEX_OBJS) -Wl,-\)
