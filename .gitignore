@@ -1,5 +1,6 @@
 *.o
 .depend
+cscope.out
 tags
 dbtool
 index.cgi

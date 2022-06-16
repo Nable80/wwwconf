@@ -20,7 +20,7 @@ SRCS=$(INDEX_SRCS) $(DBTOOL_SRCS)
 INDEX_OBJS=$(INDEX_SRCS:.cpp=.o)
 DBTOOL_OBJS=$(DBTOOL_SRCS:.cpp=.o)
 
-debug: OPT_FLAGS=-ggdb3 -O0
+debug: OPT_FLAGS=-g3 -ggdb3 -O0
 debug: all
 
 release: OPT_FLAGS=-g -O2 -fomit-frame-pointer -flto

@@ -35,6 +35,16 @@ void printusage(char *iam)
                " -vs             - set default view settings for all users\n"
                " -fixcr          - replace '\\r' by '\\n' in all message bodies\n",
                iam);
+        printf("Format info:\n"
+               " sizeof(SPersonalMessage) = %zu (0x%zX)\n"
+               " sizeof(SViewSettings) = %zu (0x%zX)\n"
+               " sizeof(SProfile_FullUserInfo) = %zu (0x%zX)\n"
+               " sizeof(SProfile_UserInfo) = %zu (0x%zX)\n",
+               sizeof(SPersonalMessage), sizeof(SPersonalMessage),
+               sizeof(SViewSettings), sizeof(SViewSettings),
+               sizeof(SProfile_FullUserInfo), sizeof(SProfile_FullUserInfo),
+               sizeof(SProfile_UserInfo), sizeof(SProfile_UserInfo)
+        );
 }
 
 void printuserrigth(DWORD r)
