@@ -63,7 +63,7 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
         // Standard mersenne_twister_engine seeded with rand_dev()
         std::random_device rand_dev;
         std::mt19937 rand_gen(rand_dev());
-        std::uniform_int_distribution<DWORD> dword_distrib(0, UINT32_MAX);
+        std::uniform_int_distribution<DWORD> dword_distrib(1, UINT32_MAX);
 L_Try:
 //        print2log("->>> %d", ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SAuthUserSeq)));
         id = dword_distrib(rand_gen);

@@ -142,7 +142,7 @@ public:
         void PrintXmlIndex(DWORD from, DWORD to);
         void PrintXmlfpIndex(DWORD from, DWORD to);
 
-        int DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
+        int DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
         int DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CFlags, char **banreason);
         int PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD viewinv, int *updated);
         

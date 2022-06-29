@@ -2195,20 +2195,6 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
         }
 }
 
-int ConvertHex(char *s, char *res)
-{
-        int i = 0;
-        if(!s) return 0;
-        while(*s != 0 && *(s+1) != 0) {
-#define FROM_HEX(x) ((x >= 'A' && x <= 'F') ? (x-'A' + 10) : \
-        (x >= 'a' && x <= 'f') ? (x-'a' + 10) : (x - '0'))
-                res[i] = FROM_HEX(*s)*16 + FROM_HEX(*(s+1));
-                i++;
-                s+=2;
-        }
-        return i;
-}
-
 int main()
 {
         char *deal, *st, *mesb;
@@ -2325,11 +2311,8 @@ int main()
         /************ get user info from session ************/
         {
                 DWORD tmp[2];
-                if(strlen(cookie_seq) == 16 &&
-                        ConvertHex(cookie_seq, (char*)&tmp) == 8)
+                if(strlen(cookie_seq) == 16 && sscanf(cookie_seq, "%8lx%8lx", &tmp[0], &tmp[1]) == 2)
                 {
-                        tmp[0] = ntohl(tmp[0]);        // use network order due printf()
-                        tmp[1] = ntohl(tmp[1]);
                         // if session code not zero let's open session
                         if(tmp[0] != 0 && tmp[1] != 0)
                         {

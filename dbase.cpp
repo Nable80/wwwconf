@@ -944,7 +944,7 @@ DB_Base::~DB_Base()
  * this function DOESN'T SET CURRENT DATE AND TIME
  * returns 0 if successfull, otherwise error code returned
  */
-int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char** body,
+int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, char** body,
                               DWORD CFlags, char *passw, char **banreason)
 {
         DWORD fp,fl;
@@ -1060,7 +1060,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, WORD msize, char
 
 
         if(*body != NULL && **body != 0)
-                msize = (WORD)(strlen(*body) + 1);
+                msize = strlen(*body) + 1;
         else
                 msize = 0;
 
