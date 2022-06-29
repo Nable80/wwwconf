@@ -60,13 +60,17 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
         }
 
         // Generate random sequence for user session
-        // if generated sequence exist regenerate it again
+        // Standard mersenne_twister_engine seeded with rand_dev()
+        std::random_device rand_dev;
+        std::mt19937 rand_gen(rand_dev());
+        std::uniform_int_distribution<DWORD> dword_distrib(0, UINT32_MAX);
 L_Try:
 //        print2log("->>> %d", ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SAuthUserSeq)));
-        id = rand32();
-        id1 = rand32();
+        id = dword_distrib(rand_gen);
+        id1 = dword_distrib(rand_gen);
         el = -1;
         for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++) {
+                // regenerate id/id1 if the same sequence already exists
                 if(buf[i].ID[0] == id && buf[i].ID[1] == id1)
                         goto L_Try;
                 if(buf[i].ExpireDate < tn) {

@@ -16,6 +16,7 @@
 #include <locale.h>
 #include <errno.h>
 #include <ctype.h>
+#include <random>
 
 
 #define UNUSED(x) x __attribute__((__unused__))

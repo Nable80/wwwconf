@@ -39,11 +39,4 @@ int MarkPostfromIPInvalid(DWORD IP, int TimeInterval);
 int CheckPostfromIPValidity(DWORD IP, int TimeInterval);
 
 int CheckReadValidity(DWORD IP, DWORD MsgIndex);
-
-unsigned long rand32(void);
-
-void init_rand(unsigned short seed_a = 1991, unsigned short seed_b = 9880);
-
-void MakeSHA(char *origstring, char *shastring);
-
 #endif
