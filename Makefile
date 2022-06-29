@@ -4,10 +4,10 @@
 
 CXX ?= g++
 CXXFLAGS = -m32 -fno-exceptions -pedantic $(OPT_FLAGS)
-CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef
+CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion -Wno-error=conversion
 
-# TODO: enable these options and fix tons of uncovered problems
-#CXXFLAGS += -Wcast-qual -Wconversion
+# TODO: enable more options and fix tons of uncovered problems
+#CXXFLAGS += -Wcast-qual
 
 ifeq ($(CXX), clang++)
 CXXFLAGS += -Wno-invalid-source-encoding -Wno-error=pragma-pack

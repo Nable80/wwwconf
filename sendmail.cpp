@@ -11,7 +11,10 @@
 #include "error.h"
 
 
-static unsigned char dtable[512];
+static const unsigned char dtable[] =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  "abcdefghijklmnopqrstuvwxyz"
+  "0123456789+/";
 
 void buffer_new(struct buffer_st *b)
 {
@@ -36,8 +39,6 @@ void buffer_add(struct buffer_st *b, char c)
 void buffer_end(struct buffer_st *b)
 {
     b->data[b->offset++]= 0;
-    //b->data = (char *)realloc(b->data, b->offset++);
-  
 }
 
 void buffer_delete(struct buffer_st *b)
@@ -49,27 +50,12 @@ void buffer_delete(struct buffer_st *b)
   b->data = NULL;
 }
 
-
-
-
 void base64_encode(struct buffer_st *b, const char *source, int length)
 {
   int i, hiteof = 0;
   int offset = 0;
   
   buffer_new(b);
-  
-  /*        Fill dtable with character encodings.  */
-  
-  for (i = 0; i < 26; i++) {
-    dtable[i] = 'A' + i;
-    dtable[26 + i] = 'a' + i;
-  }
-  for (i = 0; i < 10; i++) {
-    dtable[52 + i] = '0' + i;
-  }
-  dtable[62] = '+';
-  dtable[63] = '/';
   
   while (!hiteof) {
     unsigned char igroup[3], ogroup[4];
