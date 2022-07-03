@@ -82,7 +82,7 @@ struct SViewSettings
         unsigned char ss:3;
         unsigned char lsel:2;
         unsigned char tt:4;
-        char tz:5;
+        signed char tz:5;
         unsigned char resrvd:2;
 };
 

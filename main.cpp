@@ -3478,15 +3478,17 @@ int main()
                                         //
 
                                         if((ULogin.LU.ID[0] != 0) && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS) ){
-                                                        
-                                                ULogin.pui->vs.dsm = currentdsm;
+                                                // Bit-field usage in SViewSettings is awful but we have to keep this structure
+                                                // as-is for some time and to add hacks to silence -Wconversion warnings here,
+                                                // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=39170 for details
+                                                ULogin.pui->vs.dsm = (WORD)currentdsm;
                                                 ULogin.pui->vs.topics = currenttopics;
-                                                ULogin.pui->vs.tv = currenttv;
-                                                ULogin.pui->vs.tc = currenttc;
-                                                ULogin.pui->vs.ss = currentss;
-                                                ULogin.pui->vs.lsel = currentlsel;
-                                                ULogin.pui->vs.tt = currenttt;
-                                                ULogin.pui->vs.tz = currenttz;
+                                                ULogin.pui->vs.tv = (WORD)currenttv;
+                                                ULogin.pui->vs.tc = (WORD)currenttc;
+                                                ULogin.pui->vs.ss = currentss & 7;
+                                                ULogin.pui->vs.lsel = currentlsel & 3;
+                                                ULogin.pui->vs.tt = currenttt & 0x0F;
+                                                ULogin.pui->vs.tz = currenttz & 0x0F;
                                 
                                                 CProfiles *uprof;
                                                 uprof = new CProfiles();

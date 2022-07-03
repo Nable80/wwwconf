@@ -4,7 +4,7 @@
 
 CXX ?= g++
 CXXFLAGS = -m32 -fno-exceptions -pedantic $(OPT_FLAGS)
-CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion -Wno-error=conversion
+CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion
 
 # TODO: enable more options and fix tons of uncovered problems
 #CXXFLAGS += -Wcast-qual
