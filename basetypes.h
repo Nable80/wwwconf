@@ -57,13 +57,14 @@ const char *GetBoardUrl();
 // banned ip check before post message
 #define BANNED_CHECK 1
 
-// if message body not have be empty
-#define MSG_REQURED_BODY 0
+// whether message body must be non-empty
+#define MSG_REQUIRED_BODY 0
 
-// enable IP to DNS name reslove Host Addresses
+// resolve IP addresses to hostnames
 #define IP_TO_HOSTNAME_RESOLVE 1
 
-#define DATETIME_DEFAULT_TIMEZONE 4
+// use MSK (UTC+3) timezone by default
+#define DATETIME_DEFAULT_TIMEZONE 3
 
 // show or not host names in messages
 #define SHOW_HOST_NAME 1

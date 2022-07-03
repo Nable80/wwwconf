@@ -392,7 +392,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
 
         if(strlen(mes->MessageHeader) == 0 || strcmp(mes->MessageHeader, " ") == 0) return MSG_CHK_ERROR_NOMSGHEADER;
         
-#if MSG_REQURED_BODY
+#if MSG_REQUIRED_BODY
         if(strlen(body) == 0) return MSG_CHK_ERROR_NOMSGBODY;
 #endif
         
