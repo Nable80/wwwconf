@@ -837,8 +837,7 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
         SMessageTable *tbls;
         SMessage *msgs;
         DWORD shouldprint = 0xFFFFFFFF, skipped = 0;
-        long size;
-        size_t lefttoread;
+        DWORD lefttoread;
         int LastLevel = 0;
         int firprn = 1;
         
@@ -861,13 +860,9 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
         if ( (fi = fopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL)
                 printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_INDEX);
 
-        if (fseek(fi, 0, SEEK_END))
+        if (wcfseek(fi, 0, SEEK_END))
                 printhtmlerror();
-        if ( (size = ftell(fi)) == -1)
-                printhtmlerror();
-        // for unknown reason ftell() returns long
-        // which is not comroftable to use
-        lefttoread = size;
+        lefttoread = wcftell(fi);
         if (lefttoread % sizeof(SMessageTable))
                 printhtmlerror();
         
@@ -884,7 +879,7 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
                         lefttoread;
                 lefttoread -= toread;
 
-                if (fseek(fi, lefttoread, SEEK_SET))
+                if (wcfseek(fi, lefttoread, SEEK_SET))
                         printhtmlerror();
                 if (!fCheckedRead(tbls, toread, fi))
                         printhtmlerror();
@@ -894,7 +889,7 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
                         size_t lefttoread = 1 + (dir ? tbls[i].end - tbls[i].begin : tbls[i].begin - tbls[i].end);
 
                         if (dir)  // forward direction
-                                if (fseek(fm, tbls[i].begin, SEEK_SET))
+                                if (wcfseek(fm, tbls[i].begin, SEEK_SET))
                                         printhtmlerror();
                         while (lefttoread) {
                                 size_t toread;
@@ -904,7 +899,7 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
                                 lefttoread -= toread;
 
                                 if (!dir)  // backward direction
-                                        if (fseek(fm, tbls[i].end + lefttoread, SEEK_SET))
+                                        if (wcfseek(fm, tbls[i].end + lefttoread, SEEK_SET))
                                                 printhtmlerror();
                                 
                                 if (!fCheckedRead(msgs, toread, fm))

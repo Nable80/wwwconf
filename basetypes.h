@@ -230,11 +230,11 @@ typedef unsigned long DWORD;
 
 #define wcfopen fopen
 #define wcfclose fclose
-#define wcfseek fseek
+#define wcfseek fseeko
 #define wcfeof feof
 #define wcfread fread
 #define wcfwrite fwrite
-#define wcftell ftell
+#define wcftell (DWORD)ftello
 #define wcfflush fflush
 
 #define lock_file(a)        {fflush(a);flock(fileno(a), LOCK_EX);}

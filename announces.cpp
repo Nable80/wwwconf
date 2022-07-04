@@ -145,7 +145,7 @@ int ReadGlobalAnnounces(SGlobalAnnounce **ga, DWORD *cnt)
                         return ANNOUNCES_RETURN_IO_ERROR;
                 }
         }
-        if(fseek(f, sizeof(DWORD), SEEK_SET) != 0) {
+        if(wcfseek(f, sizeof(DWORD), SEEK_SET) != 0) {
                 free(an);
                 return ANNOUNCES_RETURN_IO_ERROR;
         }

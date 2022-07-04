@@ -46,7 +46,7 @@ int ReadDBMessageBody(char *buf, DWORD index, DWORD size)
 {
         FILE *f;
         if((f = fopen(F_MSGBODY, FILE_ACCESS_MODES_R)) == NULL)return 0;
-        if(fseek(f, index, SEEK_SET) != 0) return 0;
+        if(wcfseek(f, index, SEEK_SET) != 0) return 0;
         if(fread(buf, 1, size, f) != size) return 0;
         fclose(f);
         return 1;
@@ -79,7 +79,7 @@ int WriteDBMessageBody(char *buf, DWORD index, DWORD size)
 {
         FILE *f;
         if((f = fopen(F_MSGBODY, FILE_ACCESS_MODES_RW)) == NULL)return 0;
-        if(fseek(f, index, SEEK_SET) != 0) return 0;
+        if(wcfseek(f, index, SEEK_SET) != 0) return 0;
         if(fwrite(buf, 1, size, f) != size) return 0;
         fclose(f);
         return 1;
