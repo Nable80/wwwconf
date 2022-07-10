@@ -124,7 +124,7 @@ void printuserrigth(DWORD r)
         printf("\n");
 }
 
-void printerror(DWORD er)
+void printerror(int er)
 {
         printf("Result: ");
         switch(er) {
@@ -287,7 +287,7 @@ int CreateFullDatabase()
 int main(int argc, char *argv[])
 {
         CProfiles *ul;
-        DWORD errcode;
+        int errcode;
 
         SProfile_UserInfo ui;
         WCFILE *fw;

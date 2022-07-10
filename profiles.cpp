@@ -320,12 +320,12 @@ Unlock_and_return:
  */
 int CProfiles::DeleteUser(char *name)
 {
-        DWORD ret, idx, ucount;
+        DWORD idx, ucount;
         SProfile_UserInfo *pi;
         Fp_i = NULL;
         Fp_b = NULL;
 
-        ret = GetIndexOfString(name, &idx);
+        int ret = GetIndexOfString(name, &idx);
 
         switch(ret) {
         case HASHINDEX_ER_NOT_FOUND:
@@ -424,7 +424,7 @@ Do_Exit:
  */
 int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index)
 {
-        DWORD ret, idx;
+        DWORD idx;
         SProfile_UserInfo *pi;
         Fp_i = NULL;
         Fp_b = NULL;
@@ -432,7 +432,7 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
         if(!isLoginStrValid(newprf->username) || strlen(newprf->username) < 3)
                 return PROFILE_RETURN_INVALID_LOGIN;
 
-        ret = GetIndexOfString(newprf->username, &idx);
+        int ret = GetIndexOfString(newprf->username, &idx);
 
         switch(ret) {
         case HASHINDEX_ER_NOT_FOUND:
@@ -544,10 +544,10 @@ Do_Exit:
  */
 int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index)
 {
-        DWORD ret, idx;
+        DWORD idx;
         SProfile_UserInfo *pi;
 
-        ret = GetIndexOfString(name, &idx);
+        int ret = GetIndexOfString(name, &idx);
         // error code returned - next strings - analizing it
 
         switch(ret) {
@@ -705,7 +705,7 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
                                         if((pi[i].right & USERRIGHT_SUPERUSER))
                                                 pi[i].right = USERRIGHT_SUPERUSER;
                                         // store it
-                                        int len = (int)strlen(pi[i].username) + 1;
+                                        size_t len = strlen(pi[i].username) + 1;
                                         (*buf)[c] = (char*)malloc(len + 5*sizeof(DWORD) + 1);
                                         memcpy(((char*)((*buf)[c])), &pi[i].lastIP, sizeof(DWORD));
                                         memcpy(((char*)((*buf)[c])) + 4, &pi[i].postcount, sizeof(DWORD));

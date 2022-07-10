@@ -45,7 +45,7 @@ DWORD hashstr(const char *s, DWORD m)
 {
         DWORD sum = 0;
         for(; *s != 0; s++) {
-                sum = sum + (*s);
+                sum += (DWORD)(*s & 0xFF);
         }
         return (sum % m);
 }
