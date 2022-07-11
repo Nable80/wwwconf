@@ -23,7 +23,7 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
 {
         SSavedAuthSeq *buf;
         WCFILE *f;
-        int el;
+        DWORD el;
         DWORD id, id1, rr = 0, i, ii;
 
         /* set creation time */
@@ -68,13 +68,15 @@ L_Try:
 //        print2log("->>> %d", ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SAuthUserSeq)));
         id = dword_distrib(rand_gen);
         id1 = dword_distrib(rand_gen);
-        el = -1;
+        el = UINT32_MAX;
         for(i = 0; i < ((ii-1)*SEQUENCE_READ_COUNT + (rr+1)/sizeof(SSavedAuthSeq)); i++) {
                 // regenerate id/id1 if the same sequence already exists
                 if(buf[i].ID[0] == id && buf[i].ID[1] == id1)
                         goto L_Try;
                 if(buf[i].ExpireDate < tn) {
-                        if(el < 0) el = i;
+                        if(el == UINT32_MAX) {
+                                el = i;
+                        }
                 }
         }
 
@@ -85,7 +87,7 @@ L_Try:
         ui->ID[1] = id1;
         ui->ExpireDate = time(NULL) + SEQUENCE_LIVE_TIME;
 
-        if(el < 0) {
+        if(el == UINT32_MAX) {
                 if(wcfseek(f, 0, SEEK_END) < 0)
                         unlock_and_logins_io_error();
         }

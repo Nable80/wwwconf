@@ -12,6 +12,7 @@
 #include "basetypes.h"
 #include "profiles.h"
 
+// TODO: get rid of this chunking and read the whole authuser.dat with just one call
 #define SEQUENCE_READ_COUNT 1000
 #define SEQUENCE_LIVE_TIME USER_SESSION_LIVE_TIME
 
