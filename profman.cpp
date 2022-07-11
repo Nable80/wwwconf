@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "announces.h"
 #include "basetypes.h"
 #include "profiles.h"
 #include "dbaseutils.h"
@@ -37,12 +38,14 @@ void printusage(char *iam)
                " -fixcr          - replace '\\r' by '\\n' in all message bodies\n",
                iam);
         printf("Format info:\n"
+               " sizeof(SGlobalAnnounce) = %zu (0x%zX)\n"
                " sizeof(SSavedAuthSeq) = %zu (0x%zX)\n"
                " sizeof(SAuthUserSeq) = %zu (0x%zX)\n"
                " sizeof(SPersonalMessage) = %zu (0x%zX)\n"
                " sizeof(SViewSettings) = %zu (0x%zX)\n"
                " sizeof(SProfile_FullUserInfo) = %zu (0x%zX)\n"
                " sizeof(SProfile_UserInfo) = %zu (0x%zX)\n",
+               sizeof(SGlobalAnnounce), sizeof(SGlobalAnnounce),
                sizeof(SSavedAuthSeq), sizeof(SSavedAuthSeq),
                sizeof(SAuthUserSeq), sizeof(SAuthUserSeq),
                sizeof(SPersonalMessage), sizeof(SPersonalMessage),

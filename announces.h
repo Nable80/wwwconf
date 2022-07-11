@@ -25,7 +25,7 @@
 #define ANNOUNCES_UPDATE_OPT_FLAGS        0x04
 #define ANNOUNCES_UPDATE_OPT_TTL        0x08
 
-#pragma pack(1)
+#pragma pack(push, 1)
 struct SGlobalAnnounce {
         char Announce[GLOBAL_ANNOUNCE_MAXSIZE];
 
@@ -41,7 +41,8 @@ struct SGlobalAnnounce {
 
         DWORD Reserved[2];        // reserved for the future use
 };
-#pragma pack(4)
+static_assert(sizeof(SGlobalAnnounce) == 571, "sizeof(SGlobalAnnounce) must be 571 (0x23B)");
+#pragma pack(pop)
 
 /* Post announce as selected user.
  * It don't check security permitions of poster !

@@ -9,7 +9,7 @@
 #include "announces.h"
 #include "error.h"
 
-static void* CreateAnnounceFile()
+static FILE * CreateAnnounceFile()
 {
         FILE *f;
         f = fopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_CW);
@@ -24,26 +24,6 @@ static void* CreateAnnounceFile()
                 else {
                         fclose(f);
                         f = fopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_RW);
-                }
-        }
-        return f;
-}
-
-static void* CreateAnnounceWCFile()
-{
-        WCFILE *f;
-        f = wcfopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_CW);
-        if(f) {
-                // announces number starting from 1
-                DWORD x = 1;
-                // write starting unique id
-                if(wcfwrite(&x, 1, sizeof(x), f) != sizeof(x)) {
-                        wcfclose(f);
-                        f = NULL;
-                }
-                else {
-                        wcfclose(f);
-                        f = wcfopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_RW);
                 }
         }
         return f;
@@ -64,13 +44,13 @@ int ReadLastAnnounceNumber(DWORD *an)
 
 int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, DWORD flags)
 {
-        WCFILE *f;
+        FILE *f;
         DWORD siz;
         SGlobalAnnounce an;
         DWORD id;
 
         if((f = wcfopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_RW)) == NULL) {
-                if((f = (WCFILE*)CreateAnnounceWCFile()) == NULL) {
+                if((f = CreateAnnounceFile()) == NULL) {
                         return ANNOUNCES_RETURN_IO_ERROR;
                 }
         }
@@ -140,7 +120,7 @@ int ReadGlobalAnnounces(SGlobalAnnounce **ga, DWORD *cnt)
         if(!an) return ANNOUNCES_RETURN_LOW_RES;
 
         if((f = fopen(F_GLOBAL_ANN, FILE_ACCESS_MODES_R)) == NULL) {
-                if((f = (FILE*)CreateAnnounceFile()) == NULL) {
+                if((f = CreateAnnounceFile()) == NULL) {
                         free(an);
                         return ANNOUNCES_RETURN_IO_ERROR;
                 }
@@ -203,7 +183,7 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
         }
         if(an->Number == id) {
                 // let's delete it
-                int i = 0;
+                unsigned i = 0;
                 while(!wcfeof(f))
                 {
                         if((rd = wcfread(&(an[i]), 1, sizeof(SGlobalAnnounce), f)) != sizeof(SGlobalAnnounce)) {
