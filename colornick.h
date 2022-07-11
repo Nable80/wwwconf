@@ -21,13 +21,13 @@ private:
         WCFILE *f;
         char ifname[1000];
         std::tr1::unordered_map<DWORD, char*> nmap;
-#pragma pack(1)
+#pragma pack(push, 1)
         typedef struct _AltNamesStruct {
                 DWORD uid;
                 char rname[MAX_REAL_NICK_SIZE];
                 char aname[MAX_ALT_NICK_SIZE];
         } AltNamesStruct, *PAltNamesStruct;
-#pragma pack(4)
+#pragma pack(pop)
 public:
         CAltNamesParser(const char *fname, bool &init);
         ~CAltNamesParser();

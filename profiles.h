@@ -57,7 +57,7 @@
 
 #define PROFILE_WASTED_FINFO_SIZE        sizeof(SProfile_FullUserInfo) - sizeof(char*)
 
-#define PROFILE_PERSONAL_MESSAGE_LENGHT        385
+#define PROFILE_PERSONAL_MESSAGE_LENGTH        385
 
 struct SPersonalMessage {
         DWORD Prev;
@@ -67,11 +67,11 @@ struct SPersonalMessage {
         char NameTo[PROFILES_MAX_USERNAME_LENGTH];
         DWORD UIdTo;
         time_t Date;
-        char Msg[PROFILE_PERSONAL_MESSAGE_LENGHT];
+        char Msg[PROFILE_PERSONAL_MESSAGE_LENGTH];
 };
 static_assert(sizeof(SPersonalMessage) == 472, "sizeof(SPersonalMessage) must be 472 (0x1D8)");
 
-#pragma pack(1)
+#pragma pack(push, 1)
 
 struct SViewSettings
 {
@@ -153,7 +153,7 @@ struct SProfile_UserInfo {
 };
 static_assert(sizeof(SProfile_UserInfo) == 316, "sizeof(SProfile_UserInfo) must be 316 (0x13C)");
 
-#pragma pack(4)
+#pragma pack(pop)
 
 class CProfiles {
 protected:

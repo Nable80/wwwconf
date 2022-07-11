@@ -418,7 +418,7 @@ static void PrintPrivateMessageForm(char *name, const char *body)
                 name, MESSAGEMAIN_privatemsg_send_msg_bdy);
 
         printf("<BR><TEXTAREA COLS=50 ROWS=7 NAME=\"body\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
-               PROFILE_PERSONAL_MESSAGE_LENGHT - 1, body);
+               PROFILE_PERSONAL_MESSAGE_LENGTH - 1, body);
 
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=80%% NOSHADE></TR><BR><TR><TD COLSPAN=2 ALIGN=CENTER>"
                 "<INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\">&nbsp;<INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\"></TD></TR></TABLE></FORM></CENTER>",
@@ -4598,7 +4598,7 @@ print2log("incor pass %s", par);
                                         body = fbody;
                                 }
                                 if(strcmp(body, "") != 0) bodyok = 1;
-                                if(strlen(body) > PROFILE_PERSONAL_MESSAGE_LENGHT - 1) tolong = 1;
+                                if(strlen(body) > PROFILE_PERSONAL_MESSAGE_LENGTH - 1) tolong = 1;
                         }
 
                         if(bodyok && nameok && (!tolong) && allowpmsg) {
