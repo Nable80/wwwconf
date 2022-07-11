@@ -336,56 +336,56 @@ typedef unsigned char BYTE;
 
 /********** bit masks **********/
 /********** Message flags ****************/
-#define MESSAGE_HAVE_PICTURE                0x0001
-#define MESSAGE_HAVE_URL                    0x0002
-#define MESSAGE_HAVE_BODY                   0x0004
-#define MESSAGE_IS_CLOSED                   0x0008
-#define MESSAGE_IS_INVISIBLE                0x0010
-#define MESSAGE_ENABLED_TAGS                0x0020
-#define MESSAGE_ENABLED_SMILES              0x0040        // affects only to HEADER of msg
-#define MESSAGE_MAIL_NOTIFIATION            0x0080
-#define MESSAGE_COLLAPSED_THREAD            0x0100        // collapsed thread
-#define MESSAGE_WAS_SIGNED                  0x0200        // message have signature
-#define MESSAGE_ENABLED_HTML                0x0400        // message in html format
-#define MESSAGE_HAVE_TEX                    0x0800
-#define MESSAGE_HAVE_TUB                    0x1000
+#define MESSAGE_HAVE_PICTURE                    0x0001u
+#define MESSAGE_HAVE_URL                        0x0002u
+#define MESSAGE_HAVE_BODY                       0x0004u
+#define MESSAGE_IS_CLOSED                       0x0008u
+#define MESSAGE_IS_INVISIBLE                    0x0010u
+#define MESSAGE_ENABLED_TAGS                    0x0020u
+#define MESSAGE_ENABLED_SMILES                  0x0040u       // affects only to HEADER of msg
+#define MESSAGE_MAIL_NOTIFIATION                0x0080u
+#define MESSAGE_COLLAPSED_THREAD                0x0100u       // collapsed thread
+#define MESSAGE_WAS_SIGNED                      0x0200u       // message have signature
+#define MESSAGE_ENABLED_HTML                    0x0400u       // message in html format
+#define MESSAGE_HAVE_TEX                        0x0800u
+#define MESSAGE_HAVE_TUB                        0x1000u
 
 
 /* for printhtmlmessage_in_index proc */
-#define MESSAGE_INDEX_PRINT_ITS_URL                0x0001
-#define MESSAGE_INDEX_DISABLE_ROLLED        0x0002
-#define MESSAGE_INDEX_PRINT_BLANK_URL        0x0004
+#define MESSAGE_INDEX_PRINT_ITS_URL             0x0001u
+#define MESSAGE_INDEX_DISABLE_ROLLED            0x0002u
+#define MESSAGE_INDEX_PRINT_BLANK_URL           0x0004u
 
 /* for user right - all modify/close/roll/delete modes affect ONLY on own posts! */
 
 #define USERRIGHT_COUNT                14
 
-#define USERRIGHT_SUPERUSER                                0x0001        // allow ALL rigth (skip all right test)
-#define USERRIGHT_VIEW_MESSAGE                        0x0002        // allow view messages in conference
-#define USERRIGHT_MODIFY_MESSAGE                0x0004        // modify (change) own messages
-#define USERRIGHT_CLOSE_MESSAGE                        0x0008        // close thread right
-#define USERRIGHT_OPEN_MESSAGE                        0x0010        // open thread right (form closed)
-#define USERRIGHT_CREATE_MESSAGE                0x0020        // create message (reply)
-#define USERRIGHT_CREATE_MESSAGE_THREAD        0x0040        // create message (new thread)
-#define USERRIGHT_ALLOW_HTML                        0x0080        // allow HTML right
-#define USERRIGHT_PROFILE_MODIFY                0x0100        // allow modify, delete own profile
-#define USERRIGHT_PROFILE_CREATE                0x0200        // allow create new profiles
-#define USERRIGHT_ROLL_MESSAGE                        0x0400        // roll thread right
-#define USERRIGHT_UNROLL_MESSAGE                0x0800        // unroll thread right
-#define USERRIGHT_POST_GLOBAL_ANNOUNCE        0x1000        // post global conference announce
-#define USERRIGHT_ALT_DISPLAY_NAME                0x2000        // alternative display name
+#define USERRIGHT_SUPERUSER                     0x0001u       // allow ALL rigth (skip all right test)
+#define USERRIGHT_VIEW_MESSAGE                  0x0002u       // allow view messages in conference
+#define USERRIGHT_MODIFY_MESSAGE                0x0004u       // modify (change) own messages
+#define USERRIGHT_CLOSE_MESSAGE                 0x0008u       // close thread right
+#define USERRIGHT_OPEN_MESSAGE                  0x0010u       // open thread right (form closed)
+#define USERRIGHT_CREATE_MESSAGE                0x0020u       // create message (reply)
+#define USERRIGHT_CREATE_MESSAGE_THREAD         0x0040u       // create message (new thread)
+#define USERRIGHT_ALLOW_HTML                    0x0080u       // allow HTML right
+#define USERRIGHT_PROFILE_MODIFY                0x0100u       // allow modify, delete own profile
+#define USERRIGHT_PROFILE_CREATE                0x0200u       // allow create new profiles
+#define USERRIGHT_ROLL_MESSAGE                  0x0400u       // roll thread right
+#define USERRIGHT_UNROLL_MESSAGE                0x0800u       // unroll thread right
+#define USERRIGHT_POST_GLOBAL_ANNOUNCE          0x1000u       // post global conference announce
+#define USERRIGHT_ALT_DISPLAY_NAME              0x2000u       // alternative display name
 
 
 /* configure view */
-#define CONFIGURE_dsm        0x000001
-#define CONFIGURE_clr        0x000002
-#define CONFIGURE_bot        0x000004
-#define CONFIGURE_onh        0x000008
-#define CONFIGURE_plu        0x000010
-#define CONFIGURE_host       0x000020
-#define CONFIGURE_nalt       0x000040
-#define CONFIGURE_dsig       0x000080
-#define CONFIGURE_shrp       0x000100
+#define CONFIGURE_dsm           0x000001u
+#define CONFIGURE_clr           0x000002u
+#define CONFIGURE_bot           0x000004u
+#define CONFIGURE_onh           0x000008u
+#define CONFIGURE_plu           0x000010u
+#define CONFIGURE_host          0x000020u
+#define CONFIGURE_nalt          0x000040u
+#define CONFIGURE_dsig          0x000080u
+#define CONFIGURE_shrp          0x000100u
 
 /* for virtual indexes */
 #define NO_MESSAGE_CODE        0xFFFFFFFF

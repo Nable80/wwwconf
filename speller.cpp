@@ -80,9 +80,9 @@ int FilterBadWords(char *s)
                         toupperstr(dic);
                         while ((dic[0] != 0 ) && ((sx = strstr(ss, dic)) != NULL)) {
                                 x = 1;
-                                DWORD tm = (DWORD)strlen(dic);
-                                for(DWORD j = 0; j < tm; j++) {
-                                        s[sx - ss + j] = BAD_WORD_SYMBOL;
+                                size_t tm = strlen(dic);
+                                for(size_t j = 0; j < tm; j++) {
+                                        s[(size_t)(sx - ss) + j] = BAD_WORD_SYMBOL;
                                         sx[j] = BAD_WORD_SYMBOL;
                                 }
                         }
@@ -90,8 +90,7 @@ int FilterBadWords(char *s)
         }
         else print2log(LOG_WARN_UNABLETOOPENFILE, F_BADWORDS);
         free(ss);
-        if(x) return 1;
-        else return 0;
+        return x;
 }
 
 #define min(a, b)                       \
@@ -99,7 +98,7 @@ int FilterBadWords(char *s)
         __typeof__(a) aa = (a);         \
         __typeof__(b) bb = (b);         \
         (aa < bb) ? aa : bb;            \
- })
+})
 
 // Detect a unicode symbol in the decimal base NSR format (&#%d;)
 // from the begin of string `s' and return its length.
@@ -117,7 +116,7 @@ static size_t unicode_len(const char *s)
         if (*ss != ';' || strtoul(s+2, NULL, 10) > 0x10ffff)
                 return 0;
 
-        return ss - s + 1;
+        return (size_t)(ss - s + 1);
 }
 
 // return filtered string with length not more than ml bytes (include '\0')
@@ -296,10 +295,13 @@ char *FilterBiDi(const char *s)
 // removing all white spaces from beginning and end of string
 char* FilterWhitespaces(char *s)
 {
-        while(isspace(((*s) & 0xff))) s++;
-        int h = 0, k = 0;
-        for(k = (int)strlen(s)-1; isspace((s[k] & 0xff)); k--) h++;
-        s[strlen(s) - h] = '\0';
+        while (isspace((unsigned char)(*s))) s++;
+        size_t len = strlen(s);
+        if (len > 0) {
+                for (size_t k = len - 1; isspace((unsigned char)s[k]); k--) {
+                        s[k] = '\0';
+                }
+        }
         return s;
 }
 
@@ -316,12 +318,12 @@ int CheckIPinSubnet(char *IP, char *mask)
         return 0;
 }
 
-int PrepareTextForPrint(char *msg, char **res, BYTE index, int flags)
+int PrepareTextForPrint(char *msg, char **res, BYTE index, DWORD flags)
 {
         DWORD tmp;
         char *st = NULL;
         int memalloc = 0;
-        int spfl = SPELLER_FILTER_HTML | SPELLER_PARSE_TAGS;
+        DWORD spfl = SPELLER_FILTER_HTML | SPELLER_PARSE_TAGS;
 
         *res = NULL;
 
@@ -441,8 +443,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
                 // HTML tags check and filtering (%lt, %gt)
                 char *st;
                 st = FilterHTMLTags(mes->MessageHeader, MESSAGE_HEADER_LENGTH);
-                st = FilterWhitespaces(st);
-                strcpy(mes->MessageHeader, st);
+                strcpy(mes->MessageHeader, FilterWhitespaces(st));
                 free(st);
                 st = FilterHTMLTags(mes->AuthorName, AUTHOR_NAME_LENGTH - 1);
                 strcpy(mes->AuthorName, st);
@@ -516,7 +517,7 @@ static char* replace(const char *s, const char *find, const char *subst)
         ssp = ss;
 
         while ( (sp = strstr(s, find))) {
-                strncpy(ssp, s, sp - s);
+                memcpy(ssp, s, (size_t)(sp - s));
                 ssp += sp - s;
                 strcpy(ssp, subst);
                 ssp += strlen(subst);
