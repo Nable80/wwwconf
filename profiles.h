@@ -69,7 +69,7 @@ struct SPersonalMessage {
         time_t Date;
         char Msg[PROFILE_PERSONAL_MESSAGE_LENGHT];
 };
-
+static_assert(sizeof(SPersonalMessage) == 472, "sizeof(SPersonalMessage) must be 472 (0x1D8)");
 
 #pragma pack(1)
 
@@ -85,6 +85,7 @@ struct SViewSettings
         signed char tz:5;
         unsigned char resrvd:2;
 };
+static_assert(sizeof(SViewSettings) == 12, "sizeof(SViewSettings) must be 12 (0xC)");
 
 /* Full user information */
 struct SProfile_FullUserInfo {
@@ -102,6 +103,7 @@ struct SProfile_FullUserInfo {
         DWORD size;
         char *AboutUser;
 };
+static_assert(sizeof(SProfile_FullUserInfo) == 1032, "sizeof(SProfile_FullUserInfo) must be 1032 (0x408)");
 
 /* Structure which keep information about user in profiles database */
 struct SProfile_UserInfo {
@@ -149,6 +151,8 @@ struct SProfile_UserInfo {
         // index in profile bodies file of structure with common user information
         DWORD FullInfo_ID;
 };
+static_assert(sizeof(SProfile_UserInfo) == 316, "sizeof(SProfile_UserInfo) must be 316 (0x13C)");
+
 #pragma pack(4)
 
 class CProfiles {

@@ -12,6 +12,7 @@
 #include "profiles.h"
 #include "dbaseutils.h"
 #include "error.h"
+#include "logins.h"
 
 #define DIR_CREATION_MASK    511
 #define FILES_CREATION_MASK  511
@@ -36,10 +37,14 @@ void printusage(char *iam)
                " -fixcr          - replace '\\r' by '\\n' in all message bodies\n",
                iam);
         printf("Format info:\n"
+               " sizeof(SSavedAuthSeq) = %zu (0x%zX)\n"
+               " sizeof(SAuthUserSeq) = %zu (0x%zX)\n"
                " sizeof(SPersonalMessage) = %zu (0x%zX)\n"
                " sizeof(SViewSettings) = %zu (0x%zX)\n"
                " sizeof(SProfile_FullUserInfo) = %zu (0x%zX)\n"
                " sizeof(SProfile_UserInfo) = %zu (0x%zX)\n",
+               sizeof(SSavedAuthSeq), sizeof(SSavedAuthSeq),
+               sizeof(SAuthUserSeq), sizeof(SAuthUserSeq),
                sizeof(SPersonalMessage), sizeof(SPersonalMessage),
                sizeof(SViewSettings), sizeof(SViewSettings),
                sizeof(SProfile_FullUserInfo), sizeof(SProfile_FullUserInfo),

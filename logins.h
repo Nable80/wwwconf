@@ -24,6 +24,7 @@ struct SSavedAuthSeq {
         DWORD SIndex;                //        Index in profindex file
         time_t ExpireDate;        //        Expiration date of the session
 };
+static_assert(sizeof(SSavedAuthSeq) == 24, "sizeof(SSavedAuthSeq) must be 24 (0x18)");
 
 struct SAuthUserSeq {
         /* sequence number */
@@ -41,6 +42,7 @@ struct SAuthUserSeq {
         // Expiration date of the session
         time_t ExpireDate;
 };
+static_assert(sizeof(SAuthUserSeq) == 28, "sizeof(SAuthUserSeq) must be 28 (0x1C)");
 
 /* contain information about logged in user or
  * about default user
