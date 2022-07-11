@@ -19,7 +19,7 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         DWORD tm, tm1, fin, fin1;
         int disfileok = 0, addfileok = 0, finalizedone = 0, swapdone = 0;
         hostcnt = hitcnt = 0;
-        DWORD crtime = time(NULL);
+        DWORD crtime = (DWORD)time(NULL);
 
         if((f = wcfopen(F_ACTIVITYLOG1, FILE_ACCESS_MODES_RW)) == NULL) {
                 // create file
@@ -157,7 +157,7 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         for(i = 0; i < cn; i++) {
                                 if(buf[i].IP == IP) {
                                         buf[i].Count++;
-                                        buf[i].Time = time(NULL);
+                                        buf[i].Time = (DWORD)time(NULL);
                                         done = 1;
                                         wcfseek(f, pos, SEEK_SET);
                                         fCheckedWrite(buf, sizeof(SActivityLogRecord)*(i+1), f);

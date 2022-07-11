@@ -10,8 +10,7 @@
 #include "messages.h"
 #include "error.h"
 
-
-static const unsigned char dtable[] =
+static const char dtable[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   "abcdefghijklmnopqrstuvwxyz"
   "0123456789+/";
@@ -19,7 +18,7 @@ static const unsigned char dtable[] =
 void buffer_new(struct buffer_st *b)
 {
   b->length = 512;
-  b->data = (char *)malloc(sizeof(char)*(b->length));
+  b->data = (char *)malloc(b->length);
   b->data[0] = 0;
   b->ptr = b->data;
   b->offset = 0;
@@ -50,15 +49,16 @@ void buffer_delete(struct buffer_st *b)
   b->data = NULL;
 }
 
-void base64_encode(struct buffer_st *b, const char *source, int length)
+void base64_encode(struct buffer_st *b, const char *source, size_t length)
 {
   int i, hiteof = 0;
-  int offset = 0;
+  size_t offset = 0;
   
   buffer_new(b);
   
   while (!hiteof) {
-    unsigned char igroup[3], ogroup[4];
+    unsigned char igroup[3];
+    char ogroup[4];
     int c, n;
     
     igroup[0] = igroup[1] = igroup[2] = 0;
@@ -134,7 +134,7 @@ int store_hostaddress(unsigned char *where, const char *hostname)
         if (!hptr)
                 return 0;
         /* Copy the address of the host to socket description.  */
-        memcpy(where, hptr->h_addr_list[0], hptr->h_length);
+        memcpy(where, hptr->h_addr_list[0], (size_t)hptr->h_length);
         /* Now that we're here, we could as well cache the hostname for
            future use, as in realhost().  First, we have to look for it by
            address to know if it's already in the cache by another name.  */
