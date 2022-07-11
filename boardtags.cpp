@@ -87,9 +87,9 @@ SPicConvert PicConvTable[BoardPicCount] = {
 };
 
 /* parse string to nearest ';' or ':' */
-int inline ParseToOpenSmileTagorHttp(char *s)
+size_t ParseToOpenSmileTagorHttp(const char *s)
 {
-        unsigned int i = 0;
+        size_t i = 0;
 #if TRY_AUTO_URL_PREPARSE
         // find smile, ftp or http start
         while (s[i] != 0 && s[i] != ':' && s[i] != ';' && s[i] != 'h' && s[i] != 'f')
@@ -117,7 +117,7 @@ static int ReparseUrl(char **ss, char **dd, int index, DWORD status)
 {
         int rf = 0;
         char *d = *dd, *s = *ss;
-        int slen = strlen(s);
+        size_t slen = strlen(s);
         if( ( (slen > 7) && (strncmp(s, "http://", 7) == 0) ) ||
                 ( (slen > 8) && (strncmp(s, "https://", 8) == 0) ) ||
                  ( (slen > 6) && (strncmp(s, "ftp://", 6) == 0) ) )
@@ -237,11 +237,11 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
 /* function for concatenation string s to d
  * with converting smile-codes to images
  */
-int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, DWORD *flg)
+int ParseSmiles_smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
 {
         char *dd = d + strlen(d);
         char *ss = s;
-        unsigned int i = 0, fstat;
+        size_t i = 0;
         int wassmile = 0;
         *flg = 0;
         while (*ss) {
@@ -256,8 +256,7 @@ int inline ParseSmiles_smartstrcat(char *d, char *s, BYTE index, DWORD status, D
                 if(*ss == 0) break;
 
 #if TRY_AUTO_URL_PREPARSE
-                fstat = ReparseUrl(&ss, &dd, index, status);
-                if(fstat) *flg = 1;
+                if (ReparseUrl(&ss, &dd, index, status)) *flg = 1;
 #endif
 
                 for(unsigned int j = 0; j < BoardPicCount; j++) {
@@ -297,7 +296,7 @@ next_sym: ;
 /* insert string 'src' into string 'dst' at position 'index'
  * returns 'dst', DOES NOT CONTROL ANY ERRORS
  */
-char* strins(char *dst, const char *src, int index)
+char* strins(char *dst, const char *src, size_t index)
 {
         char *insert_pos = dst + index;
         size_t insert_len = strlen(src);
@@ -309,26 +308,26 @@ char* strins(char *dst, const char *src, int index)
 }
 
 /* parse string up to nearest =, WC_TAG_OPEN/CLOSE */
-int inline ParseRegExp(char *s)
+size_t ParseRegExp(const char *s)
 {
-        int i = 0;
+        size_t i = 0;
         while(s[i] != 0 && s[i] != '=' && s[i] != WC_TAG_CLOSE && s[i] != WC_TAG_OPEN) i++;
         return i;
 }
 
 /* parse to nearest WC_TAG_OPEN */
-int inline ParseToOpenWC_TAG(char *s)
+size_t ParseToOpenWC_TAG(const char *s)
 {
-        int i = 0;
+        size_t i = 0;
         while (s[i] && s[i] != WC_TAG_OPEN)
                 ++i;
         return i;
 }
 
 /* parse to nearest WC_TAG_CLOSE */
-int inline ParseToCloseWC_TAG(char *s)
+size_t ParseToCloseWC_TAG(const char *s)
 {
-        int i = 0;
+        size_t i = 0;
         while(s[i] != 0 && s[i] != WC_TAG_CLOSE) i++;
         return i;
 }
@@ -337,11 +336,10 @@ int inline ParseToCloseWC_TAG(char *s)
  * oputput: function return length of parsed board tag or 0 if tag is not valid
  *                                par1 - tag name, par2 - parameter after = in tag (NULL if not present)
  */
-int inline ParseBoardTag(char *s, char **par1, char **par2)
+size_t ParseBoardTag(char *s, char **par1, char **par2)
 {
-        char *ss;
-        int i, j;
-        ss = s;
+        char *ss = s;
+        size_t i, j;
         *par1 = NULL;
         *par2 = NULL;
         // ignore WC_TAG_OPEN
@@ -362,7 +360,7 @@ int inline ParseBoardTag(char *s, char **par1, char **par2)
         s[i] = ts;
         s += i;
         if(*s == WC_TAG_CLOSE) {
-                return s - ss + 1;
+                return (size_t)(s - ss + 1);
         }
         if(*s == '=') {
                 // parse second arg
@@ -377,7 +375,7 @@ int inline ParseBoardTag(char *s, char **par1, char **par2)
                         s[j] = 0;
                         strcpy(*par2, s);
                         s[j] = ts;
-                        return s - ss + j + 1;
+                        return (size_t)(s - ss + 1) + j;
                 }
         }
         //ParseBoardTag_Faild:
@@ -391,7 +389,7 @@ int inline ParseBoardTag(char *s, char **par1, char **par2)
  * return value: function return 1 if successfull, overwise 0
  * tagtype - tag type (index in TagConvTable) and taglen = 1, 2 
  */
-int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, BYTE index)
+int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, int index)
 {
         int tagdirection = 0; /* open by default */
         
@@ -539,12 +537,12 @@ int inline ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int 
  *                0x04 - url autopreparse
 
  */
-int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD *RF)
+int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *RF)
 {
-        int beforePreStatus;
+        DWORD beforePreStatus;
         char *tag1 = NULL, *tag2 = NULL, *res = NULL, *st = NULL;
         DWORD opentag, reff, status = 0x04, urldisable = 0;        // http preparse
-        int i, StringTooLong = 0;
+        size_t i, StringTooLong = 0;
         SSavedTag OldTag[MAX_NESTED_TAGS];
         char *params[MAX_NESTED_TAGS + 1] = {NULL};
         char *param = NULL;
@@ -555,9 +553,8 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
         
         // ignore ending newline
         {
-                int sl = strlen(s);
-                int k;
-                for(k = sl; k>0; k--) {
+                size_t k = strlen(s);
+                for (; k > 0; k--) {
                         if(!(s[k - 1] == '\r' || s[k - 1] == '\n'))
                                 break;
                 }
@@ -575,7 +572,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
 
 
         if((Flags & BOARDTAGS_CUT_TAGS) || (Flags & BOARDTAGS_TAG_PREPARSE) || ((Flags & BOARDTAGS_PURL_ENABLE) == 0)) {
-                status &= (~0x04);        // disable url parsing
+                status &= ~0x04u;      // disable url parsing
                 urldisable = 1;
         }
 
@@ -658,7 +655,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                                         if(!urldisable) {
                                                                 status |= 0x04;        // allow http parsing
                                                         }
-                                                        status &= (~0x80);
+                                                        status &= ~0x80u;
                                                         *RF = *RF | MESSAGE_HAVE_PICTURE;
                                                 }
 
@@ -666,7 +663,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                                         if(!urldisable) {
                                                                 status |= 0x04;
                                                         }
-                                                        status &= (~0x80);
+                                                        status &= ~0x80u;
                                                         *RF = *RF | MESSAGE_HAVE_TEX;
                                                 }						
 
@@ -674,7 +671,7 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                                         if(!urldisable) {
                                                                 status |= 0x04;
                                                         }
-                                                        status &= (~0x80);
+                                                        status &= ~0x80u;
                                                         *RF = *RF | MESSAGE_HAVE_TUB;
                                                 }						
 
@@ -748,20 +745,20 @@ int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD 
                                                 // check if it was PRE or PIC tag
                                                 if(tt == PRE_TAG_TYPE) {
                                                         beforePreStatus = status;
-                                                        status &= ~2;//disable "\n" -> "<br>" conv
+                                                        status &= ~2u; //disable "\n" -> "<br>" conv
                                                 }
                                                 if(tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE || tt == TEX_TAG_TYPE) // disable tag parsing
                                                         status |= 0x01;
                                                 // check if it was PIC tag
-                                                if(tt == PIC_TAG_TYPE) {// disable http parsing
+                                                if(tt == PIC_TAG_TYPE) {
                                                         if(!urldisable)
-                                                                status &= (~0x04);
+                                                                status &= ~4u; // disable http parsing
                                                         status |= 0x80;
                                                 }
                                                 // check if it was URL tag
-                                                if(tt == URL_TAG_TYPE) {// disable http parsing
+                                                if(tt == URL_TAG_TYPE) {
                                                         if(!urldisable)
-                                                                status &= (~0x04);
+                                                                status &= ~4u; // disable http parsing
                                                 }
                                         }
                                         else goto ignore_tag;

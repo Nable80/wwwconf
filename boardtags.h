@@ -22,11 +22,11 @@
 
 #define MAX_NESTED_TAGS                        8
 
-#define BOARDTAGS_EXPAND_XMLEN  0x04000000
-#define BOARDTAGS_CUT_TAGS      0x08000000
-#define BOARDTAGS_TAG_PREPARSE  0x10000000
-#define BOARDTAGS_EXPAND_ENTER  0x20000000
-#define BOARDTAGS_PURL_ENABLE   0x40000000
+#define BOARDTAGS_EXPAND_XMLEN  0x04000000u
+#define BOARDTAGS_CUT_TAGS      0x08000000u
+#define BOARDTAGS_TAG_PREPARSE  0x10000000u
+#define BOARDTAGS_EXPAND_ENTER  0x20000000u
+#define BOARDTAGS_PURL_ENABLE   0x40000000u
 
 #define BoardTagCount  19
 #define BoardPicCount  46
@@ -78,9 +78,9 @@ struct SSavedTag {
         char *tagexp;
         char *oldexp;
         /* insert expanded expression index */
-        int index;
+        size_t index;
 };
 
-int FilterBoardTags(char *s, char **r, BYTE index, DWORD ml, DWORD Flags, DWORD *RF);
+int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *RF);
 
 #endif
