@@ -1057,7 +1057,7 @@ void PrintSessionsList(DWORD Uid)
                                         printf(MESSAGEMAIN_session_state_active);
 
                                         if( (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0  || ( ULogin.LU.UniqID == Uid && ( ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) != 0 ) )
-                                                printf(" [<a href=\"%s?clsession1=%ld&clsession2=%ld\">" MESSAGEMAIN_session_state_toclose "</a>]", MY_CGI_URL, seqid[0], seqid[1]);
+                                                printf(" [<a href=\"%s?clsession1=%lu&clsession2=%lu\">" MESSAGEMAIN_session_state_toclose "</a>]", MY_CGI_URL, seqid[0], seqid[1]);
                                 }
                                 else  printf(MESSAGEMAIN_session_state_closed);
                                 printf("</STRONG></TD></TR><TR><TD><BR></TD></TR>");
@@ -5484,7 +5484,7 @@ print2log("incor pass %s", par);
                 if((st= strget(deal, "clsession1=", 255 - 1, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                         closeseq[0] = strtol(st, &ss, 10);
+                        closeseq[0] = strtoul(st, &ss, 10);
                         if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||  closeseq[0] == 0 ) {
                                 free(st);
                                 goto End_URLerror;
@@ -5494,7 +5494,7 @@ print2log("incor pass %s", par);
                 if((st= strget(deal, "clsession2=", 255 - 1, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                         closeseq[1] = strtol(st, &ss, 10);
+                        closeseq[1] = strtoul(st, &ss, 10);
                         if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||  closeseq[1] == 0 ) {
                                 free(st);
                                 goto End_URLerror;
