@@ -153,9 +153,7 @@ char* toupperstr(char *s)
 
 int getAction(char* par)
 {
-        size_t i;
-
-        for(i = 0; i < ACTION_COUNT; ++i) {
+        for (int i = 0; i < ACTION_COUNT; ++i) {
                 char *st, *tok;
                 size_t actlen;
 
@@ -425,7 +423,7 @@ static void PrintPrivateMessageForm(char *name, const char *body)
                 MESSAGEMAIN_privatemsg_prev_msg_btn, MESSAGEMAIN_privatemsg_send_msg_btn);
 }
 
-static void PrintAnnounceForm(const char *body, int ChangeAnn = 0)
+static void PrintAnnounceForm(const char *body, DWORD ChangeAnn = 0)
 {
         printf("<CENTER><FORM METHOD=POST ACTION=\"%s?globann=post\"><P>&nbsp;<P>", MY_CGI_URL);
 
@@ -439,7 +437,7 @@ static void PrintAnnounceForm(const char *body, int ChangeAnn = 0)
         if(ChangeAnn) printf("<TR><TD COLSPAN=2><CENTER><INPUT TYPE=CHECKBOX NAME=\"refid\" VALUE=1>" \
                 MESSAGEMAIN_globann_upd_ann_id "</CENTER></TD></TR>");
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=80%% NOSHADE></TR><BR><TR><TD COLSPAN=2 ALIGN=CENTER>");
-        if(ChangeAnn) printf("<INPUT TYPE=HIDDEN NAME=\"cgann\" VALUE=\"%d\">", ChangeAnn);
+        if(ChangeAnn) printf("<INPUT TYPE=HIDDEN NAME=\"cgann\" VALUE=\"%lu\">", ChangeAnn);
         printf("<INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\"><INPUT TYPE=SUBMIT NAME=\"Post\" VALUE=\"%s\"></TD></TR></TABLE></FORM></CENTER>",
                 MESSAGEMAIN_globann_prev_ann_btn, MESSAGEMAIN_globann_send_ann_btn);
 }
@@ -753,7 +751,7 @@ void PrintBottomLines()
 /* print moderation toolbar and keys
  * 
  */
-int PrintAdminToolbar(DWORD root, int mflag, DWORD UID)
+int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
 {
         DWORD fl = 0;        // store bit mask for keys
 
@@ -1037,7 +1035,7 @@ void PrintSessionsList(DWORD Uid)
                                 seqid[0] = *((DWORD*)(buf[i]+8));
                                 seqid[1] = *((DWORD*)(buf[i]+12));
                                 userid = *((DWORD*)(buf[i]+16));
-                                time_t seqtime = *((DWORD*)(buf[i]));
+                                time_t seqtime = *((time_t*)(buf[i]));
                                 char *seqdate;
                                 if (seqtime > time(NULL))
                                         seqdate = (char*)ConvertFullTime(seqtime-USER_SESSION_LIVE_TIME);
@@ -1352,7 +1350,7 @@ static int cmp_right(const void *p1, const void *p2)
         return int( (*((DWORD**)p1))[4] - (*((DWORD**)p2))[4] );
 }
 
-void PrintUserList(DB_Base *dbb, int code)
+void PrintUserList(DB_Base *dbb, DWORD code)
 {
         char **buf = NULL;
         char name[1000];
@@ -1507,7 +1505,7 @@ void PrintXmlfpDescriptor()
 int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, char *p2, char *oldp, int op, char *deal)
 {
         CProfiles *uprof;
-        DWORD err = 0, needregisteraltnick = 0;
+        int err = 0, needregisteraltnick = 0;
 
         /* password check */
         if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
@@ -2279,6 +2277,7 @@ int main()
 
         // translate IP
         // if it fails, we will have Nip = 0
+        // TODO: use inet_addr/inet_aton/inet_pton instead of this ugly code
         char *tst, *tms;
         tst = Cip;
         {
@@ -2287,7 +2286,7 @@ int main()
                         if((tms = strchr(tst,'.')) != NULL || (tms = strchr(tst,'\0')) != NULL)
                         {
                                 *tms = '\0';
-                                ((char*)(&Nip))[i] = (unsigned char)atoi(tst);
+                                ((uint8_t*)(&Nip))[i] = (uint8_t)atoi(tst);
                                 tst = tms + 1;
                                 if(i < 3) *tms = '.';
                         }
@@ -2350,7 +2349,7 @@ int main()
         }
 
         // calculate minimal message print time
-        if(currentlsel == 1) current_minprntime = time(NULL) - 3600*currenttv*LENGTH_timetypes_hours[currenttt-1];
+        if(currentlsel == 1) current_minprntime = time(NULL) - (time_t)(3600 * currenttv * LENGTH_timetypes_hours[currenttt - 1]);
 
 
         //security check
@@ -2400,7 +2399,7 @@ int main()
                         } else {
                                 errno = 0;
                                 char *ss;
-                                DWORD tmp = strtol(st, &ss, 10);
+                                DWORD tmp = strtoul(st, &ss, 10);
                                 if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE || tmp > TOPICS_COUNT)
                                 {
                                         // just print common index
@@ -2628,7 +2627,7 @@ int main()
                 {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         DWORD x;
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || (x = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE)
@@ -2903,7 +2902,7 @@ int main()
                 {
                         errno = 0;
                         char *ss;
-                        repnum = strtol(st, &ss, 10);
+                        repnum = strtoul(st, &ss, 10);
                         DWORD x;
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 repnum < 1 || (x = DB.TranslateMsgIndex(repnum)) == NO_MESSAGE_CODE)
@@ -2949,7 +2948,7 @@ int main()
                 if((ss = strget(deal, "xpost=", 16, '&')) != NULL ) {
                         errno = 0;
                         char *st;
-                        ROOT = strtol(ss, &st, 10);
+                        ROOT = strtoul(ss, &st, 10);
                         if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE) {
                                 printnomessage(deal);
                                 goto End_part;
@@ -3121,7 +3120,7 @@ int main()
                         if((ss = strget(par, "topic=", 10, '&')) != NULL) {
                                 errno = 0;
                                 char *st;
-                                topicID = strtol(ss, &st, 10);
+                                topicID = strtoul(ss, &st, 10);
                                 if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE || topicID > TOPICS_COUNT - 1)
                                 {
                                         // default topic
@@ -3412,7 +3411,19 @@ int main()
        errno = 0;                                                       \
        var = vardefault;                                                \
        if (ss && *ss) {                                                 \
-               DWORD tmp = strtol(ss, &st, 10);                         \
+               DWORD tmp = strtoul(ss, &st, 10);                        \
+               if (!*st || !errno)                                      \
+                       var = tmp;                                       \
+       }                                                                \
+       free(ss);                                                        \
+}
+
+#define READ_PARAM_INUM(param, var, vardefault) {                       \
+       char *st, *ss = strget(par, param, 20, '&');                     \
+       errno = 0;                                                       \
+       var = vardefault;                                                \
+       if (ss && *ss) {                                                 \
+               int tmp = strtol(ss, &st, 10);                           \
                if (!*st || !errno)                                      \
                        var = tmp;                                       \
        }                                                                \
@@ -3447,7 +3458,7 @@ int main()
                                         READ_PARAM_NUM("ss=", currentss, CONFIGURE_SETTING_DEFAULT_ss);
                                         if(currentss < 1 || currentss > 4)
                                                 currentss = CONFIGURE_SETTING_DEFAULT_ss;
-                                        READ_PARAM_NUM("tz=", currenttz, DATETIME_DEFAULT_TIMEZONE);
+                                        READ_PARAM_INUM("tz=", currenttz, DATETIME_DEFAULT_TIMEZONE);
                                         if(currenttz < -12 || currenttz > 12)
                                                 currenttz = DATETIME_DEFAULT_TIMEZONE;
 
@@ -3542,7 +3553,7 @@ int main()
                                 par = GetParams(MAX_PARAMETERS_STRING);
 
                                 /***************************************/
-                                int disableipcheck = 0;
+                                DWORD disableipcheck = 0;
                                 char *ipchk;
                                 if((ipchk = strget(par, "ipoff=", 10, '&')) != NULL) {
                                         if(strcmp(ipchk, "1") == 0) {
@@ -3731,7 +3742,7 @@ print2log("incor pass %s", par);
                         char *ss;
                         DWORD midx;
                         errno = 0;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || ((midx = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE) ) {
                                 printnomessage(deal);
@@ -3771,7 +3782,7 @@ print2log("incor pass %s", par);
                 if((st = strget(deal,"hide=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || DB.TranslateMsgIndex(tmp) == NO_MESSAGE_CODE) {
                                 printnomessage(deal);
@@ -3805,7 +3816,7 @@ print2log("incor pass %s", par);
                 if((st = strget(deal,"unhide=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || DB.TranslateMsgIndex(tmp) == NO_MESSAGE_CODE) {
                                 printnomessage(deal);
@@ -3838,7 +3849,7 @@ print2log("incor pass %s", par);
                         char *ss;
                         DWORD midx;
                         errno = 0;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || ((midx = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE) ) {
                                 printnomessage(deal);
@@ -3878,7 +3889,7 @@ print2log("incor pass %s", par);
                 if((st = strget(deal,"roll=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || DB.TranslateMsgIndex(tmp) == NO_MESSAGE_CODE) {
                                 printnomessage(deal);
@@ -3913,7 +3924,7 @@ print2log("incor pass %s", par);
                 if((st = strget(deal,"delmsg=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || DB.TranslateMsgIndex(tmp) == NO_MESSAGE_CODE) {
@@ -3947,7 +3958,7 @@ print2log("incor pass %s", par);
                 if((st = strget(deal,"changemsg=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
-                        DWORD tmp = strtol(st, &ss, 10);
+                        DWORD tmp = strtoul(st, &ss, 10);
                         DWORD midx;
                         if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || ((midx = DB.TranslateMsgIndex(tmp)) == NO_MESSAGE_CODE)) {
@@ -4063,7 +4074,7 @@ print2log("incor pass %s", par);
                                         if((st = strget(par, "ustat=", 10, '&')) != NULL) {
                                                 errno = 0;
                                                 char *ss;
-                                                ustat = (BYTE)strtol(st, &ss, 10);
+                                                ustat = (BYTE)strtoul(st, &ss, 10);
                                                 if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE || ustat >= USER_STATUS_COUNT) {
                                                         ustat = 0;
                                                 }
@@ -4099,11 +4110,10 @@ print2log("incor pass %s", par);
                                                 CProfiles *uprof;
                                                 SProfile_UserInfo ui;
                                                 SProfile_FullUserInfo fui;
-                                                DWORD err = 0;
                                                 DWORD idx;
 
                                                 uprof = new CProfiles();
-                                                err = uprof->GetUserByName(name, &ui, &fui, &idx);
+                                                int err = uprof->GetUserByName(name, &ui, &fui, &idx);
                                                 if(err == PROFILE_RETURN_ALLOK) {
                                                         int altnupd = 0;
                                                         // delete alt name if required
@@ -4432,7 +4442,7 @@ print2log("incor pass %s", par);
                         errno = 0;
                         int errok;
                         char *ss;
-                        MsgNum = strtol(sn, &ss, 10);
+                        MsgNum = strtoul(sn, &ss, 10);
                         if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE || MsgNum == 0 ||
                                 (MsgNum = DB.TranslateMsgIndex(MsgNum)) == NO_MESSAGE_CODE) {
                                 errok = 0;
@@ -4442,7 +4452,7 @@ print2log("incor pass %s", par);
                         if(errok && (st = strget(deal,"topic=", 60, '&')) != NULL) {
                                 errno = 0;
                                 char *ss;
-                                Topic = strtol(st, &ss, 10);
+                                Topic = strtoul(st, &ss, 10);
                                 if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE || Topic > TOPICS_COUNT) {
                                         errok = 0;
                                 }
@@ -4481,7 +4491,7 @@ print2log("incor pass %s", par);
                         errno = 0;
                         DWORD retval;
                         char *ss;
-                        retval = strtol(sn, &ss, 10);
+                        retval = strtoul(sn, &ss, 10);
                         if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE || retval == 0 || retval > 6) {
 
                         }
@@ -4959,7 +4969,7 @@ print2log("incor pass %s", par);
                         }
                         else {
                                 char *body = NULL;
-                                int cgann_num = 0, preview = 0, refid = 0;
+                                DWORD cgann_num = 0, preview = 0, refid = 0;
 
                                 // post
                                 /* get parameters */
@@ -4991,7 +5001,7 @@ print2log("incor pass %s", par);
                                         // translate to numeric format
                                         char *ss;
                                         if(sn) {
-                                                cgann_num = strtol(sn, &ss, 10);
+                                                cgann_num = strtoul(sn, &ss, 10);
                                                 if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
                                                         cgann_num = 0;
                                                 }
@@ -5112,7 +5122,7 @@ print2log("incor pass %s", par);
                                 errno = 0;
                                 int errok;
                                 char *ss;
-                                MsgNum = strtol(sn, &ss, 10);
+                                MsgNum = strtoul(sn, &ss, 10);
                                 if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
                                         errok = 0;
                                 }
@@ -5157,7 +5167,7 @@ print2log("incor pass %s", par);
                                 errno = 0;
                                 int errok;
                                 char *ss;
-                                MsgNum = strtol(sn, &ss, 10);
+                                MsgNum = strtoul(sn, &ss, 10);
                                 if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
                                         errok = 0;
                                 }
@@ -5176,7 +5186,6 @@ print2log("incor pass %s", par);
 
 #ifdef USER_FAVOURITES_SUPPORT
         if(strncmp(deal, "favs", 4) == 0) {
-                int num;
                 if(ULogin.LU.UniqID != 0) {
                         CProfiles prof;
                         //favourites
@@ -5190,8 +5199,8 @@ print2log("incor pass %s", par);
                         printf("<P><CENTER><P><B>%s</B><BR></CENTER>", MESSAGEHEAD_favourites);
 
                         int updated;
-                        if( (num = DB.PrintandCheckMessageFavsExistandInv(ULogin.pui,
-                                ULogin.LU.right & USERRIGHT_SUPERUSER, &updated)) == 0)
+                        if (!DB.PrintandCheckMessageFavsExistandInv(ULogin.pui,
+                                ULogin.LU.right & USERRIGHT_SUPERUSER, &updated))
                                 printf("<P><CENTER><B>" MESSAGEMAIN_favourites_listclear "</B></CENTER><P>");
                         if(updated) prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
                         PrintBottomLines();
@@ -5216,7 +5225,7 @@ print2log("incor pass %s", par);
                                 errno = 0;
                                 DWORD addmsg;
                                 char *ss;
-                                addmsg = strtol(st, &ss, 10);
+                                addmsg = strtoul(st, &ss, 10);
                                 if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE  || addmsg < 1){
                                         free (st);
                                          goto End_URLerror;
@@ -5289,7 +5298,7 @@ print2log("incor pass %s", par);
                                 errno = 0;
                                 DWORD delmsg;
                                 char *ss;
-                                delmsg = strtol(st, &ss, 10);
+                                delmsg = strtoul(st, &ss, 10);
                                 if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE  || delmsg == 0){
                                         free (st);
                                          goto End_URLerror;
@@ -5377,11 +5386,11 @@ print2log("incor pass %s", par);
                         qsort((void*)buf, uc, sizeof(char*), cmp_name);
                         for(i = 0; i < uc; i++) {
                                 DWORD PostCount = *((DWORD*)(buf[i] + 4));
-                                DWORD LoginDate = *((DWORD*)(buf[i] + 8));
+                                time_t LoginDate = *((time_t*)(buf[i] + 8));
                                 DWORD RefreshCount = *((DWORD*)(buf[i] + 12));
                                 DWORD activity = PostCount + RefreshCount;
                                 char *username = buf[i] + 20;
-                                int idletime = tn - LoginDate;
+                                time_t idletime = tn - LoginDate;
                                 bool fAged1 = idletime > 3 * YEAR;
                                 bool fAged2 = idletime > 2 * YEAR && activity < 1000;
                                 bool fAged3 = idletime > YEAR && activity < 100;
@@ -5393,7 +5402,7 @@ print2log("incor pass %s", par);
                                         DB.Profile_UserName(buf[i] + 20, name, 1, 1);
                                         printf("%s", name);
                                         if(fDelete) {
-                                                DWORD err = uprof.DeleteUser(username);
+                                                int err = uprof.DeleteUser(username);
                                                 if(err == PROFILE_RETURN_ALLOK) {
                                                         printf("!");
                                                 } else { 

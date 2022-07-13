@@ -76,7 +76,7 @@ char DESIGN_open_dl_white[20];
 char DESIGN_close_dl[10];
 char DESIGN_break[10];
 
-int IP2HostName(DWORD IP, char *hostname, int maxlen)
+int IP2HostName(DWORD IP, char *hostname, size_t maxlen)
 {
         struct hostent *he;
 #if IP_TO_HOSTNAME_RESOLVE
@@ -139,7 +139,7 @@ char* ConvertFullTime(time_t t)
         return s;
 }
 
-void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml)
+void DB_Base::Profile_UserName(char *name, char *tostr, DWORD reg, int doparsehtml)
 {
         char *str, *str1;
         if(reg) {
@@ -162,8 +162,8 @@ void DB_Base::Profile_UserName(char *name, char *tostr, int reg, int doparsehtml
 int DB_Base::printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, int ll,
                                int *czero, DWORD selected, DWORD root, int *bp)
 {
-        int count = size/sizeof(SMessage);
-        for (int i = p ? 0 : count-1; p ? i < count : i >=0; p ? ++i : --i) {
+        size_t count = size / sizeof(SMessage);
+        for (size_t i = p ? 0 : count; p ? i < count : i-- > 0; p ? i++ : 0) {
                 if (fmpos + i*sizeof(SMessage) == root)
                         (*bp) = 1;
                 if(*bp) {
@@ -221,8 +221,8 @@ int DB_Base::printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, in
 /* this function could not print more than 32000 messages at once */
 int DB_Base::printhtmlbuffer(SMessage *buf, DWORD size, int p/*direction*/, int *ll, int *pr, DWORD mode, DWORD &shouldprint, DWORD &skipped)
 {
-        int count = size/sizeof(SMessage);
-        for (int i = p ? 0 : count-1; p ? i < count : i >=0; p ? ++i : --i) {
+        size_t count = size / sizeof(SMessage);
+        for (size_t i = p ? 0 : count; p ? i < count : i-- > 0; p ? i++ : 0) {
                 if (buf[i].Level == 0) {
                         invflag = -1;
                         collapsed = 0;
@@ -412,7 +412,7 @@ void DB_Base::DB_PrintHtmlIndex(DWORD mtc)
         }
 }
 
-int DB_Base::printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped, int newmessmark)
+int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped, int newmessmark)
 {
 
         // *******************************
@@ -774,7 +774,7 @@ int DB_Base::PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD vi
         wcfclose(m);
         printf("</div>");
         printf("<P>");
-        return cnt;
+        return 1;
 }
 
 int DB_Base::printhtmlindexhron_wothreads()
@@ -873,7 +873,6 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
         }
 
         while (lefttoread) {
-                ssize_t i;
                 size_t toread = lefttoread > READ_MESSAGE_TABLE*sizeof(SMessageTable) ?
                         READ_MESSAGE_TABLE*sizeof(SMessageTable) :
                         lefttoread;
@@ -884,7 +883,8 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
                 if (!fCheckedRead(tbls, toread, fi))
                         printhtmlerror();
                 
-                for (i = toread / sizeof(SMessageTable) - 1; i >= 0; --i) {
+                size_t i = toread / sizeof(SMessageTable);
+                while (i-- > 0) {
                         int dir = tbls[i].begin < tbls[i].end;
                         size_t lefttoread = 1 + (dir ? tbls[i].end - tbls[i].begin : tbls[i].begin - tbls[i].end);
 
@@ -947,7 +947,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
         SMessageTable *buf;
         SMessage *msg;
         void *tmp;
-        signed long i = 0;
+        DWORD i = 0;
         int code;
         int re; // reply flag
         DWORD MFlags, msigned = 0;
@@ -1343,12 +1343,11 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                                 printhtmlerror();
                         }
         
-                        rd = i = (toread + 1) / sizeof(SMessageTable) - 1;
-                        while(i>=0) {
+                        rd = i = (toread + 1) / sizeof(SMessageTable);
+                        while (i-- > 0) {
                                 if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                         goto LB_end;
                                 }
-                                i--;
                         }
                 }
                 // NO MESSAGE
@@ -1542,7 +1541,7 @@ int DB_Base::DB_DeleteMessage(DWORD root)
         SMessageTable *buf;
         DWORD fbsize, fbindex, oldroot;
         DWORD fl, fisize;
-        int i = 0;
+        DWORD i = 0;
         void *tmp;
         oldroot = root;
         root = TranslateMsgIndex(root);
@@ -1599,12 +1598,11 @@ int DB_Base::DB_DeleteMessage(DWORD root)
                         unlock_file(fi);
                         printhtmlerror();
                 }
-                i = (toread + 1) / sizeof(SMessageTable) - 1;
-                while(i>=0) {
+                i = (toread + 1) / sizeof(SMessageTable);
+                while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto LB_MsgFound;
                         }
-                        i--;
                 }
         }
         // not found message
@@ -1982,7 +1980,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         favid = msg->ViIndex;
 #endif
         if (ULogin.LU.ID[0] != 0) {
-                DWORD result = prof.CheckandAddFavsList(ULogin.LU.SIndex, favid, 0);
+                int result = prof.CheckandAddFavsList(ULogin.LU.SIndex, favid, 0);
                 switch (result) {
                 case PROFILE_RETURN_ALLOK:
                         printf("&nbsp;&nbsp;&nbsp;<A HREF=\"" MY_CGI_URL "?favadd=%ld\" target=_blank>"
@@ -2472,7 +2470,7 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
         DWORD rr, fipos, toread;
         DWORD fmpos, fl, oldroot;
         int LastLevel = 0;
-        int i = 0;
+        DWORD i = 0;
         // translate virtual to real index, and check it
         root = TranslateMsgIndex(root);
         if(root == NO_MESSAGE_CODE) return 0; // invalid or nonexisting index
@@ -2518,12 +2516,11 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                i = (toread + 1) / sizeof(SMessageTable) - 1;
-                while(i>=0) {
+                i = (toread + 1) / sizeof(SMessageTable);
+                while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto PT_Found;
                         }
-                        i--;
                 }
         }
         
@@ -2562,9 +2559,9 @@ PT_Found:
                 if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
                 if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
                 
-                signed long i = rr / sizeof(SMessageTable) - 1;
+                DWORD i = rr / sizeof(SMessageTable);
                 
-                while(i >= 0) {
+                while (i-- > 0) {
                         if(buf[i].begin < buf[i].end ) {
                                 // forward direction
                                 fmpos = buf[i].begin;
@@ -2611,12 +2608,11 @@ PT_Found:
                                         if(czero == 2) goto PT_Finish;
                                 }
                         }
-                        i--;
                 }
         }
         
 PT_Finish:
-        for(i = -1; i < LastLevel; i++) printf("%s", DESIGN_close_dl);
+        for (int lvl = -1; lvl < LastLevel; lvl++) printf("%s", DESIGN_close_dl);
         
         free(buf);
         free(msgs);
@@ -2783,7 +2779,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         SMessage *msgs;
         DWORD rr, fipos, toread;
         DWORD fmpos, fl, EndLevel, viroot;
-        int i;
+        DWORD i;
         
         // array for storing selecting messages
         *mescnt = 0;
@@ -2827,12 +2823,11 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                i = (toread + 1) / sizeof(SMessageTable) - 1;
-                while(i>=0) {
+                i = (toread + 1) / sizeof(SMessageTable);
+                while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
                                 goto PT_Found;
                         }
-                        i--;
                 }
         }
         
@@ -2866,9 +2861,8 @@ PT_Found:
                 }
                 if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
                 if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
-                signed long i = rr / sizeof(SMessageTable) - 1;
-                while(i >= 0) {
-                        
+                DWORD i = rr / sizeof(SMessageTable);
+                while (i-- > 0) {
                         if(buf[i].begin < buf[i].end ) {
                                 // forward direction
                                 fmpos = buf[i].begin;
@@ -2946,7 +2940,6 @@ PT_Found:
                                         }
                                 }
                         }
-                        i--;
                 }
         }
 PT_Finish:
@@ -3201,7 +3194,7 @@ DWORD DB_Base::getparent(DWORD root)
 	DWORD rr, fipos, toread;
 	DWORD fmpos, fl, oldroot, parent = 0;
 	WORD mlevel;
-	int i = 0;
+	DWORD i = 0;
 	int czero = 0, bp = 0;
 	int success = 0;
 	SMessage amsg;
@@ -3249,12 +3242,11 @@ DWORD DB_Base::getparent(DWORD root)
 		}
 		if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
 		if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-		i = (toread + 1) / sizeof(SMessageTable) - 1;
-		while(i>=0) {
+		i = (toread + 1) / sizeof(SMessageTable);
+		while(i-- > 0) {
 			if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
 				goto TT_Found;
 			}
-			i--;
 		}
 	}
 
@@ -3284,8 +3276,8 @@ DWORD DB_Base::getparent(DWORD root)
 		if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
 		if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
 
-		signed long i = rr / sizeof(SMessageTable) - 1;
-		while(i >= 0) {
+		DWORD i = rr / sizeof(SMessageTable);
+		while (i-- > 0) {
 			if(buf[i].begin < buf[i].end ) {
 				// forward direction
 				fmpos = buf[i].begin;
@@ -3350,7 +3342,6 @@ DWORD DB_Base::getparent(DWORD root)
 					}
                                 }
 			}
-			i--;
 		}
 	}
  TT_Finish:

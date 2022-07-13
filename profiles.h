@@ -27,18 +27,18 @@
 #define PROFILES_MIN_PASSWORD_LENGTH                        3
 
 /* bit mask for user flags */
-#define PROFILES_FLAG_HAVE_PICTURE                        0x0001
-#define PROFILES_FLAG_HAVE_SIGNATURE                0x0002
-#define PROFILES_FLAG_INVISIBLE                                0x0004
-#define PROFILES_FLAG_VISIBLE_EMAIL                        0x0008
-#define PROFILES_FLAG_NOT_ACTIVATED                        0x0010
-#define PROFILES_FLAG_VIEW_SETTINGS                        0x0020
-#define PROFILES_FLAG_DISABLED                                0x0040
-#define PROFILES_FLAG_PERSMSGDISABLED                0x0080
-#define PROFILES_FLAG_PERSMSGTOEMAIL                0x0100
-#define PROFILES_FLAG_ALWAYS_EMAIL_ACKN        0x0200
-#define PROFILES_FLAG_ALT_DISPLAY_NAME                0x0400
-#define PROFILES_FLAG_APPLY_CONF_LOGIN                0x0800
+#define PROFILES_FLAG_HAVE_PICTURE              0x0001u
+#define PROFILES_FLAG_HAVE_SIGNATURE            0x0002u
+#define PROFILES_FLAG_INVISIBLE                 0x0004u
+#define PROFILES_FLAG_VISIBLE_EMAIL             0x0008u
+#define PROFILES_FLAG_NOT_ACTIVATED             0x0010u
+#define PROFILES_FLAG_VIEW_SETTINGS             0x0020u
+#define PROFILES_FLAG_DISABLED                  0x0040u
+#define PROFILES_FLAG_PERSMSGDISABLED           0x0080u
+#define PROFILES_FLAG_PERSMSGTOEMAIL            0x0100u
+#define PROFILES_FLAG_ALWAYS_EMAIL_ACKN         0x0200u
+#define PROFILES_FLAG_ALT_DISPLAY_NAME          0x0400u
+#define PROFILES_FLAG_APPLY_CONF_LOGIN          0x0800u
 
 
 /* profile function error codes */

@@ -77,7 +77,7 @@ extern CAltNamesParser AltNames;
  */
 char *ConvertTime(time_t t);
 char *ConvertFullTime(time_t t);
-int IP2HostName(DWORD IP, char *hostname, int maxlen);
+int IP2HostName(DWORD IP, char *hostname, size_t maxlen);
 
 class DB_Base
 {
@@ -106,7 +106,7 @@ protected:
         int printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, int ll, int *czero, DWORD selected, DWORD root, int *bp);
         void printhtmlindexhron_bythreads(DWORD mode);
         int printhtmlindexhron_wothreads();
-        int printhtmlmessage_in_index(SMessage *mes, int style, DWORD skipped = 0xffffffff, int newmessmark = 0);
+        int printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped = 0xffffffff, int newmessmark = 0);
         int printxmlmessage_in_index(SMessage *mes);
 
 
@@ -153,7 +153,7 @@ public:
         int DB_PrintMessageThread(DWORD root);
         void DB_PrintHtmlIndex(DWORD mtc);
         int DB_PrintMessageBody(DWORD root);
-        void Profile_UserName(char *name, char *tostr, int reg, int doparsehtml = 1);
+        void Profile_UserName(char *name, char *tostr, DWORD reg, int doparsehtml = 1);
 	DWORD getparent(DWORD);
 };
 
