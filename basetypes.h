@@ -184,7 +184,7 @@ const char *GetBoardUrl();
 
 #define COOKIE_NAME_STRING                        "RTBB="
 #define COOKIE_SESSION_NAME                        "SessionRT="
-#define COOKIE_EXPIRATION_DATE                "Fri, 31-Dec-2019 00:00:00 GMT;"
+#define COOKIE_EXPIRATION_DATE                "Tue, 01-Jan-2030 00:00:00 GMT;"
 #define COOKIE_SERVER_PATH                        "/;"
 
 // the maximum size for top and bottom files
