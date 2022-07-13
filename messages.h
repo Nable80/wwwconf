@@ -930,6 +930,6 @@ extern char DESIGN_break[10];
 #define HTML_BOTTOMBANNER                                               \
         "<div style=\"font-size: 7pt; text-align: center;margin:10px;\">" \
         "Конференция основана на движке "                               \
-        "<A STYLE=\"text-decoration:underline;\" href=\"http://code.google.com/p/wwwconf/\" TARGET=\"_blank\">wwwconf</A>.</div>"
+        "<A STYLE=\"text-decoration:underline;\" href=\"https://github.com/Nable80/wwwconf\" TARGET=\"_blank\">wwwconf</A>.</div>"
 
 #endif

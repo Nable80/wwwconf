@@ -175,13 +175,6 @@ int getAction(char* par)
         return -1;
 }
 
-static void HttpRedirect(char *url)
-{
-        printf("Status: 302 Moved\n");
-        printf("Pragma: no-cache\n");
-        printf("Location: %s\n\n",url);
-}
-
 static void PrintBoardError(const char *s1, const char *s2, int code, DWORD msgid = 0)
 {
         printf(DESIGN_GLOBAL_BOARD_MESSAGE, s1, s2);
@@ -624,7 +617,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         }
 
         if((c & HEADERSTRING_DISABLE_SEARCH) == 0) {
-                 printf("<a HREF=\"http://zlo.rt.mipt.ru:7500/search\">%s</a>", MESSAGEHEAD_search);
+                 printf("<a HREF=\"https://search.mipt.cc/search\">%s</a>", MESSAGEHEAD_search);
         }
         
         if(c & HEADERSTRING_CONFIGURE) {
@@ -632,7 +625,6 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         }
 
         if(c & HEADERSTRING_ENABLE_RESETNEW) {
-        //        printf("<A HREF=\"%s?resetnew\" onclick=\"run_resetnew(); return false;\">%s</A>", MY_CGI_URL, MESSAGEHEAD_resetnew);
                 printf("<A HREF=\"%s?resetnew\" >%s</A>", MY_CGI_URL, MESSAGEHEAD_resetnew);
         }
 
@@ -1177,18 +1169,6 @@ int PrintAboutUserInfo(char *name)
                 //strcat(ustatus, " )");
 
                 ui.icqnumber[15] = 0;        //        FIX
-/*
-                char icqpic[1000];
-                icqpic[0] = 0;
-
-                if(strlen(ui.icqnumber) > 0) {
-                        sprintf(icqpic, "<TR><TD ALIGN=RIGHT>%s</TD><TD><STRONG>" \
-                                "<IMG src=\"http://online.mirabilis.com/scripts/online.dll?icq=%s&amp;img=5\" alt=\"icq status\">"\
-                                "%s</STRONG></TD></TR>",
-                                MESSAGEMAIN_profview_user_icq, ui.icqnumber, ui.icqnumber);
-                }
-
-*/
 
                 char *about = NULL;
                 DWORD tmp;
@@ -2206,26 +2186,6 @@ int main()
                 "Sorry guys, no space left for DB - wwwconf shutting down.");
                 exit(1);
         }
-
-#ifdef RT_REDIRECT
-#define BADURL "/board/"
-#define GOODURL "http://board.rt.mipt.ru/"
-        if((st = getenv(REQUEST_URI)) != NULL)
-        {
-                deal = (char*)malloc(strlen(st) + 2);
-                strcpy(deal, st);
-                //fprintf(stderr,"req uri: %s\n",deal);
-                if (strncmp(deal, BADURL, strlen(BADURL)) == 0 ) { 
-                        tmp = (char*)malloc(strlen(deal) + strlen(GOODURL) + 10);
-                        sprintf(tmp,"%s%s",GOODURL,deal + strlen(BADURL));
-                        //fprintf(stderr,"redir: %s\n",tmp);
-                        HttpRedirect(tmp);
-                        free(tmp);
-                        goto End_part;
-                }        
-                free(deal);
-        }
-#endif
 
         strcpy(DESIGN_open_dl, DESIGN_OP_UL);
         strcpy(DESIGN_open_dl_grey, DESIGN_OP_UL_grey);

@@ -49,8 +49,6 @@ const char *GetBoardUrl();
 // should we set up locale during initialization
 #define USE_LOCALE 0
 
-#define RT_REDIRECT 1
-
 // spelling check before post message
 #define SPELLING_CHECK 1
 
@@ -165,8 +163,8 @@ const char *GetBoardUrl();
                                                                                                         // it's only HTTP path
 
 #define HTTP_REFERER_CHECK        0        
-// this string should be in HTTP_REFERER to pass trough the test
-#define ALLOWED_HTTP_REFERER "rt.mipt.ru"
+// this string should be in HTTP_REFERER to pass the test
+#define ALLOWED_HTTP_REFERER "mipt.cc"
 
 // MAIL
 
@@ -176,11 +174,11 @@ const char *GetBoardUrl();
 
 #define MA_TYPE                        1
 
-#define MA_READURL                "http://board.rt.mipt.ru/"
-#define MA_FROM                        "automailer-noreply@rt.mipt.ru"
+#define MA_FROM                        "automailer-noreply@mipt.cc"
 // there should be smtp server ip or path to sendmail-like program
 #define MA_SENDER                 "localhost"
-#define ADMIN_MAIL        "bbsadmin@rt.mipt.ru"
+// you should place support e-mail address here:
+#define ADMIN_MAIL        ""
 
 #define COOKIE_NAME_STRING                        "RTBB="
 #define COOKIE_SESSION_NAME                        "SessionRT="
