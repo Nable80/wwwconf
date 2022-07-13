@@ -1038,9 +1038,9 @@ void PrintSessionsList(DWORD Uid)
                                 time_t seqtime = *((time_t*)(buf[i]));
                                 char *seqdate;
                                 if (seqtime > time(NULL))
-                                        seqdate = (char*)ConvertFullTime(seqtime-USER_SESSION_LIVE_TIME);
+                                        seqdate = ConvertFullTime(seqtime-USER_SESSION_LIVE_TIME);
                                 else
-                                        seqdate = (char*)ConvertFullTime(seqtime);
+                                        seqdate = ConvertFullTime(seqtime);
 
                                 printf("<TR><TD ALIGN=RIGHT>%ld. " MESSAGEMAIN_session_ip "</TD><TD"
                                         " ALIGN=LEFT><STRONG>%u.%u.%u.%u</STRONG> %s</TD></TR>",
@@ -1157,8 +1157,8 @@ int PrintAboutUserInfo(char *name)
                 char *regdate, *logdate = (char*)malloc(255), *ustatus = (char*)malloc(255);
                 /*************************************/
                 if(!ui.LoginDate) strcpy(logdate, "Never logged in");
-                else strcpy(logdate, (char*)ConvertFullTime(ui.LoginDate));
-                regdate = (char*)ConvertFullTime(fui.CreateDate);
+                else strcpy(logdate, ConvertFullTime(ui.LoginDate));
+                regdate = ConvertFullTime(fui.CreateDate);
 
                 // set up ustatus
         //        if((ui.right & USERRIGHT_SUPERUSER) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) || (strcmp(name, "www") /*&& strcmp(name, "Jul'etka") */))) {

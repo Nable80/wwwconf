@@ -208,30 +208,27 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
                 rr = rr/sizeof(SSavedAuthSeq);
                 for(i = 0; i < rr; i++) {
                         if( Uid==0 || (buf[i].UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) == Uid ){
+                                // TODO: replace this monster with structures
                                 *buflist = (char**)realloc(*buflist, (cn+1)*sizeof(char**));
                                 (*buflist)[cn] = (char*)malloc(5*sizeof(DWORD) + 1);
-                                memcpy(((char*)((*buflist)[cn])), &buf[i].ExpireDate, sizeof(DWORD));
-                                memcpy(((char*)((*buflist)[cn]))+4, &buf[i].IP, sizeof(DWORD));
-                                memcpy(((char*)((*buflist)[cn]))+8, &buf[i].ID[0], sizeof(DWORD));
-                                memcpy(((char*)((*buflist)[cn]))+12, &buf[i].ID[1], sizeof(DWORD));
-                                memcpy(((char*)((*buflist)[cn]))+16, &buf[i].UniqID, sizeof(DWORD));
+                                memcpy((*buflist)[cn], &buf[i].ExpireDate, sizeof(DWORD));
+                                memcpy((*buflist)[cn] + 4, &buf[i].IP, sizeof(DWORD));
+                                memcpy((*buflist)[cn] + 8, &buf[i].ID[0], sizeof(DWORD));
+                                memcpy((*buflist)[cn] + 12, &buf[i].ID[1], sizeof(DWORD));
+                                memcpy((*buflist)[cn] + 16, &buf[i].UniqID, sizeof(DWORD));
                                 cn++;
                         }
                 }
         } while(rr == SEQUENCE_READ_COUNT);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
         free(buf);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
         logins_unlock_file();
         /********* unlock f *********/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
         wcfclose(f);
         *sc = cn;
         return 1;        
 }
 
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 /* check and update sequence 'id' with ttl - Time To Live
  * return 1 if successfull otherwise -1 if not found and 0 if i/o error
  */

@@ -514,13 +514,13 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
 		char *pp = strstr(p, "<A");
 		if (!pp)
 			break;
-		printf("%.*s", (int) (pp - p), p);
+		printf("%.*s", pp - p, p);
 		p = pp;
 
 		printf("</A>");
 
 		pp = strstr(p, "</A>");
-		printf("%.*s", (int) (pp - p), p);
+		printf("%.*s", pp - p, p);
 		p = pp;
 		printf("</A>");
 		p += 4;
@@ -2044,10 +2044,10 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                 printf(DESIGN_VIEW_THREAD_MSG_SENT2, tmp);
         }
 
-        char *dt = ConvertFullTime((time_t)msg->Date);
+        char *dt = ConvertFullTime(msg->Date);
         printf(DESIGN_VIEW_THREAD_DATE, MESSAGEMAIN_viewthread_date, dt);
         if(msg->MDate) {
-                dt = ConvertFullTime((time_t)msg->MDate);
+                dt = ConvertFullTime(msg->MDate);
                 printf(DESIGN_VIEW_THREAD_MDATE, MESSAGEMAIN_viewthread_mdate, dt);
         }
 
@@ -3112,7 +3112,7 @@ DWORD DB_Base::VIndexCountInDB()
 
 DWORD DB_Base::MessageCountInDB()
 {
-        return ( ( (DWORD)(((DWORD)Fsize(F_MSGINDEX))) )/sizeof(SMessage) );
+        return Fsize(F_MSGINDEX) / sizeof(SMessage);
 }
 
 int DB_Base::ReadMainThreadCount(DWORD *root)

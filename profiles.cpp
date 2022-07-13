@@ -706,13 +706,14 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
                                                 pi[i].right = USERRIGHT_SUPERUSER;
                                         // store it
                                         size_t len = strlen(pi[i].username) + 1;
+                                        // TODO: replace this monster with structures
                                         (*buf)[c] = (char*)malloc(len + 5*sizeof(DWORD) + 1);
-                                        memcpy(((char*)((*buf)[c])), &pi[i].lastIP, sizeof(DWORD));
-                                        memcpy(((char*)((*buf)[c])) + 4, &pi[i].postcount, sizeof(DWORD));
-                                        memcpy(((char*)((*buf)[c])) + 8, &pi[i].LoginDate, sizeof(DWORD));
-                                        memcpy(((char*)((*buf)[c])) + 12, &pi[i].RefreshCount, sizeof(DWORD));
-                                        memcpy(((char*)((*buf)[c])) + 16, &pi[i].right, sizeof(DWORD));
-                                        memcpy(((char*)((*buf)[c])) + 20, &pi[i].username, len);
+                                        memcpy((*buf)[c], &pi[i].lastIP, sizeof(DWORD));
+                                        memcpy((*buf)[c] + 4, &pi[i].postcount, sizeof(DWORD));
+                                        memcpy((*buf)[c] + 8, &pi[i].LoginDate, sizeof(DWORD));
+                                        memcpy((*buf)[c] + 12, &pi[i].RefreshCount, sizeof(DWORD));
+                                        memcpy((*buf)[c] + 16, &pi[i].right, sizeof(DWORD));
+                                        memcpy((*buf)[c] + 20, &pi[i].username, len);
                                         c++;
                                         // check for realloc
                                         if(ac == c) {

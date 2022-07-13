@@ -9,8 +9,11 @@ CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversi
 # TODO: enable more options and fix tons of uncovered problems
 #CXXFLAGS += -Wcast-qual
 
+# Compiler-specific flags
 ifeq ($(CXX), clang++)
 CXXFLAGS += -Wno-invalid-source-encoding -Wno-error=pragma-pack
+else
+CXXFLAGS += -Wuseless-cast -fanalyzer
 endif
 
 INDEX_SRCS=statfs.cpp dbaseutils.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp profiles.cpp logins.cpp hashindex.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp

@@ -90,10 +90,9 @@ DWORD VIndexCountInDB()
         DWORD fsize;
         fsize = Fsize(F_VINDEX);
         if (fsize > 0)
-                return ( (DWORD)(((DWORD)fsize) - 3) )/sizeof(DWORD);
+                return (fsize - 3) / sizeof(DWORD);
         else 
                 return 0;
-
 }
 
 DWORD TranslateMsgIndexDel(DWORD root)
