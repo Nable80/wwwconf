@@ -1065,21 +1065,14 @@ void PrintSessionsList(DWORD Uid)
 int PrintAboutUserInfo(char *name)
 {
         char *nickname;
-        CProfiles *mprf = new CProfiles();
-        if(mprf->errnum != PROFILE_RETURN_ALLOK) {
-#if ENABLE_LOG >= 1
-                print2log("error working with profiles database (init)");
-#endif
-                return 0;
-        }
+        CProfiles mprf;
         SProfile_FullUserInfo fui;
         SProfile_UserInfo ui;
 
         nickname = FilterHTMLTags(name, 1000);
 
-        if(mprf->GetUserByName(name, &ui, &fui, NULL) != PROFILE_RETURN_ALLOK)
+        if(mprf.GetUserByName(name, &ui, &fui, NULL) != PROFILE_RETURN_ALLOK)
         {
-                delete mprf;
                 char *nickname_f = FilterBiDi(nickname);
                 printf(MESSAGEMAIN_profview_no_user, nickname_f);
                 if (nickname_f)
@@ -1283,7 +1276,6 @@ int PrintAboutUserInfo(char *name)
         }
 
         free(nickname);
-        delete mprf;
 
         return 1;
 }
@@ -1484,7 +1476,7 @@ void PrintXmlfpDescriptor()
  */
 int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, char *p2, char *oldp, int op, char *deal)
 {
-        CProfiles *uprof;
+        CProfiles uprof;
         int err = 0, needregisteraltnick = 0;
 
         /* password check */
@@ -1509,10 +1501,8 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
                         (ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) == 0) && (!(ULogin.LU.right & USERRIGHT_SUPERUSER)))
                         return PROFILE_CHK_ERROR_CANNOT_DELETE_USR;
 
-                uprof = new CProfiles();
-
                 SProfile_UserInfo nui;
-                err = uprof->GetUserByName(ui->username, &nui, fui, NULL);
+                err = uprof.GetUserByName(ui->username, &nui, fui, NULL);
                 if(err == PROFILE_RETURN_ALLOK) {
                         // check for special admitions
                         if(nui.altdisplayname[0] != 0 && (nui.Flags & PROFILES_FLAG_ALT_DISPLAY_NAME) ) {
@@ -1522,7 +1512,7 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
                         }
 
                         // deleting user
-                        err = uprof->DeleteUser(ui->username);
+                        err = uprof.DeleteUser(ui->username);
                         // check result of operation
                         if(err == PROFILE_RETURN_ALLOK) ULogin.ForceCloseSessionForUser(nui.UniqID); // delete all sessions.
                 }
@@ -1548,28 +1538,22 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
         if(IsMailCorrect(fui->Email) == 0)
                 return PROFILE_CHK_ERROR_INVALID_EMAIL;
 
-        uprof = new CProfiles();
-
         // ********** update **********
         if(op == 2) {
-                err = uprof->ModifyUser(ui, fui, NULL);
+                err = uprof.ModifyUser(ui, fui, NULL);
                 goto cleanup_and_parseerror;
         }
 
         // ********** create **********
         if(op == 1) {
                 ui->lastIP = Nip;
-                err = uprof->AddNewUser(ui, fui, NULL);
+                err = uprof.AddNewUser(ui, fui, NULL);
                 goto cleanup_and_parseerror;
         }
-
-        delete uprof;
 
         printhtmlerror();
 
 cleanup_and_parseerror:
-
-        delete uprof;
 
         switch(err) {
         case PROFILE_RETURN_ALLOK:
@@ -3461,10 +3445,8 @@ int main()
                                                 ULogin.pui->vs.tt = currenttt & 0x0F;
                                                 ULogin.pui->vs.tz = currenttz & 0x0F;
                                 
-                                                CProfiles *uprof;
-                                                uprof = new CProfiles();
-                                                uprof->ModifyUser(ULogin.pui, NULL, NULL);
-                                                delete uprof;
+                                                CProfiles uprof;
+                                                uprof.ModifyUser(ULogin.pui, NULL, NULL);
                                         }
                                         else{
                                                 // settings are not in profile. so new values should be in cookies
@@ -4067,13 +4049,12 @@ print2log("incor pass %s", par);
                                         //
                                         int updated = 0;
                                         if(name) {
-                                                CProfiles *uprof;
+                                                CProfiles uprof;
                                                 SProfile_UserInfo ui;
                                                 SProfile_FullUserInfo fui;
                                                 DWORD idx;
 
-                                                uprof = new CProfiles();
-                                                int err = uprof->GetUserByName(name, &ui, &fui, &idx);
+                                                int err = uprof.GetUserByName(name, &ui, &fui, &idx);
                                                 if(err == PROFILE_RETURN_ALLOK) {
                                                         int altnupd = 0;
                                                         // delete alt name if required
@@ -4090,12 +4071,11 @@ print2log("incor pass %s", par);
                                                         ui.Status = ustat;
                                                         ui.right = right;
 
-                                                        if(uprof->SetUInfo(idx, &ui)) {
+                                                        if(uprof.SetUInfo(idx, &ui)) {
                                                                 if(altnupd) AltNames.DeleteAltName(ui.UniqID);
                                                                 updated = 1;
                                                         }
                                                 }
-                                                if(uprof) delete uprof;
                                         }
 
                                         //
@@ -4187,9 +4167,8 @@ print2log("incor pass %s", par);
                                         }
                                         /* if edit - load current settings */
                                         if(strcmp(act, MESSAGEMAIN_register_edit) == 0 && ui.username[0] != 0) {
-                                                CProfiles *cp = new CProfiles();
-                                                cp->GetUserByName(ui.username, &ui, &fui, NULL);
-                                                delete cp;
+                                                CProfiles cp;
+                                                cp.GetUserByName(ui.username, &ui, &fui, NULL);
                                         }
 
                                         //        Read alternative display name for user
@@ -4375,7 +4354,7 @@ print2log("incor pass %s", par);
                 else if(ULogin.LU.ID[0] != 0) x = 6;
 
                 if(x & 0x02) {
-                        ULogin.uprof->GetUserByName(ULogin.pui->username, &ui, &fui, NULL);
+                        ULogin.uprof.GetUserByName(ULogin.pui->username, &ui, &fui, NULL);
                 }
                 else {
                         strcpy(fui.HomePage, "http://");

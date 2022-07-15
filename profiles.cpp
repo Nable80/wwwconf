@@ -26,18 +26,6 @@ int isLoginStrValid(char *s)
         return 1;
 }
 
-/* constructor */
-CProfiles::CProfiles()
-{
-        errnum = PROFILE_RETURN_ALLOK;
-}
-
-
-/* constructor */
-CProfiles::~CProfiles()
-{
-}
-
 /* write SProfile_FullUserInfo structure, allocating space for it automatically
  * return 1 if successfull, otherwise zero 
  */

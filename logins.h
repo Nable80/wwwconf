@@ -50,7 +50,7 @@ static_assert(sizeof(SAuthUserSeq) == 28, "sizeof(SAuthUserSeq) must be 28 (0x1C
  */
 class CUserLogin {
 public:
-        CProfiles *uprof;
+        CProfiles uprof;
         DWORD errnum;
         SProfile_UserInfo *pui;
         SProfile_FullUserInfo *pfui;

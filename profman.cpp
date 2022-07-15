@@ -294,16 +294,12 @@ int CreateFullDatabase()
 
 int main(int argc, char *argv[])
 {
-        CProfiles *ul;
+        CProfiles ul;
         int errcode;
 
         SProfile_UserInfo ui;
         WCFILE *fw;
 
-        ul = new CProfiles();
-        if(ul->errnum != PROFILE_RETURN_ALLOK) {
-        }
-        
         printf("WWWConf console management tool\n");
 
 #if USE_LOCALE
@@ -340,14 +336,14 @@ int main(int argc, char *argv[])
                 else
                         ui.right = DEFAULT_ADMIN_RIGHT;
 
-                if((errcode = ul->AddNewUser(&ui, &fui, NULL)) == PROFILE_RETURN_ALLOK)
+                if((errcode = ul.AddNewUser(&ui, &fui, NULL)) == PROFILE_RETURN_ALLOK)
                         printf("User successfully created\n");
                 else printerror(errcode);
                 goto go_stop;
         }
 
         if(strcmp(argv[1], "-d") == 0 && argc == 3) {
-                if((errcode = ul->DeleteUser(argv[2])) == PROFILE_RETURN_ALLOK) {
+                if((errcode = ul.DeleteUser(argv[2])) == PROFILE_RETURN_ALLOK) {
                         printf("User successfully deleted\n");
                 }
                 else printerror(errcode);
@@ -357,11 +353,7 @@ int main(int argc, char *argv[])
         if(strcmp(argv[1], "-v") == 0 && argc == 3) {
                 SProfile_FullUserInfo fui;
                 DWORD ind;
-                if(ul->errnum != PROFILE_RETURN_ALLOK) {
-                        printf("Fatal: profiles database could not be accessed\n");
-                        goto go_stop;
-                }
-                if((errcode = ul->GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
+                if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("User Information\n");
                         printf("Login name : %s  Password : %s\n", ui.username, ui.password);
                         fui.SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;
@@ -371,22 +363,8 @@ int main(int argc, char *argv[])
                                 fui.Signature, ui.Flags, ui.RefreshCount);
                         printuserrigth(ui.right);
                         
-                        char *s;
-                        s = ctime(&fui.CreateDate);
-                        printf("Creation date: %s\n", s);
-
-                        int nf = 0;
-
-                        if(ui.LoginDate != 0) s = ctime(&ui.LoginDate);
-                        else {
-                                nf = 1;
-                                s = (char*)malloc(100);
-                                strcpy(s, "Never logged in");
-                        }        
-                        printf("Last access date: %s\n", s);
-                        if(nf) free(s);
-/*                        ui.LoginDate -= 36000*7;
-                        ul->SetUInfo(ind, &ui);*/
+                        printf("Creation date: %s\n", ctime(&fui.CreateDate));
+                        printf("Last access date: %s\n", ui.LoginDate ? ctime(&ui.LoginDate) : "Never logged in");
                 }
                 else printerror(errcode);
                 goto go_stop;
@@ -432,11 +410,7 @@ int main(int argc, char *argv[])
            if(strcmp(argv[1], "-cp") == 0 && argc == 3) {
                 SProfile_FullUserInfo fui;
                 DWORD ind;
-                if(ul->errnum != PROFILE_RETURN_ALLOK) {
-                        printf("Fatal: profiles database could not be accessed\n");
-                        goto go_stop;
-                }
-                if((errcode = ul->GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
+                if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("Clean Privates\n");
                 
                         printf("Login name : %s  persmescnt : %d\n", ui.username, ui.persmescnt);
@@ -448,7 +422,7 @@ int main(int argc, char *argv[])
                         ui.postedmescnt = 0;
 
 
-                        ul->SetUInfo(ind, &ui);
+                        ul.SetUInfo(ind, &ui);
                 }
                 else printerror(errcode);
                 goto go_stop;
@@ -520,13 +494,12 @@ int main(int argc, char *argv[])
 
         if(argc == 3 && strcmp(argv[1], "-vp") == 0) {
                 SPersonalMessage *topm, *frompm;
-                CProfiles prof;
                 int code;
-                if((code = prof.GetUserByName(argv[2], &ui, NULL, NULL)) != PROFILE_RETURN_ALLOK) {
+                if((code = ul.GetUserByName(argv[2], &ui, NULL, NULL)) != PROFILE_RETURN_ALLOK) {
                         printf("User not found!\n");
                         exit(0);
                 }
-                if((code = prof.ReadPersonalMessages(argv[2], 0, &topm, NULL, &frompm, NULL)) == PROFILE_RETURN_ALLOK) {
+                if((code = ul.ReadPersonalMessages(argv[2], 0, &topm, NULL, &frompm, NULL)) == PROFILE_RETURN_ALLOK) {
                         char tostr[1000], newm[100];
                         char *ss;
                         SPersonalMessage *pmsg;
@@ -681,6 +654,5 @@ go_end:
         printf("Fatal: Invalid option was specified: %s\n\n", argv[1] ? argv[1] : "");
         printusage(argv[0]);
 go_stop:
-        delete ul;
         return 0;
 }

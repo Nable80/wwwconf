@@ -299,7 +299,6 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
 /********************** CUserLogin **********************/
 CUserLogin::CUserLogin()
 {
-        uprof = NULL;
         pui = NULL;
         pfui = NULL;
         LU.SIndex = 0xFFFFFFFF;
@@ -311,7 +310,6 @@ CUserLogin::CUserLogin()
 
 CUserLogin::~CUserLogin()
 {
-        if(uprof != NULL)        delete uprof;
         if(pui != NULL)                free(pui);
         if(pfui != NULL)        free(pfui);
 }
@@ -322,20 +320,10 @@ CUserLogin::~CUserLogin()
 DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *Fui, DWORD lIP, DWORD IPCheckD)
 {
         int cr;
-        if(uprof == NULL) {
-                uprof = new CProfiles();
-                if(uprof->errnum != PROFILE_RETURN_ALLOK) {
-#if ENABLE_LOG >= 1
-                        print2log("call to CProfiles::CProfiles failed at CUserLogin::OpenSession(), line %d", __LINE__);
-#endif
-                        return 0;
-                }
-        }
-
         if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
         if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
 
-        if((cr = uprof->GetUserByName(uname, pui, pfui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
+        if((cr = uprof.GetUserByName(uname, pui, pfui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
                 strcmp(passw, pui->password) == 0)
         {
                 /* prepare SUserInfo structure */
@@ -385,7 +373,7 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 // update IP and last login date
                 pui->lastIP = lIP;
                 pui->LoginDate = time(NULL);
-                if(uprof->SetUInfo(LU.SIndex, pui) != 1) {
+                if(uprof.SetUInfo(LU.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
                         print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), lined %d", __LINE__);
 #endif
@@ -424,21 +412,10 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
         if(CheckAndUpdateAuthSequence(seq, lIP, &SEQ) == 1) {
                 if(lIP){
-
-                        if(uprof == NULL) {
-                                uprof = new CProfiles();
-                                if(uprof->errnum != PROFILE_RETURN_ALLOK) {
-#if ENABLE_LOG >= 1
-                                        print2log("call to CProfiles::CProfiles failed at CUserLogin::CheckSession(), line %d", __LINE__);
-#endif
-                                        goto SessionError1;
-                                }
-                        }
-
                         if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
                         if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
 
-                        if(uprof->GetUInfo(SEQ.SIndex, pui) != 1) {
+                        if(uprof.GetUInfo(SEQ.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("call to CProfiles::GetUInfo failed at CUserLogin::CheckSession(), line %d" \
                                         " (maybe user has been deleted)", __LINE__);
@@ -448,7 +425,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
 
                         
-                        if(uprof->GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
+                        if(uprof.GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("call to CProfiles::GetFullInfo() failed at CUserLogin::CheckSession(), line %d"
                                         " (maybe user have been deleted)", __LINE__);
@@ -467,7 +444,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         pui->LoginDate = time(NULL);
                         pui->RefreshCount++;
 
-                        if(uprof->SetUInfo(SEQ.SIndex, pui) != 1) {
+                        if(uprof.SetUInfo(SEQ.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), lined %d", __LINE__);
 #endif
@@ -516,11 +493,6 @@ SessionError2:
         free(pfui);
         pui = NULL;
         pfui = NULL;
-
-SessionError1:
-
-        delete uprof;
-        uprof = NULL;
 
 SessionErrorEnd:
 

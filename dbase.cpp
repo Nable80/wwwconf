@@ -952,7 +952,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
         int re; // reply flag
         DWORD MFlags, msigned = 0;
 
-        CProfiles *uprof = NULL;
+        CProfiles uprof;
         /* posting user SProfile_UserInfo absoulte index in profile database */
         DWORD Uind = 0xFFFFFFFF;
 
@@ -960,16 +960,8 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
         SProfile_UserInfo UI;
 
         if(passw != NULL && *passw != 0) {
-                uprof = new CProfiles();
-                if(uprof->errnum != PROFILE_RETURN_ALLOK) {
-#if ENABLE_LOG >= 1
-                        print2log("Error working with profiles database (init)");
-#endif
-                        printhtmlerror();
-                }
-                int opres = uprof->GetUserByName(mes->AuthorName, &UI, NULL, &Uind);
+                int opres = uprof.GetUserByName(mes->AuthorName, &UI, NULL, &Uind);
                 if((opres != PROFILE_RETURN_ALLOK) || (strcmp(UI.password, passw) != 0)) {
-                        delete uprof;
                         return MSG_CHK_ERROR_INVALID_PASSW;
                 }
         }
@@ -999,9 +991,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                         }
                         if(strlen(mes->AuthorName) == 0 || strcmp(mes->AuthorName, " ") == 0) return MSG_CHK_ERROR_NONAME;
 #if POST_ALLOW_UNDER_SAME_NICK == 0
-                        uprof = new CProfiles();
-                        if(uprof->GetUserByName(mes->AuthorName, NULL, NULL, NULL) == PROFILE_RETURN_ALLOK) {
-                                delete uprof;
+                        if(uprof.GetUserByName(mes->AuthorName, NULL, NULL, NULL) == PROFILE_RETURN_ALLOK) {
                             return MSG_CHK_ERROR_INVALID_PASSW;
                         }
 #endif
@@ -1036,14 +1026,11 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
 
         /* increase postcount if posting as registred user */
         if(Uind != 0xFFFFFFFF) {
-                if(!uprof) uprof = new CProfiles();        // if it's logged in user
-                
                 UI.postcount++;
                 UI.lastIP = mes->IPAddr;
                 UI.LoginDate = time(NULL);
                 
-                if(uprof->SetUInfo(Uind, &UI) == 0) {
-                        delete uprof;
+                if(uprof.SetUInfo(Uind, &UI) == 0) {
 #if ENABLE_LOG >= 1
                 print2log("Call to CProfiles::SetUInfo failed at DB_Base::DB_InsertMessage(), line %d (Update user information for %s)",
                     __LINE__, UI.username);
@@ -1051,8 +1038,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                         printhtmlerror();
                 }
         }
-        if(uprof != NULL) delete uprof;
-
 
         if(*body != NULL && **body != 0)
                 msize = strlen(*body) + 1;
@@ -1128,7 +1113,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                 // send mail ackn if required
                 {
                         // 1. Get user and email
-                        CProfiles prof;
                         SProfile_UserInfo ui;
                         SProfile_FullUserInfo fui;
                         char subj[1000];
@@ -1136,7 +1120,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
 
                         fui.AboutUser = NULL;
 
-                        if(msg->UniqUserID != 0 && prof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
+                        if(msg->UniqUserID != 0 && uprof.GetUserByName(msg->AuthorName, &ui, &fui, NULL) == PROFILE_RETURN_ALLOK &&
                                 ((msg->Flag & MESSAGE_MAIL_NOTIFIATION) || (ui.Flags & PROFILES_FLAG_ALWAYS_EMAIL_ACKN)) ) {
                                 char *pb, *pb1, *pb2;
                                 char *pb_f, *pb1_f;
