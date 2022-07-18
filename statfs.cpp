@@ -1,5 +1,5 @@
 #include <sys/statvfs.h>
-#include "statfs.h" 
+#include "statfs.h"
 
 bool isEnoughSpace(void)
 {

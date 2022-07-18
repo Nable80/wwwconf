@@ -72,7 +72,7 @@ int GetIndexOfString(char *s, DWORD *Index)
                         hi_unlock_file();
                         return HASHINDEX_ER_IO_READ;
                 }
-                
+
                 if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                         hi_unlock_file();
                         return HASHINDEX_ER_IO_READ;
@@ -117,7 +117,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                 return HASHINDEX_ER_FORMAT;
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
-        
+
         if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_RW)) == NULL) {
                 //
                 //        try to create new index WCFILE
@@ -247,7 +247,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                                                 wcfclose(f);
                                                 return HASHINDEX_ER_IO_READ;
                                         }
-                                        
+
                                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                                 hi_unlock_file();
                                                 wcfclose(f);
@@ -304,7 +304,7 @@ int DeleteStringFromHashedIndex(const char *s)
                         hi_unlock_file();
                         return HASHINDEX_ER_IO_READ;
                 }
-                
+
                 if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                         hi_unlock_file();
                         return HASHINDEX_ER_IO_READ;
@@ -383,7 +383,7 @@ int GenerateHashwordList(char **names)
                                 hi_unlock_file();
                                 return HASHINDEX_ER_IO_READ;
                         }
-                        
+
                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                 free(*names);
                                 hi_unlock_file();
@@ -465,7 +465,7 @@ int GenerateIndexList(DWORD **index)
                                 wcfclose(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
-                        
+
                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                 free(*index);
                                 *index = NULL;

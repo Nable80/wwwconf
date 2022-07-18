@@ -44,7 +44,7 @@ extern DWORD                currentlm;        // last message
 extern DWORD                currentfm;        // first message
 extern DWORD                currentlt;        // last threads
 extern DWORD                currentft;        // first threads
-extern int                currenttz;        
+extern int                currenttz;
 
 extern DWORD                currenttopics_map;
 
@@ -101,7 +101,7 @@ protected:
         SMessage lastmes;        // for last posted message in collapsed thread
 
         int SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *msgcnt);
-        
+
         int printhtmlbuffer(SMessage *buf, DWORD size, int p, int *ll, int *pr, DWORD mode, DWORD &shouldprint, DWORD &skipped);
         int printThreadbuffer(SMessage *buf, DWORD size, int p, DWORD fmpos, int ll, int *czero, DWORD selected, DWORD root, int *bp);
         void printhtmlindexhron_bythreads(DWORD mode);
@@ -118,7 +118,7 @@ protected:
 public:
         DB_Base();
         ~DB_Base();
-        
+
         DWORD TranslateMsgIndex(DWORD root);
         DWORD TranslateMsgIndexDel(DWORD root);
         DWORD AddMsgIndex(DWORD root);
@@ -130,7 +130,7 @@ public:
         int IncrementMainThreadCount();
         int DecrementMainThreadCount();
         int ReadMainThreadCount(DWORD *root);
-        
+
         int PrintHtmlMessageBody(SMessage *mes,  char *body);
 
         char* PrintXmlMessageRoutine(DWORD num, int is_xmlfp = 0, int only_body = 0, int print_body = 1);
@@ -145,7 +145,7 @@ public:
         int DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, char** body, DWORD CFlags, char *passw, char **banreason);
         int DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CFlags, char **banreason);
         int PrintandCheckMessageFavsExistandInv(SProfile_UserInfo *ui, DWORD viewinv, int *updated);
-        
+
         int DB_DeleteMessages(DWORD root);
         int DB_ChangeInvisibilityThreadFlag(DWORD root, int invf);
         int DB_ChangeRollThreadFlag(DWORD tmp);

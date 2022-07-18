@@ -55,7 +55,7 @@ int ReadDBMessageBody(char *buf, DWORD index, DWORD size)
 int WriteDBMessage(DWORD midx, SMessage *mes)
 {
         WCFILE *f;
-        
+
         if((f = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_RW)) == NULL) return 0;
         lock_file(f);
         if(wcfseek(f, midx, SEEK_SET) != 0)
@@ -86,12 +86,12 @@ int WriteDBMessageBody(char *buf, DWORD index, DWORD size)
 }
 
 DWORD VIndexCountInDB()
-{        
+{
         DWORD fsize;
         fsize = Fsize(F_VINDEX);
         if (fsize > 0)
                 return (fsize - 3) / sizeof(DWORD);
-        else 
+        else
                 return 0;
 }
 
@@ -103,7 +103,7 @@ DWORD TranslateMsgIndexDel(DWORD root)
 
         if (root == 0)
                 return NO_MESSAGE_CODE;
-        
+
         if ( (f = wcfopen(F_VINDEX, FILE_ACCESS_MODES_R)) == NULL)
                 printhtmlerror();
 
@@ -122,7 +122,7 @@ DWORD TranslateMsgIndexDel(DWORD root)
                         printhtmlerror();
         } else if (i == NO_MESSAGE_CODE)
                 i = 0;
-        
+
         wcfclose(f);
 
         return i;

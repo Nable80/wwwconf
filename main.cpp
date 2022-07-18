@@ -21,7 +21,7 @@
 #include "announces.h"
 #include "colornick.h"
 #include "activitylog.h"
-#include "statfs.h" 
+#include "statfs.h"
 #include "dbaseutils.h"
 
 char *ConfTitle;
@@ -255,12 +255,12 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                                 " VALUE=\"%s\"></TD></TR>", MESSAGEMAIN_post_you_name, AUTHOR_NAME_LENGTH - 1,
                                 msg->AuthorName, MESSAGEMAIN_post_hostname, HOST_NAME_LENGTH - 1, msg->HostName);
                 }
-                
+
         }
 
 
         printf("<TR><TD ALIGN=CENTER>%s</TD><TD ALIGN=LEFT>", MESSAGEMAIN_post_message_subject);
-        
+
 #if TOPICS_SYSTEM_SUPPORT
         // subject and topic
         if(s == 0) {
@@ -284,7 +284,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 #else
         printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
 	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
-#endif                         
+#endif
 
         DESIGN_STYLE_BUTTONS_BEGIN()
                 DESIGN_STYLE_BUTTONS_ADD_WRAP("b", "30px", "b", "жирный текст: [b]текст[/b] (alt+b)", "[b]", "[/b]", 1)
@@ -334,7 +334,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                         DESIGN_STYLE_SMILES_ADD("iq.gif", ":CIQ")
                 DESIGN_STYLE_SMILES_END()
         DESIGN_STYLE_BUTTONS_END();
-        
+
 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "
 	       "CLASS=\"post\" tabindex=\"1\" maxlength=\"%d\" "
@@ -349,7 +349,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
                "%s<INPUT TYPE=CHECKBOX NAME=\"dst\"%s class=cl>",
                MESSAGEMAIN_post_disable_wwwconf_tags, tstr[1],
                MESSAGEMAIN_post_disable_smile_tags, tstr[0]);
-                                                  
+
         if (ULogin.LU.ID[0] != 0) {
                 tstr[0][0] = 0;
                 if(flags & MSG_CHK_ENABLE_EMAIL_ACKNL) strcpy(tstr[0], RADIO_CHECKED);
@@ -358,7 +358,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
         }
 
         printf("</TD></TR><TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TR>");
-                                                                 
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER>");
 
         if(code & ACTION_BUTTON_EDIT) {
@@ -379,7 +379,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD
 static void PrintLoginForm()
 {
         printf("<P><FORM METHOD=POST ACTION=\"%s?login=action\">", MY_CGI_URL);
-        
+
         printf(DESIGN_BEGIN_LOGIN_OPEN);
 
         printf("<TR><TD ALIGN=RIGHT>%s</TD><TD><INPUT TYPE=TEXT NAME=\"mname\" SIZE=20 " \
@@ -390,7 +390,7 @@ static void PrintLoginForm()
 
         printf("<TR><TD COLSPAN=2><CENTER><INPUT TYPE=CHECKBOX NAME=\"ipoff\" VALUE=1>" \
                 MESSAGEMAIN_login_ipcheck "</CENTER></TD></TR>");
-        
+
         printf("<P><TR><TD COLSPAN=2 ALIGN=CENTER><INPUT TYPE=SUBMIT VALUE=\"Enter\"></TD></TR>" DESIGN_END_LOGIN_CLOSE "</FORM>");
 
         printf(MESSAGEMAIN_login_lostpassw);
@@ -404,7 +404,7 @@ static void PrintPrivateMessageForm(char *name, const char *body)
                 "</BIG></TR><TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=80%% NOSHADE></TR>");
         printf("<TR><TH ALIGN=RIGHT>%s </TH><TD>"
                 "<INPUT TYPE=TEXT NAME=\"name\" SIZE=30 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>"
-                "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG>", 
+                "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG>",
                 MESSAGEMAIN_privatemsg_send_msg_usr, PROFILES_MAX_USERNAME_LENGTH - 1,
                 name, MESSAGEMAIN_privatemsg_send_msg_bdy);
 
@@ -450,16 +450,16 @@ static void PrintLostPasswordForm()
 }
 
 /* print configuration form */
-static void PrintConfig()        
+static void PrintConfig()
 {
         char str1[20], str2[20], str3[20], str4[20], str5[20], str6[20], str7[20], str8[20], str9[20];
         int i;
 
         printf("<TABLE align=center width=\"100%%\"><tr><td><FORM METHOD=POST ACTION=\"%s?configure=action\" name=\"configure\">",
                 MY_CGI_URL);
-        
+
         printf("<CENTER><P><B>%s</B><BR><P>", MESSAGEHEAD_configure);
-        
+
         printf("<BR><BR>%s<BR>", MESSAGEHEAD_configure_showmsgs);
 
         str1[0] = str2[0] = str3[0] = str4[0] = str5[0] = 0;
@@ -509,7 +509,7 @@ static void PrintConfig()
         printf("<INPUT TYPE=RADIO NAME=lsel VALUE=2 %s>%s<INPUT TYPE=TEXT NAME=\"tc\" SIZE=3 maxlength=\"3\" VALUE=%lu>"
                 "<BR><BR>%s<BR><SELECT NAME=\"ss\"><OPTION VALUE=\"2\" %s>%s<OPTION VALUE=\"3\" %s>%s<OPTION VALUE=\"4\"%s>"
                 "%s</SELECT>",
-                str1, MESSAGEHEAD_configure_lastnum, currenttc, 
+                str1, MESSAGEHEAD_configure_lastnum, currenttc,
                 MESSAGEHEAD_configure_showstyle, str3,
                 MESSAGEHEAD_configure_showhronbackward, str4,
                 MESSAGEHEAD_configure_showhronwothreads, str5,
@@ -582,17 +582,17 @@ static void PrintConfig()
                         printf("<P>" MESSAGEHEAD_configure_saving_to_profile "<BR>");
         else printf("<P>" MESSAGEHEAD_configure_saving_to_browser "<BR>");
         if(ULogin.LU.ID[0]) printf(MESSAGEHEAD_configure_view_saving "<BR>");
-        
+
         printf("<P><INPUT TYPE=SUBMIT VALUE=\"%s\"></CENTER></FORM></td></tr></table>",
                 MESSAGEHEAD_configure_applysettings);
-        
+
 }
 
 void PrintTopString(DWORD c, DWORD ind, DWORD ret)
 {
         /* print init code */
         printf(DESIGN_COMMAND_TABLE_BEGIN);
-        
+
         if(c & HEADERSTRING_ENABLE_TO_MESSAGE) {
                 printf("<A HREF=\"#%ld\">%s</A>", ret, MESSAGEHEAD_to_message);
 
@@ -611,7 +611,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
                         MY_CGI_URL, ind, MESSAGEHEAD_return_to_main_page);
 
         }
-        
+
         if(c & HEADERSTRING_POST_NEW_MESSAGE) {
                 printf("<A HREF=\"%s?form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_post_new_message);
         }
@@ -619,7 +619,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         if((c & HEADERSTRING_DISABLE_SEARCH) == 0) {
                  printf("<a HREF=\"https://search.mipt.cc/search\">%s</a>", MESSAGEHEAD_search);
         }
-        
+
         if(c & HEADERSTRING_CONFIGURE) {
                 printf("<A HREF=\"%s?configure=form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_configure);
         }
@@ -636,7 +636,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         if(c & HEADERSTRING_REG_USER_LIST) {
                 printf("<A HREF=\"%s?userlist\">%s</A>", MY_CGI_URL, MESSAGEHEAD_userlist);
         }
-        
+
         if( (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0  && HEADERSTRING_REG_USER_LIST) {
                 printf("<A HREF=\"%s?banlist\">%s</a>", MY_CGI_URL, MESSAGEHEAD_banlist);
         }
@@ -663,7 +663,7 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
         if((ULogin.LU.right & USERRIGHT_POST_GLOBAL_ANNOUNCE) != 0 && (c & HEADERSTRING_POST_NEW_MESSAGE) != 0) {
                 printf("<A HREF=\"%s?globann=form\">%s</A>", MY_CGI_URL, MESSAGEHEAD_makeannounce);
         }
-        
+
         if((ULogin.LU.ID[0] != 0) && ((c & HEADERSTRING_DISABLE_LOGOFF) == 0)) {
                 printf("<A HREF=\"%s?login=logoff\">%s</A>", MY_CGI_URL, MESSAGEHEAD_logoff);
         }
@@ -685,7 +685,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         printf("Set-Cookie: " COOKIE_NAME_STRING "name=%s|lsel=%lu|tc=%lu|tt=%lu|tv=%lu|ss=%lu|" \
                 "lm=%ld|fm=%ld|lt=%ld|ft=%ld|dsm=%lu|seq=%08lx%08lx|topics=%lu|lann=%lu|tovr=%lu|tz=%ld&;" \
                 " expires=" COOKIE_EXPIRATION_DATE "path=" COOKIE_SERVER_PATH
-                "\nSet-Cookie: " COOKIE_SESSION_NAME "on&; path=" COOKIE_SERVER_PATH "\n\n", 
+                "\nSet-Cookie: " COOKIE_SESSION_NAME "on&; path=" COOKIE_SERVER_PATH "\n\n",
                 CodeHttpString(cookie_name, 0), cookie_lsel, cookie_tc, cookie_tt, cookie_tv,
                 cookie_ss, currentlm, currentfm, currentlt, currentft, cookie_dsm, ULogin.LU.ID[0], ULogin.LU.ID[1],
                 cookie_topics, currentlann, topicsoverride,cookie_tz);
@@ -741,7 +741,7 @@ void PrintBottomLines()
 }
 
 /* print moderation toolbar and keys
- * 
+ *
  */
 int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
 {
@@ -763,18 +763,18 @@ int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
 
         /* allow only to superuser */
         if(ULogin.LU.right & USERRIGHT_SUPERUSER) {
-                
+
                 fl = fl | 0x0080; /* delete */
 
                 if((mflag & MESSAGE_IS_INVISIBLE) == 0)
                         fl = fl | 0x0008;
-                
+
                 if(mflag & MESSAGE_IS_INVISIBLE)
                         fl = fl | 0x0010;
-                
+
                 if((mflag & MESSAGE_COLLAPSED_THREAD) == 0)
                         fl = fl | 0x0020;
-                
+
                 if(mflag & MESSAGE_COLLAPSED_THREAD)
                         fl = fl | 0x0040;
         }
@@ -784,7 +784,7 @@ int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
                 /* print administration table */
                 printf("<BR><CENTER><TABLE BORDER=0 CELLSPACING=0 CELLPADDING=1"
                         "BGCOLOR=\"#eeeeee\"><TR><TD ALIGN=CENTER>[ <SMALL>");
-                
+
                 /* close thread */
                 if(fl & 0x0001) {
                         printf("<A HREF=\"%s?close=%ld\"><font color=\"#AF0000\">%s</font></A>",
@@ -799,8 +799,8 @@ int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
                                 MY_CGI_URL, root, MESSAGEMAIN_moderate_unclose_thread);
                         g = 1;
                 }
-                
-                // change message 
+
+                // change message
                 if(fl & 0x0004) {
                         if(g) printf(DESIGN_BUTTONS_DIVIDER);
                         printf("<A HREF=\"%s?changemsg=%ld\"><font color=\"#AF0000\">%s</font></A>",
@@ -813,7 +813,7 @@ int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
                         printf("<A HREF=\"%s?roll=%ld\"><font color=\"#AF0000\">%s</font></A>",
                                 MY_CGI_URL, root, MESSAGEMAIN_moderate_roll);
                 }
-                        
+
                 /* uncollapse thread */
                 if(fl & 0x0040) {
                         if(g) printf(DESIGN_BUTTONS_DIVIDER);
@@ -828,7 +828,7 @@ int PrintAdminToolbar(DWORD root, DWORD mflag, DWORD UID)
                                 MY_CGI_URL, root, MESSAGEMAIN_moderate_hide_thread);
                         g = 1;
                 }
-                
+
                 /* unhide thread */
                 if(fl & 0x0010) {
                         if(g) printf(DESIGN_BUTTONS_DIVIDER);
@@ -906,7 +906,7 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         else *str1 = 0;
 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_if_want_change "</STRONG></TR>");
-        
+
         printf("<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=PASSWORD NAME=\"pswd1\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>" \
                 "<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=PASSWORD NAME=\"pswd2\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                 MESSAGEMAIN_register_password1, PROFILES_MAX_PASSWORD_LENGTH - 1, "",
@@ -915,7 +915,7 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         printf("<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"name\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                 MESSAGEMAIN_register_full_name, PROFILES_FULL_USERINFO_MAX_NAME - 1,
                 FilterHTMLTags(fui->FullName, 1000, 0));
-                
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_validemail_req "</STRONG></TR>");
 
         if ((currentdsm & CONFIGURE_bot) == 0 && ULogin.LU.ID[0] == 0)
@@ -930,30 +930,30 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
                        PROFILES_FULL_USERINFO_MAX_EMAIL - 1);
 
         printf("<INPUT TYPE=TEXT NAME=\"emchk\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>"
-               "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_email_pub 
+               "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>" MESSAGEMAIN_register_email_pub
                "</STRONG><INPUT TYPE=CHECKBOX NAME=\"pem\" VALUE=1%s>",
                PROFILES_FULL_USERINFO_MAX_EMAIL - 1, FilterHTMLTags(fui->Email, 1000, 0), str1);
-        
+
         printf("</TD></TR>");
 
         printf("<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"hpage\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                 MESSAGEMAIN_register_homepage, PROFILES_FULL_USERINFO_MAX_HOMEPAGE - 1,
                 FilterHTMLTags(fui->HomePage, 1000, 0));
-                
+
         printf("<TR><TD ALIGN=RIGHT>%s </TD><TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"icq\" SIZE=15 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                   MESSAGEMAIN_register_icq, PROFILES_MAX_ICQ_LEN - 1, FilterHTMLTags(ui->icqnumber, 1000, 0));
 
-                        
+
         fui->SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;        // FIX
-   
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
                 "<TEXTAREA COLS=60 ROWS=3 NAME=\"about\" WRAP=VIRTUAL maxlength=\"1000\">%s</TEXTAREA></TD></TR>",
                  MESSAGEMAIN_register_about, FilterHTMLTags(fui->AboutUser, 1000, 0));
-                 
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
                 "<TEXTAREA COLS=60 ROWS=3 NAME=\"sign\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
                MESSAGEMAIN_register_signature, PROFILES_MAX_SIGNATURE_LENGTH - 1, FilterHTMLTags(fui->Signature, 1000, 0));
-                
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><BR>"\
                 "<TEXTAREA COLS=30 ROWS=4 NAME=\"susr\" WRAP=VIRTUAL maxlength=\"%d\">%s</TEXTAREA></TD></TR>",
                MESSAGEMAIN_register_selectedusers, PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1, FilterHTMLTags(fui->SelectedUsers, 1000, 0));
@@ -978,8 +978,8 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         if((ui->Flags & PROFILES_FLAG_VIEW_SETTINGS) != 0)
                 strcpy(str5, RADIO_CHECKED);
         else *str5 = 0;
-                                                                                                                                                                                
-                
+
+
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><INPUT TYPE=CHECKBOX NAME=\"vprf\" VALUE=1 %s></TD></TR>" \
                 "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><INPUT TYPE=CHECKBOX NAME=\"apem\" VALUE=1 %s></TD></TR>"        \
                 "<TR><TD COLSPAN=2 ALIGN=CENTER><STRONG>%s</STRONG><INPUT TYPE=CHECKBOX NAME=\"pdis\" VALUE=1 %s></TD></TR>" \
@@ -1005,8 +1005,8 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
 
         if(flags & 0x04)
                 printf(
-                "<INPUT TYPE=SUBMIT NAME=\"register\" VALUE=\"" MESSAGEMAIN_register_delete "\">" 
-                "<INPUT TYPE=CHECKBOX NAME=\"" CONFIRM_DELETE_CHECKBOX_TEXT "\" VALUE=\"true\">" 
+                "<INPUT TYPE=SUBMIT NAME=\"register\" VALUE=\"" MESSAGEMAIN_register_delete "\">"
+                "<INPUT TYPE=CHECKBOX NAME=\"" CONFIRM_DELETE_CHECKBOX_TEXT "\" VALUE=\"true\">"
                 MESSAGEMAIN_register_confirm_delete);
 
         printf("</TD></TR>" DESIGN_END_REGISTER_CLOSE "</FORM>");
@@ -1036,9 +1036,9 @@ void PrintSessionsList(DWORD Uid)
 
                                 printf("<TR><TD ALIGN=RIGHT>%ld. " MESSAGEMAIN_session_ip "</TD><TD"
                                         " ALIGN=LEFT><STRONG>%u.%u.%u.%u</STRONG> %s</TD></TR>",
-                                        i+1, seqip[0] & 0xff, seqip[1] & 0xff, seqip[2] & 0xff, seqip[3] & 0xff, 
+                                        i+1, seqip[0] & 0xff, seqip[1] & 0xff, seqip[2] & 0xff, seqip[3] & 0xff,
                                         userid & SEQUENCE_IP_CHECK_DISABLED ? MESSAGEMAIN_session_ip_nocheck : MESSAGEMAIN_session_ip_check );
-                                         
+
                                 printf("<TR><TD ALIGN=RIGHT>" MESSAGEMAIN_session_date "</TD><TD ALIGN=LEFT>"
                                         " <STRONG>%s</STRONG></TD></TR>", seqdate);
                                 printf("<TR><TD ALIGN=RIGHT>" MESSAGEMAIN_session_state "</TD><TD ALIGN=LEFT><STRONG>");
@@ -1061,7 +1061,7 @@ void PrintSessionsList(DWORD Uid)
         else printhtmlerror();
         if(buf) free(buf);
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
 int PrintAboutUserInfo(char *name)
 {
         char *nickname;
@@ -1091,7 +1091,7 @@ int PrintAboutUserInfo(char *name)
         if(ULogin.LU.UniqID == ui.UniqID){
                 printf(" <A HREF=\"%s?register=form\">(%s)</A>", MY_CGI_URL, MESSAGEMAIN_profview_editinfo);
         }
-        
+
         if(ULogin.LU.ID[0] && ULogin.LU.UniqID != ui.UniqID){
                 printf(" <A HREF=\"%s?persmsgform=%s\">(%s)</A>", MY_CGI_URL, CodeHttpString(name), MESSAGEMAIN_profview_postpersmsg);
         }
@@ -1114,21 +1114,21 @@ int PrintAboutUserInfo(char *name)
         {
                 printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG></TD></TR>",
                         MESSAGEMAIN_profview_fullname,  FilterHTMLTags(fui.FullName, 1000, 0));
-                        
+
         //        printf("<TR><TD ALIGN=RIGHT>%s</TD><TD><STRONG><A HREF=\"%s\">%s</A></STRONG></TD></TR>",
         //                MESSAGEMAIN_profview_homepage,        CodeHttpString(fui.HomePage, 0, URL_ENCODE), FilterHTMLTags(fui.HomePage, 1000, 0));
                 int need_http = 0;
                 if(strlen(fui.HomePage) < 7 || strncmp(fui.HomePage, "http://", 7)) need_http = 1;
                 //else fui.HomePage;
 
-                                
+
                 printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG><A HREF=\"%s%s\">%s%s</A></STRONG></TD></TR>",
-                        MESSAGEMAIN_profview_homepage,        
+                        MESSAGEMAIN_profview_homepage,
                         need_http ? "http://": "", CodeHttpString(fui.HomePage, 0, URL_ENCODE),
                         need_http ? "http://": "", FilterHTMLTags(fui.HomePage, 1000, 0));
-        
-        
-                
+
+
+
                 /* if invisible mail - allow view only for same user or superuser */
                 if((ui.Flags & PROFILES_FLAG_VISIBLE_EMAIL) || (ULogin.LU.right & USERRIGHT_SUPERUSER) ||
                         (ULogin.LU.UniqID == ui.UniqID)) {
@@ -1137,7 +1137,7 @@ int PrintAboutUserInfo(char *name)
                 }
                 else printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG><FONT COLOR=\"#0000F0\">%s</FONT></STRONG></TD></TR>",
                         MESSAGEMAIN_profview_email, MESSAGEMAIN_profview_privacy_inf);
-                
+
                 /* possible error (with malloc) here */
                 char *regdate, *logdate = (char*)malloc(255), *ustatus = (char*)malloc(255);
                 /*************************************/
@@ -1178,7 +1178,7 @@ int PrintAboutUserInfo(char *name)
                         }
                         free(st);
                 }
-                
+
 
                 printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG></TD></TR><BR>" \
                         "<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG></TD></TR>" \
@@ -1214,7 +1214,7 @@ int PrintAboutUserInfo(char *name)
                         }
                         // only for admin :)
                         if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0)
-                                printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%lu</STRONG></TD></TR>", 
+                                printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%lu</STRONG></TD></TR>",
                                         MESSAGEMAIN_profview_refreshcnt, ui.RefreshCount);
                         printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%s</STRONG></TD></TR>",
                                 MESSAGEMAIN_profview_lastip, hname);
@@ -1286,9 +1286,9 @@ static int cmp_name(const void *p1, const void *p2)
         char upper[2][AUTHOR_NAME_LENGTH];
         strcpy(upper[0], (*(char **)p1) + 20);
         strcpy(upper[1], (*(char **)p2) + 20);
-        for(int i = 0; i < 2; i++) 
+        for(int i = 0; i < 2; i++)
                 toupperstr(upper[i]);
-        
+
         return strcmp(upper[0], upper[1]);
 }
 
@@ -1437,9 +1437,9 @@ void PrintUserList(DB_Base *dbb, DWORD code)
                }
                if((cc % 10) != 0) printf(" | ");
                if(((cc % 10) == 0) && cc != 0)  printf("<BR>");
-               
+
                cc++;
-               
+
                dbb->Profile_UserName(buf[i] + 20, name, 1);
                printf("%s", name);
                free(buf[i]);
@@ -1489,7 +1489,7 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
         /* password and confirm password */
         if(op != 3 && (strcmp(ui->password, p2) != 0 || ((strlen(p2) < PROFILES_MIN_PASSWORD_LENGTH) && strlen(p2) != 0)))
                 return PROFILE_CHK_ERROR_INVALID_PASSWORD_REP;
-        
+
         if(strlen(p2) == 0) {
                 if(ULogin.LU.ID[0] != 0) strcpy(ui->password, ULogin.pui->password);
                 else return PROFILE_CHK_ERROR_INVALID_PASSWORD_REP;
@@ -1579,7 +1579,7 @@ cleanup_and_parseerror:
         case PROFILE_RETURN_DB_ERROR:
 #if ENABLE_LOG >= 1
                 print2log("Profiles database error: DB ERROR, deal=%s", deal);
-#endif 
+#endif
                 printhtmlerror();
 
         case PROFILE_RETURN_INVALID_FORMAT:
@@ -1603,14 +1603,14 @@ cleanup_and_parseerror:
         default:
 #if ENABLE_LOG >= 1
                 print2log("profiles database error : UNKNOWN, deal=%s", deal);
-#endif 
+#endif
                 printhtmlerror();
         }
 
         return 0; //abnormal
 }
 
-/* complete operation with user profile and print 
+/* complete operation with user profile and print
  * result of execution
  * op == 1 create
  * op == 2 update
@@ -1619,8 +1619,8 @@ cleanup_and_parseerror:
 void DoCheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, char *passwdconfirm, char *oldpasswd, int op, char *deal)
 {
         int err;
-        
-        if(op == 1 ) { 
+
+        if(op == 1 ) {
                 char *f = FilterWhitespaces(ui->username);
                 memmove(ui->username, f, strlen(f) + 1);
         }
@@ -1725,7 +1725,7 @@ void printpassworderror(UNUSED(char *deal))
 #endif
 
         Tittle_cat(TITLE_IncorrectPassword);
-                                
+
         /* incorrect login and/or password */
         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
         PrintBoardError(MESSAGEMAIN_incorrectpwd, MESSAGEMAIN_incorrectpwd2, 0);
@@ -1763,7 +1763,7 @@ int PrintMessageThread(DB_Base *bd, DWORD root, DWORD Flag, DWORD Puser)
 
         bd->DB_PrintMessageBody(root);
         bd->DB_PrintMessageThread(root);
-        return 0;        
+        return 0;
 }
 
 //rewritten for IIS compatibility
@@ -1789,13 +1789,13 @@ char* GetParams(DWORD maxlen)
 #if _DEBUG_ == 1
                                 print2log("GetParams::fread - failed");
 #endif
-                                goto cleanup;        
+                                goto cleanup;
                         }
                         szBuf[ret] = '&';        // patch string for our parser
                         szBuf[ret+1] = '\0';
 //                        print2log("POST params = %s, readed = %d", szBuf, ret);
                         return szBuf;
-cleanup:        
+cleanup:
                         free(szBuf);
                 }
         }
@@ -1872,14 +1872,14 @@ void ParseCookie()
         char *c, *s, *ss, *t, *st;
         DWORD tmp;
         long tmp_signed;
-        
+
         GlobalNewSession = 1;
         currentft = 1;
         currentlt = 1;
         currentfm = 1;
         currentlm = 1;
         currentlann = 0;
-        
+
         cookie_ss = CONFIGURE_SETTING_DEFAULT_ss;
         cookie_tt = CONFIGURE_SETTING_DEFAULT_tt;
         cookie_tv = CONFIGURE_SETTING_DEFAULT_tv;
@@ -1887,7 +1887,7 @@ void ParseCookie()
         cookie_lsel = CONFIGURE_SETTING_DEFAULT_lsel;
         cookie_dsm = CONFIGURE_SETTING_DEFAULT_dsm;
         cookie_tz = DATETIME_DEFAULT_TIMEZONE;
-        
+
 #if        TOPICS_SYSTEM_SUPPORT
         cookie_topics = CONFIGURE_SETTING_DEFAULT_topics;
         topicsoverride = CONFIGURE_SETTING_DEFAULT_toverride;
@@ -1895,7 +1895,7 @@ void ParseCookie()
 
         s = getenv("HTTP_COOKIE");
         //if(s) print2log(s);
-        
+
         if(s != NULL) {
                 c = strdup(s);
 
@@ -1904,13 +1904,13 @@ void ParseCookie()
                 if((ss = strget(c, COOKIE_NAME_STRING, COOKIE_MAX_LENGTH, '&')) != NULL) {
                         ss = (char*)realloc(ss, strlen(ss)+2);
                         strcat(ss,"|");
-                        
-                        
+
+
                         if((t = strget(ss, "name=", AUTHOR_NAME_LENGTH - 1, '|', 0))){
                                 cookie_name = t;
                         }
 
-                        
+
                         if((t = strget(ss, "seq=", 30, '|', 0))){
                                 cookie_seq = t;
                         }
@@ -1926,7 +1926,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                
+
                         // read tc (thread count)
                         if((t = strget(ss, "tc=", 12, '|', 0))) {
                                 tmp = strtoul(t, &st, 10);
@@ -1959,8 +1959,8 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                                
-                        if(cookie_tv > CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[cookie_tt-1]) 
+
+                        if(cookie_tv > CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[cookie_tt-1])
                                                 cookie_tv = CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[cookie_tt-1];
 
                         // read ss (style string)
@@ -1972,7 +1972,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                
+
 
                         // read lt (last thread)
                         if((t = strget(ss, "lt=", 12, '|', 0))){
@@ -1983,7 +1983,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                                        
+
                         // read fm (first message)
                         if((t = strget(ss, "ft=", 12, '|', 0))) {
                                 tmp = strtoul(t, &st, 10);
@@ -1993,7 +1993,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                                
+
                         // read lm (last message)
                         if((t = strget(ss, "lm=", 12, '|', 0))){
                                 tmp = strtoul(t, &st, 10);
@@ -2003,7 +2003,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                        
+
                         // read fm (first message)
                         if((t = strget(ss, "fm=", 12, '|', 0))){
                                 tmp = strtoul(t, &st, 10);
@@ -2013,7 +2013,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                        
+
                         // read dsm (globally disable smiles, picture, and 2-d link bar)
                         if((t = strget(ss, "dsm=", 12, '|', 0))) {
                                 tmp = strtoul(t, &st, 10);
@@ -2023,7 +2023,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                        
+
                         // read topics
                         if((t = strget(ss, "topics=", 20, '|', 0))) {
                                 tmp = strtoul(t, &st, 10);
@@ -2055,7 +2055,7 @@ void ParseCookie()
                                 }
                                 free(t);
                         }
-                        
+
                         // read timezone
                         if((t = strget(ss, "tz=", 12, '|', 0))) {
                                 tmp_signed = strtol(t, &st, 10);
@@ -2067,22 +2067,22 @@ void ParseCookie()
                         }
 
                         free(ss);
-        
+
                 }
-                
-        
+
+
                 if((ss = strget(c, COOKIE_SESSION_NAME, 12, '&')) && strcmp(ss, "on") == 0) {
                         GlobalNewSession = 0;
                         free(ss);
                 }
-                        
+
                 free(c);
         }
 
         if(!cookie_name){
                 cookie_name = strdup("");
         }
-        
+
         if(!cookie_seq) {
                 cookie_seq = strdup("");
         }
@@ -2102,7 +2102,7 @@ const char *GetBoardUrl()
                 strcat(url, h);
                 strcat(url, (s || *s ? s : "/"));
         }
-        return url;        
+        return url;
 }
 
 static void PrepareActionResult(int action, const char **c_par1, const char **c_par2)
@@ -2256,12 +2256,12 @@ int main()
                         }
                 }
         }
-        
-        //        
+
+        //
         // checking settings were saved in profile or cookies and  restoring them.
         //
 
-        if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS)  ) { 
+        if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS)  ) {
 
                 currentdsm = ULogin.pui->vs.dsm;
                 currenttopics = ULogin.pui->vs.topics;
@@ -2292,12 +2292,12 @@ int main()
                 print2log("Superuser: %s from %s - %s", ULogin.pui->username, Cip, deal);
 
 
-        //==========================        
+        //==========================
         // detecting user wishes %)
         //==========================
-        
-        
-        
+
+
+
         if(strncmp(deal, "resetnew", 8) == 0) {
                 // apply old last message value
                 currentlm = currentfm;
@@ -2305,7 +2305,7 @@ int main()
 
                 // set new read time value
                 PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS, MAINPAGE_INDEX);
-                
+
                 goto End_part;
         }
 
@@ -2345,7 +2345,7 @@ int main()
                                 }
                         }
                         if(entok) {
-                                PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS | 
+                                PrintHTMLHeader(HEADERSTRING_REDIRECT_NOW | HEADERSTRING_NO_CACHE_THIS |
                                                 HEADERSTRING_ENABLE_REGISTER, MAINPAGE_INDEX);
                                 goto End_part;
                         }
@@ -2367,7 +2367,7 @@ int main()
                 DWORD mtc;
                 //        Read main threads count
                 if(!DB.ReadMainThreadCount(&mtc)) mtc=0;
-                
+
                 currentfm = readed;
                 currentft = mtc;
                 //
@@ -2456,7 +2456,7 @@ int main()
                 }
 
 
-                
+
                 // Announce going here
                 {
                         SGlobalAnnounce *ga;
@@ -2475,7 +2475,7 @@ int main()
                                                 DWORD enabled_smiles = 0;
                                                 if((currentdsm & CONFIGURE_dsm) == 0)
                                                         enabled_smiles = MESSAGE_ENABLED_SMILES;
-                                                if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
+                                                if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1,
                                                         enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                                         BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                                                 {
@@ -2491,13 +2491,13 @@ int main()
                                                                 "</A> <A HREF=\"" MY_CGI_URL "?globann=%lu\" "
                                                                 "STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_globann_updannounce
                                                                 "</A>", ga[i].Number, ga[i].Number);
-                                        }        
+                                        }
                                                 else del[0] = 0;
 
                                                 date = ConvertTime(ga[i].Date);
 
                                                 printf(DESIGN_GLOBALANN_FRAME, st1, MESSAGEMAIN_globann_postedby, uname, date, del);
-                                                                                                        
+
 
                                                 if(st) free(st);
                                                 if(st1) free(st1);
@@ -2520,9 +2520,9 @@ int main()
                         printf("Content-type: application/rss+xml\n\n");
                         printf(RSS_START, GetBoardUrl());
                 }
-                
+
 #if TOPICS_SYSTEM_SUPPORT
-                DWORD oldct = currenttopics;                
+                DWORD oldct = currenttopics;
                 if(topicsoverride) {
                         if(topicsoverride > TOPICS_COUNT) currenttopics = 0xffffffff;        // all
                         else currenttopics = (1<<(topicsoverride-1));
@@ -2540,15 +2540,15 @@ int main()
 #if TOPICS_SYSTEM_SUPPORT
                 currenttopics = oldct;
 #endif
-        
+
                 if (!is_xml)
                         PrintBottomLines();
                 else
                         printf(RSS_END);
-                        
+
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "read", 4) == 0)
         {
                 /* security check */
@@ -2595,13 +2595,13 @@ int main()
                                                 Tittle_cat(Topics_List[mes.Topics]);
 #endif
 
-                                        Tittle_cat(an);                                        
+                                        Tittle_cat(an);
 
                                         if(an != mes.MessageHeader) free(an);
 #endif
                                         // tmpxx contains vindex of parent message if thread is rolled.
                                         // if some sub-thread is rolled, tmpxx contains vindex of MAIN parent of thread
-                                        
+
                                         DWORD tmpxx;
                                         if (mes.Flag & MESSAGE_COLLAPSED_THREAD && mes.Level > 0){
                                                 SMessage parmes;
@@ -2613,16 +2613,16 @@ int main()
                                         /* allow post to closed message only to SUPERUSER and USER  */
                                         if ((((mes.Flag & MESSAGE_IS_CLOSED) == 0 &&
                                               (ULogin.LU.right & USERRIGHT_CREATE_MESSAGE) )  ||
-                                             (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0 ) && 
-                                            ((currentfm < MAX_DELTA_POST_MESSAGE) || 
-                                             (tmp > (currentfm - MAX_DELTA_POST_MESSAGE)) || 
+                                             (ULogin.LU.right & USERRIGHT_SUPERUSER) != 0 ) &&
+                                            ((currentfm < MAX_DELTA_POST_MESSAGE) ||
+                                             (tmp > (currentfm - MAX_DELTA_POST_MESSAGE)) ||
                                              (tmp == 0)) && ((currentdsm & CONFIGURE_shrp) == 0))
                                                 is_form = 1;
 
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_ENABLE_TO_MESSAGE |
                                                         (currentdsm & CONFIGURE_shrp ? HEADERSTRING_ENABLE_REPLY_LINK : 0) |
                                                         HEADERSTRING_SHOWBODY_JS | (is_form ? HEADERSTRING_POST_JS : 0), tmpxx, tmp);
-                                        
+
                                         PrintMessageThread(&DB, tmp, mes.Flag, mes.UniqUserID);
 
                                         if (is_form) {
@@ -2773,7 +2773,7 @@ int main()
 
                 error_type = ERROR_TYPE_XML;
                 DB.PrintXmlIndex(from, to);
-                
+
                 goto End_part;
         }
 
@@ -2812,7 +2812,7 @@ int main()
 
                 error_type = ERROR_TYPE_XMLFP;
                 DB.PrintXmlfpIndex(from, to);
-                
+
                 goto End_part;
         }
 
@@ -2827,11 +2827,11 @@ int main()
 
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "form", 4) == 0)
         {
                 DWORD repnum = 0;
-                
+
                 // read form= parameter (if reply form is required)
                 if((st = strget(deal,"form=", 16, '&')) != NULL)
                 {
@@ -2844,7 +2844,7 @@ int main()
                         {
                                 printnomessage(deal);
                                 free(st);
-                                goto End_part; 
+                                goto End_part;
                         }
                         free(st);
                 }
@@ -2855,12 +2855,12 @@ int main()
                                 printaccessdenied(deal);
                                 goto End_part;
                 }
-                
+
                 if(!repnum) Tittle_cat(TITLE_Form);
                 else Tittle_cat(TITLE_WriteReply);
 
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_POST_JS, MAINPAGE_INDEX);
-                
+
                 strcpy(mes.AuthorName, FilterHTMLTags(cookie_name, 1000, 0));
                 mes.MessageHeader[0] = 0;
                 mesb = (char*)malloc(1);
@@ -2871,8 +2871,8 @@ int main()
                 PrintBottomLines();
                 goto End_part;
         }
-        
-        
+
+
         if(strncmp(deal, "xpost", 5) == 0) {
                 char *ss = NULL, *st = NULL;
                 char *passw, *c_host;
@@ -2902,8 +2902,8 @@ int main()
                         printaccessdenied(deal);
                         goto End_part;
                 }
-                        
-                        
+
+
                 // make IP address
                 if ((tmp = getenv("HTTP_X_FORWARDED_FOR")) != NULL) print2log("proxy HTTP_X_FORWARDED_FOR %s - %s", tmp, deal);
                 if ((tmp = getenv("HTTP_X_FORWARDED")) != NULL) print2log("proxy HTTP_X_FORWARDED %s - %s", tmp, deal);
@@ -2929,12 +2929,12 @@ int main()
                         {
                                 // TODO: more detailed log here
                                 print2log("proxy %s - %s", tmp, deal);
-                                
+
                                 // TODO: we need to resolve DNS here
                                 strncpy(mes.HostName, tmp, HOST_NAME_LENGTH - 1);
                                 mes.HostName[HOST_NAME_LENGTH - 1] = 0;
                         } else
-                */ 
+                */
                         if(!IP2HostName(Nip, mes.HostName, HOST_NAME_LENGTH - 1))
                                 strcpy(mes.HostName, Cip);
 
@@ -2949,7 +2949,7 @@ int main()
 #if HTTP_REFERER_CHECK == 1
                 char *useragent = getenv("HTTP_USER_AGENT");
                 if(
-                        !useragent || 
+                        !useragent ||
                         (strncmp(useragent, UA_LYNX, strlen(UA_LYNX)) &&
                         strncmp(useragent, UA_LINKS, strlen(UA_LINKS)))
                 ) {
@@ -2989,7 +2989,7 @@ int main()
                         mes.AuthorName[AUTHOR_NAME_LENGTH - 1] = 0;
                         free(st);
                 }
-        
+
                 // read password
                 passw = strget(par,"pswd=", PROFILES_MAX_PASSWORD_LENGTH - 1, '&');
 
@@ -3009,7 +3009,7 @@ int main()
 
                 // read msg body
                 mesb = strget(par,"body=", MAX_PARAMETERS_STRING, '&');
-                
+
                 // read dct (disable WWWConf Tags)
                 st = strget(par,"dct=", 10, '&');
                 if(st != NULL) {
@@ -3018,7 +3018,7 @@ int main()
                         }
                         free(st);
                 }
-                
+
                 // read dst (disable smile codes)
                 st = strget(par,"dst=", 10, '&');
                 if(st != NULL) {
@@ -3027,7 +3027,7 @@ int main()
                         }
                         free(st);
                 }
-                
+
                 // read wen (acknol. by email)
                 st = strget(par,"wen=", 10, '&');
                 if(st != NULL) {
@@ -3103,7 +3103,7 @@ int main()
                                         goto End_part;
 
                                 }
-                        
+
                                 mes.Date = time(NULL);        //        set current time
                                 mes.MDate = (time_t)0;        //        haven't modified
                                 char *banreason = NULL;
@@ -3258,7 +3258,7 @@ int main()
                                         //        posted, set new cookie
                                         cookie_name = (char*)realloc(cookie_name, AUTHOR_NAME_LENGTH);
                                         strcpy(cookie_name, mes.AuthorName);
-                                        
+
                                         // Check if message was posted to rolled thread then we should change ROOT to main root of thread
                                         DWORD tmpxx;
                                         if (mes.Flag & MESSAGE_COLLAPSED_THREAD) {
@@ -3294,7 +3294,7 @@ int main()
                 goto End_part;
         }
 
-        
+
         if(strncmp(deal, "configure", 9) == 0) {
                 st = NULL;
                 if((st = strget(deal,"configure=", 16, '&')) != NULL) {
@@ -3310,7 +3310,7 @@ int main()
                                 currentlsel = CONFIGURE_SETTING_DEFAULT_lsel;
                                 currentdsm = CONFIGURE_SETTING_DEFAULT_dsm;
                                 currenttz = DATETIME_DEFAULT_TIMEZONE;
-                                
+
                                 if(par != NULL) {
 
 #define READ_PARAM_MASK(param, var, mask) {                             \
@@ -3385,7 +3385,7 @@ int main()
                                         READ_PARAM_NUM("tv=", currenttv, CONFIGURE_SETTING_DEFAULT_tv);
                                         if(currenttv <= 0)
                                                 currenttv = CONFIGURE_SETTING_DEFAULT_tv;
-                                        if(currenttv > CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[currenttt-1]) 
+                                        if(currenttv > CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[currenttt-1])
                                                 currenttv = CONFIGURE_SETTING_MAX_hours/LENGTH_timetypes_hours[currenttt-1];
 
 
@@ -3435,7 +3435,7 @@ int main()
                                                 ULogin.pui->vs.lsel = currentlsel & 3;
                                                 ULogin.pui->vs.tt = currenttt & 0x0F;
                                                 ULogin.pui->vs.tz = currenttz & 0x0F;
-                                
+
                                                 CProfiles uprof;
                                                 uprof.ModifyUser(ULogin.pui, NULL, NULL);
                                         }
@@ -3450,11 +3450,11 @@ int main()
                                                 cookie_topics = currenttopics;
                                                 cookie_tz = currenttz;
                                          }
-                                        
+
                                 }
                                 free(par);
-                                
-                                
+
+
                                 //
                                 // Redirect user to the index page
                                 //
@@ -3478,7 +3478,7 @@ int main()
         if(strncmp(deal, "login", 5) == 0) {
                 st = NULL;
                 if((st = strget(deal,"login=", 16, '&')) != NULL) {
-                        
+
                         if(strcmp(st, "action") == 0) {
                                 free(st);
                                 // check for User name and password
@@ -3592,13 +3592,13 @@ print2log("incor pass %s", par);
                                                                 //
                                                                 {
                                                                         char subj[1000], bdy[10000];
-                                                                                                                                                
+
                                                                         sprintf(subj, MAILACKN_LOSTPASS_SUBJECT, st);
-                                                                        
+
                                                                         sprintf(bdy, MAILACKN_LOSTPASS_BODY, st, ui.password);
                                                                         //print2log("will send message now %s", bdy);
                                                                         wcSendMail(Fui.Email, subj, bdy);
-                                                                        
+
                                                                         print2log("Password was sent to %s", Fui.Email);
                                                                 }
 
@@ -3641,11 +3641,11 @@ print2log("incor pass %s", par);
 
                                 /* close sequence */
                                 ULogin.CloseSession(ULogin.LU.ID);
-                                
+
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, MAINPAGE_INDEX);
-                                
+
                                 PrintBoardError(MESSAGEMAIN_logoff_ok, MESSAGEMAIN_logoff_ok, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
-                                
+
                                 PrintBottomLines();
                                 goto End_part;
                         }
@@ -3663,7 +3663,7 @@ print2log("incor pass %s", par);
                 /********************************/
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "close", 5) == 0) {
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_CLOSE_MESSAGE) == 0) {
@@ -3703,8 +3703,8 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
-        
+
+
         if(strncmp(deal, "hide", 4) == 0) {
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
@@ -3737,8 +3737,8 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
-        
+
+
         if(strncmp(deal, "unhide", 6) == 0) {
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
@@ -3770,7 +3770,7 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "unclose", 7) == 0) {
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_OPEN_MESSAGE) == 0) {
@@ -3846,7 +3846,7 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "delmsg", 6) == 0) {
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
@@ -3858,7 +3858,7 @@ print2log("incor pass %s", par);
                         errno = 0;
                         char *ss;
                         DWORD tmp = strtoul(st, &ss, 10);
-                        
+
                         if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE ||
                                 tmp < 1 || DB.TranslateMsgIndex(tmp) == NO_MESSAGE_CODE) {
                                 printnomessage(deal);
@@ -3870,7 +3870,7 @@ print2log("incor pass %s", par);
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %d (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 DB.DB_DeleteMessages(tmp);
-                                
+
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threaddeleted, MESSAGEMAIN_threaddeleted2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                 PrintBottomLines();
@@ -3880,7 +3880,7 @@ print2log("incor pass %s", par);
                 else goto End_URLerror;
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "changemsg", 9) == 0) {
                 // precheck security
                 if((ULogin.LU.right & USERRIGHT_MODIFY_MESSAGE) == 0) {
@@ -3962,7 +3962,7 @@ print2log("incor pass %s", par);
 
                         char *nickname;
                         nickname = FilterHTMLTags(name, 1000);
-                        
+
                         ConfTitle = (char*)realloc(ConfTitle, strlen(ConfTitle) + 2*strlen(TITLE_divider) + strlen(TITLE_ProfileInfo) + strlen(nickname) + 1);
                         strcat(ConfTitle, TITLE_divider);
                         strcat(ConfTitle, TITLE_ProfileInfo);
@@ -3974,7 +3974,7 @@ print2log("incor pass %s", par);
 
                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         PrintAboutUserInfo(name);
-                        
+
                         PrintBottomLines();
                         free(name);
                 }
@@ -4144,7 +4144,7 @@ print2log("incor pass %s", par);
                                                 exit(0);
                                         }
                                         free(ss);
-                                        
+
                                         /* read login name (username) and load user profile if update */
                                         ss = strget(par, "login=", PROFILES_MAX_USERNAME_LENGTH - 1, '&');
                                         if(ss != NULL) {
@@ -4177,7 +4177,7 @@ print2log("incor pass %s", par);
                                                 free(ss);
                                         }
                                         else ui.password[0] = 0;
-                                        
+
                                         /* read password 2 */
                                         passwdconfirm = strget(par, "pswd2=", PROFILES_MAX_PASSWORD_LENGTH - 1, '&');
                                         if(!passwdconfirm)
@@ -4185,7 +4185,7 @@ print2log("incor pass %s", par);
                                                 passwdconfirm = (char*)malloc(2);
                                                 passwdconfirm[0] = 0;
                                         }
-                                        
+
                                         /* read old password */
                                         oldpasswd = strget(par, "opswd=", PROFILES_MAX_PASSWORD_LENGTH - 1, '&');
                                         if(!oldpasswd)
@@ -4209,7 +4209,7 @@ print2log("incor pass %s", par);
                                                 free(ss);
                                         }
                                         else fui.Email[0] = 0;
-                                        
+
                                         /* read email */
                                         ss = strget(par, "icq=", PROFILES_MAX_ICQ_LEN - 1, '&');
                                         if(ss != NULL) {
@@ -4225,7 +4225,7 @@ print2log("incor pass %s", par);
                                                 free(ss);
                                         }
                                         else fui.HomePage[0] = 0;
-                                        
+
                                         /* read about */
                                         fui.AboutUser = strget(par, "about=", MAX_PARAMETERS_STRING - 1, '&');
 
@@ -4284,7 +4284,7 @@ print2log("incor pass %s", par);
                                         }
                                         else ui.Flags = ui.Flags & (~PROFILES_FLAG_VISIBLE_EMAIL);
                                         if(ss != NULL) free(ss);
-                                
+
                                         /* save view settings to profile */
                                         ss = strget(par, "vprs=", 10, '&');
                                         if(ss != NULL && strcmp(ss, "1") == 0) {
@@ -4292,9 +4292,9 @@ print2log("incor pass %s", par);
                                         }
                                         else ui.Flags = ui.Flags & (~PROFILES_FLAG_VIEW_SETTINGS);
                                         if(ss != NULL) free(ss);
-                                                                                                                                                                                                        
 
-                                        
+
+
                                         if(act != NULL && strcmp(act, MESSAGEMAIN_register_register) == 0) {
 
                                                 Tittle_cat(TITLE_Registration);
@@ -4315,7 +4315,7 @@ print2log("incor pass %s", par);
                                                         goto End_URLerror;
                                                 Tittle_cat(TITLE_Registration);
 
-                                                DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 3, deal);                                                
+                                                DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 3, deal);
                                         }
                                         else {
                                                 if(act != NULL) free(act);
@@ -4354,7 +4354,7 @@ print2log("incor pass %s", par);
                 Tittle_cat(TITLE_Registration);
 
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
-                
+
                 PrintEditProfileForm(&ui, &fui, x);
 
                 free(fui.AboutUser);
@@ -4489,7 +4489,7 @@ print2log("incor pass %s", par);
                 if(ULogin.LU.UniqID != 0) {
                 // personal messages post or preview
                 int bodyok = 0, nameok = 0, tolong = 0, allowpmsg = 1;
-                
+
                 /* get parameters */
                 par = GetParams(MAX_PARAMETERS_STRING);
                 if(par != NULL) {
@@ -4499,7 +4499,7 @@ print2log("incor pass %s", par);
                         SProfile_FullUserInfo fui;
                         int preview = 0;
 
-                        todo = strget(par, "Post=", MAX_PARAMETERS_STRING - 1, '&');                        
+                        todo = strget(par, "Post=", MAX_PARAMETERS_STRING - 1, '&');
 
                         if(todo != NULL && strcmp(todo, MESSAGEMAIN_privatemsg_prev_msg_btn) == 0) {
                                 preview = 1;
@@ -4530,7 +4530,7 @@ print2log("incor pass %s", par);
                                 if(FilterBoardTags(body, &fbody, 0, MAX_PARAMETERS_STRING - 1,
                                         enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_TAG_PREPARSE, &retflg) == 0) {
                                         /* if to long - ignore tags */
-                                        
+
                                 }
                                 else {
                                         free(body);
@@ -4561,20 +4561,20 @@ print2log("incor pass %s", par);
                                         DWORD enabled_smiles = 0;
                                         if((currentdsm & CONFIGURE_dsm) == 0)
                                                 enabled_smiles = MESSAGE_ENABLED_SMILES;
-                                        if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
+                                        if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1,
                                                 enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                                 BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                                         {
                                                 st1 = st;
                                                 st = NULL;
                                         }
-                                        
+
                                         st1_f = FilterBiDi(st1);
 
                                         // print message text
-                                        printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(name), 
+                                        printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(name),
                                                MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1_f);
-                                        
+
                                         PrintPrivateMessageForm(name, body);
 
                                         if(st) free(st);
@@ -4790,7 +4790,7 @@ print2log("incor pass %s", par);
                                                 i++;
                                                 received = 1;
                                         }
-                                } 
+                                }
                         }
 
                         if(!received) {
@@ -4814,23 +4814,23 @@ print2log("incor pass %s", par);
                         DWORD enabled_smiles = 0;
                         if((currentdsm & CONFIGURE_dsm) == 0)
                                 enabled_smiles = MESSAGE_ENABLED_SMILES;
-                        if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1, 
+                        if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1,
                                 enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                 BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                         {
                                 st1 = st;
                                 st = NULL;
                         }
-                        
+
                         st1_f = FilterBiDi(st1);
-                        
-                        if(!received) {        
+
+                        if(!received) {
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_touser, tostr, CodeHttpString(pmsg->NameTo, 0),
                                         MESSAGEMAIN_privatemsg_write, DESIGN_PRIVATEMSG_FRAME_OUT, st1_f);
                         }else{
                                 printf(DESIGN_PRIVATEMSG_FRAME, ss, MESSAGEMAIN_privatemsg_fromuser, tostr, CodeHttpString(pmsg->NameFrom, 0),
                                         MESSAGEMAIN_privatemsg_answer, DESIGN_PRIVATEMSG_FRAME_IN, st1_f);
-                        }                
+                        }
 
                         if(st) free(st);
                         if(st1) free(st1);
@@ -5144,7 +5144,7 @@ print2log("incor pass %s", par);
                 }
                 goto End_part;
         }
-        
+
         if(strncmp(deal, "favadd", 6) == 0) {
                 if(ULogin.LU.UniqID != 0){
                         if((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
@@ -5205,7 +5205,7 @@ print2log("incor pass %s", par);
                                         default:
                                                 printhtmlerror();
                                                 goto End_part;
-                                        
+
                                 }
                         }
                 }
@@ -5263,7 +5263,7 @@ print2log("incor pass %s", par);
                                         default:
                                                 printhtmlerror();
                                                 goto End_part;
-                                        
+
                                 }
                         }
                 }
@@ -5306,7 +5306,7 @@ print2log("incor pass %s", par);
                 printf("<BR><BR><center>");
                 printf("<font color=\"red\">%s</font><br>\n",
                        fDelete ?
-                       "—ледующие пользователи были успешно удалены:" : 
+                       "—ледующие пользователи были успешно удалены:" :
                        "—писок пользователей подлежащих удалению:"
                        );
 
@@ -5326,7 +5326,7 @@ print2log("incor pass %s", par);
                                 bool fAged3 = idletime > YEAR && activity < 100;
                                 bool fAged4 = idletime > YEAR / 2 && activity < 10;
                                 bool fAged5 = idletime > DAY && activity == 0;
-                                if (fAged1 || fAged2 || fAged3 || fAged4 || fAged5) {        
+                                if (fAged1 || fAged2 || fAged3 || fAged4 || fAged5) {
                                         if((ii % 10) != 0) printf(" | ");
                                         if(((ii % 10) == 0) && ii != 0) printf("<br>");
                                         DB.Profile_UserName(buf[i] + 20, name, 1, 1);
@@ -5335,7 +5335,7 @@ print2log("incor pass %s", par);
                                                 int err = uprof.DeleteUser(username);
                                                 if(err == PROFILE_RETURN_ALLOK) {
                                                         printf("!");
-                                                } else { 
+                                                } else {
                                                         printf("Ќевозможно удалить '%s' !!!", name);
                                                         goto End_part;
                                                 }
@@ -5344,7 +5344,7 @@ print2log("incor pass %s", par);
                                 }
                                 free(buf[i]);
                         }
-                        
+
                         if(fDelete)
                                 printf("<br /><b>удалено %lu из %lu пользователей</b> \n", ii, uc);
                         else
@@ -5357,7 +5357,7 @@ print2log("incor pass %s", par);
 #endif
 
         if(strncmp(deal, "banlist", 7) == 0) {
-                
+
                 /* security check */
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
                         printaccessdenied(deal);
@@ -5369,7 +5369,7 @@ print2log("incor pass %s", par);
                                 par = GetParams(MAX_PARAMETERS_STRING);
                                 char *ban_list;
                                 ban_list = strget(par,"ban_list=", MAX_PARAMETERS_STRING, '&');
-                                
+
                                 // check ban_list is empty
                                 if(ban_list == NULL || *ban_list == 0) {
                                         Tittle_cat(TITLE_BanSave);
@@ -5377,13 +5377,13 @@ print2log("incor pass %s", par);
                                         PrintBoardError(MESSAGEMAIN_ban_no_save, MESSAGEMAIN_ban_empty, 0);
                                         PrintBottomLines();
                                         goto End_part;
-                        
+
                                 }
-                                
+
                                 WCFILE *BAN_FILE;
                                 if ((BAN_FILE = wcfopen(F_BANNEDIP, FILE_ACCESS_MODES_RW)) == NULL) printhtmlerror();
                                 lock_file(BAN_FILE);
-                                
+
                                 if ( !fCheckedWrite(ban_list, strlen(ban_list), BAN_FILE)  )  {
                                         unlock_file(BAN_FILE);
                                         printhtmlerror();
@@ -5394,15 +5394,15 @@ print2log("incor pass %s", par);
 
                                 unlock_file(BAN_FILE);
                                 wcfclose(BAN_FILE);
-                                
+
                                 Tittle_cat(TITLE_BanSave);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, 0);
                                 PrintBoardError(MESSAGEMAIN_ban_save, MESSAGEMAIN_ban_save2, 0);
                                 PrintBottomLines();
 
                                 print2log("Banlist update by %s from %s", ULogin.pui->username, Cip);
-                        
-                        }        
+
+                        }
                 }
                 else{
 
@@ -5414,9 +5414,9 @@ print2log("incor pass %s", par);
                 }
                 goto End_part;
         }
-        
-        
-        
+
+
+
         if(strncmp(deal, "clsession1", 9) == 0) {
                 if(ULogin.LU.UniqID != 0) {
                 DWORD closeseq[2];
@@ -5478,9 +5478,9 @@ print2log("incor pass %s", par);
                 }
                 }
                 goto End_URLerror;
-                
+
         }
-        
+
 
 End_URLerror:
         printbadurl(deal);

@@ -164,7 +164,7 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                                 printhtmlerror();
                         unlock_file(f);
                         wcfclose(f);
-                
+
                         free(it->second);
                         nmap.erase(it);
 

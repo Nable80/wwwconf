@@ -23,7 +23,7 @@ int CheckForIpAndMsgInQueue(DWORD ip, DWORD Msg, SReadQueue *buf, int n, int &Al
         {
                 // also find latest date
                 if(buf[Alatest].Date > buf[i].Date) Alatest = i;
-                
+
                 if(buf[i].IP == ip && buf[i].MsgIndex == Msg)
                 {
                         return i;
@@ -111,7 +111,7 @@ int CheckReadValidity(DWORD IP, DWORD MsgIndex)
         buf[Alatest].IP = IP;
         buf[Alatest].Date = t;
         buf[Alatest].MsgIndex = MsgIndex;
-        
+
         if(wcfseek(f, READQUEUE_PREFIX, SEEK_SET) != 0) {
                 unlock_file(f);
                 wcfclose(f);
@@ -139,7 +139,7 @@ int CheckForIpInQueue(DWORD ip, SSpamQueue *buf, int n, int &Alatest)
         {
                 // also find latest date
                 if(buf[Alatest].Date > buf[i].Date) Alatest = i;
-                
+
                 if(buf[i].IP == ip)
                 {
                         return i;
@@ -161,7 +161,7 @@ int MarkPostfromIPInvalid(DWORD IP)
                 printhtmlerror();
 
         lock_file(f);
-        
+
         if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
                 printhtmlerror();
 
@@ -238,9 +238,9 @@ int CheckPostfromIPValidity(DWORD IP, int TimeInterval)
                 }
                 else printhtmlerror();
         }
-        
+
         lock_file(f);
-        
+
         if(!fCheckedRead(buf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f))
                 printhtmlerror();
 

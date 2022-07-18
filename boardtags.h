@@ -73,7 +73,7 @@ struct SPicConvert {
 /* Struct for saving last opened tag */
 struct SSavedTag {
         /* tag type and tag length */
-        int tt, tl;        
+        int tt, tl;
         /* tag old and expanded expression */
         char *tagexp;
         char *oldexp;

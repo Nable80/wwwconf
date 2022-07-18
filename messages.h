@@ -179,7 +179,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_register_full_name                "Ваше полное имя:"
 #define MESSAGEMAIN_register_validemail_req        "Вы должны указать действующий E-Mail адрес <BR>(он будет использоваться для получения пароля и сводок по конференции)"
 #define MESSAGEMAIN_register_bot "Внимание!<br>Если вы видите два поля, то введите e-mail только<br>во второе, оставьте первое пустым!<br>Attention!<br>If you see two fields, fill with e-mail only<br>the second one, leave the first one blank!"
-#define MESSAGEMAIN_register_email  "E-Mail адрес (*):"        
+#define MESSAGEMAIN_register_email  "E-Mail адрес (*):"
 #define MESSAGEMAIN_register_email_pub                "Публичный доступ к Вашему E-Mail"
 #define MESSAGEMAIN_register_homepage                "Адрес Вашей домашней страницы:"
 #define MESSAGEMAIN_register_icq                        "ICQ :"
@@ -199,7 +199,7 @@ extern const char *MESSAGEHEAD_timetypes[4];
 #define MESSAGEMAIN_register_delete                        "Удалить"
 #define MESSAGEMAIN_register_confirm_delete        "подтвердить удаление"
 #define MESSAGEMAIN_register_view_saving    "Использовать профайл для хранения настроек внешнего вида"
-        
+
 #define CONFIRM_DELETE_CHECKBOX_TEXT                "confirm_delete"
 
 /**************** Регистрационные сообщения ***************/
@@ -569,7 +569,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 
 
-                                                                                                                                                                                                                
+
 #define MESSAGEMAIN_WELCOME_HELLOREG                "Вы вошли в конференцию как "
 
 #if TOPICS_SYSTEM_SUPPORT
@@ -581,7 +581,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 #define MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT                "новых потоков(сообщений): <a href=\"#n0\" "\
         "style=\"color: #f00;font-weight:bold;\">+</a> %lu(%lu) из %lu"
 #define MESSAGEMAIN_WELCOME_NEWTHREADS "<span id=\"new_count\">" MESSAGEMAIN_WELCOME_NEWTHREADS_TEXT "</span>"
-                                
+
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT        "новых сообщений нет, всего %ld"
 #define MESSAGEMAIN_WELCOME_NONEWTHREADS "<span id=\"new_count\">"\
                         MESSAGEMAIN_WELCOME_NONEWTHREADS_TEXT "</span>"
@@ -621,7 +621,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 #define MAIL_SEND_GREETING        "<HTML>Здравствуйте, <bold><font color=#009000>"\
                 "<strong>%s</strong></font></bold>.<br />"
-                
+
 #define MAIL_SEND_SIGNING        "Это письмо послано автоматически форумом " WWWCONF_FULL_NAME \
                 ".<br />Вам <b>не</b> следует отвечать на него.<br /></HTML>"
 
@@ -776,7 +776,7 @@ extern char DESIGN_break[10];
 #define DESIGN_VIEW_THREAD_MSG_SENT1        "&lt;<A HREF=\"mailto:%s\">%s</A>&gt; "
 #define DESIGN_VIEW_THREAD_MSG_SENT2        "<small>(%s)</small>"
 #define DESIGN_VIEW_THREAD_MSG_SENT3        "</DIV><BR>"
-// topic when reading 
+// topic when reading
 #define DESIGN_VIEW_THREAD_TOPIC                "<BIG>[%s]</BIG>&nbsp;&nbsp;"
 //date
 #define DESIGN_VIEW_THREAD_DATE                        "<BR>%s %s"
@@ -912,7 +912,7 @@ extern char DESIGN_break[10];
                                "<description>BOARD RSS</description>"\
                                "<language>ru</language>"
 
-#define RSS_END "</channel></rss>"                                                           
+#define RSS_END "</channel></rss>"
 
 #define XML_START  "Content-type: application/xml\n\n" \
         "<?xml version=\"1.0\" encoding=\"windows-1251\"?>"

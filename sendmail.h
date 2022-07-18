@@ -16,7 +16,7 @@
 #define MAIL_SEND_HELO "HELO localhost\r\nMAIL FROM: <%s>\r\nRCPT TO: <%s>\r\nDATA\r\n"
 #define MAIL_SEND_DATA "From: <%s>\r\nTo: <%s>\r\nSubject:=?Windows-1251?B?%s?=\r\n"\
         MAILACKN_HEADER  "%s" MAIL_SEND_SIGNING "\r\n.\r\nQuit\r\n"
-                
+
 int wcSendMail(char *to, char *subj, char *body);
 
 struct buffer_st {

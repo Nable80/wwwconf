@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #ifndef MAIN_H_INCLUDED
-#define MAIN_H_INCLUDED 
+#define MAIN_H_INCLUDED
 
 // bit mask for proc making html header of board
 #define HEADERSTRING_POST_NEW_MESSAGE      0x000001

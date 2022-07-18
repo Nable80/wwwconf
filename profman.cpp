@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
                 setlocale(LC_ALL, "C");
         }
 #endif
-        
+
         if(argc <= 1) {
                 goto go_end;
         }
@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
                 // create user
                 SProfile_UserInfo ui;
                 SProfile_FullUserInfo fui;
-                
+
                 strcpy(fui.Email, "");
                 strcpy(fui.FullName, argv[2]);
                 strcpy(fui.Signature, "");
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
                                 ui.altdisplayname, fui.FullName, fui.Email, fui.SelectedUsers, fui.AboutUser,
                                 fui.Signature, ui.Flags, ui.RefreshCount);
                         printuserrigth(ui.right);
-                        
+
                         printf("Creation date: %s\n", ctime(&fui.CreateDate));
                         printf("Last access date: %s\n", ui.LoginDate ? ctime(&ui.LoginDate) : "Never logged in");
                 }
@@ -412,9 +412,9 @@ int main(int argc, char *argv[])
                 DWORD ind;
                 if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("Clean Privates\n");
-                
+
                         printf("Login name : %s  persmescnt : %d\n", ui.username, ui.persmescnt);
-                        
+
                         ui.persmescnt = 0;
                         ui.persmsg = 0xffffffff;
                         ui.readpersmescnt = 0;
@@ -464,7 +464,7 @@ int main(int argc, char *argv[])
                                 DWORD pos = wcftell(fw);
                                 if(wcfread(&ui, 1, sizeof(SProfile_UserInfo), fw) < sizeof(SProfile_UserInfo))
                                         break;
-                                
+
                         /*        ui.vs.dsm = CONFIGURE_SETTING_DEFAULT_dsm;
                                 ui.vs.topics = CONFIGURE_SETTING_DEFAULT_topics;
                                 ui.vs.tv = CONFIGURE_SETTING_DEFAULT_tv;
@@ -473,11 +473,11 @@ int main(int argc, char *argv[])
                                 ui.vs.lsel = CONFIGURE_SETTING_DEFAULT_lsel;
                                 ui.vs.tt = CONFIGURE_SETTING_DEFAULT_tt;
                                 ui.icqnumber[0] = 0;
-                                ui.Flags |= PROFILES_FLAG_VIEW_SETTINGS; 
+                                ui.Flags |= PROFILES_FLAG_VIEW_SETTINGS;
                                 ui.vs.tz = DATETIME_DEFAULT_TIMEZONE;
                                 */
-                                ui.vs.topics  |= (1<<17);        
-                
+                                ui.vs.topics  |= (1<<17);
+
                                 wcfseek(fw, pos, SEEK_SET);
                                 wcfwrite(&ui, 1, sizeof(SProfile_UserInfo), fw);
                                 wcfseek(fw, wcftell(fw), SEEK_SET);
@@ -540,9 +540,9 @@ int main(int argc, char *argv[])
                                                         i++;
                                                         received = 1;
                                                 }
-                                        } 
+                                        }
                                 }
-        
+
                                 if(!received) {
                                         strcpy(tostr, pmsg->NameTo);
                                 }
@@ -630,12 +630,12 @@ int main(int argc, char *argv[])
 
                         if (!mes.msize)
                                 continue;
-                
+
                         if (!ReadDBMessageBody(body, mes.MIndex, mes.msize)) {
                                 printf("Error while reading a body of message %lu.\n", i);
                                 goto fixexit;
                         }
-                
+
                         for (j = 0; j < mes.msize; ++j)
                                 if (body[j] == '\r')
                                         body[j] = '\n';

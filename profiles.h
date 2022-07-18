@@ -13,7 +13,7 @@
 #include "hashindex.h"
 
 /* database length parameters */
-#define PROFILES_MAX_PASSWORD_LENGTH                        33        
+#define PROFILES_MAX_PASSWORD_LENGTH                        33
 #define PROFILES_MAX_ICQ_LEN                                        16
 #define PROFILES_MAX_ALT_DISPLAY_NAME                        90
 #define PROFILES_FAV_THREADS_COUNT                                20        //4*20 = 80 bytes real size

@@ -52,7 +52,7 @@ void base64_encode(struct buffer_st *b, const char *source, size_t length)
     unsigned char igroup[3];
     char ogroup[4];
     int c, n;
-    
+
     igroup[0] = igroup[1] = igroup[2] = 0;
     for (n = 0; n < 3; n++) {
       c = *(source++);
@@ -68,11 +68,11 @@ void base64_encode(struct buffer_st *b, const char *source, size_t length)
       ogroup[1] = dtable[((igroup[0] & 3) << 4) | (igroup[1] >> 4)];
       ogroup[2] = dtable[((igroup[1] & 0xF) << 2) | (igroup[2] >> 6)];
       ogroup[3] = dtable[igroup[2] & 0x3F];
-      
+
       /* Replace characters in output stream with "=" pad
          characters if fewer than three characters were
          read from the end of the input stream. */
-      
+
       if (n < 3) {
         ogroup[3] = '=';
         if (n < 2) {
@@ -148,7 +148,7 @@ int make_connection(int *sock, const char *hostname, unsigned short port)
            ngethostbyname, or by calling store_hostaddress, from host.c.
            storehostaddress is better since it caches calls to
            gethostbyname. */
-           
+
 #if 1
         if(!store_hostaddress ((unsigned char *)&sock_name.sin_addr, hostname))
                 return 0;
@@ -197,31 +197,31 @@ int wcSendMail(char *to, char *subj, char *body)
         if(!make_connection(&ssock, MA_SENDER, 25))
                 return 0;
         sprintf(sbuf, MAIL_SEND_HELO, MA_FROM, to);
-        
+
         if(send(ssock, sbuf, strlen(sbuf), 0) != (int)strlen(sbuf))
                 return 0;
 
         sleep(1);
         recv(ssock, rbuf, 9999, 0);
 
-        
+
         buffer_st subj_base64;
         buffer_new(&subj_base64);
         if (!subj_base64.data) {
                 return 0;
         }
         base64_encode(&subj_base64, subj ,strlen(subj) );
-        
+
         //print2log("body %s to %s", body, to);
         sprintf(sbuf, MAIL_SEND_DATA, MA_FROM, to, subj_base64.data, body);
-        
-        
+
+
         buffer_delete(&subj_base64);
-        
+
         if(send(ssock, sbuf, strlen(sbuf), 0) != (int)strlen(sbuf))
                 return 0;
         recv(ssock, rbuf, 9999, 0);
-        
+
         sleep(1);
         shutdown(ssock, 2);
         return 1;
@@ -240,7 +240,7 @@ int wcSendMail(char *to, char *subj, char *body)
                 return 0;
         }
         base64_encode(&subj_base64, subj, strlen(subj));
-        
+
         if ((sendmail_pipe = popen(MA_SENDER, FILE_ACCESS_MODES_W))) {
                 fprintf(sendmail_pipe, MAIL_SEND_DATA, MA_FROM, to, subj_base64.data, body);
                 if (pclose(sendmail_pipe) == 0)

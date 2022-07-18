@@ -22,7 +22,7 @@ STagConvert TagConvTable[BoardTagCount] = {
         {"URL", "<A HREF=\"%s\" STYLE=\"text-decoration:underline;\" TARGET=_blank>", WC_TAG_TYPE_2, "</A>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"PIC", "<IMG class=\"imgtag\" src=\"", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"HR", "<HR SIZE=2>", WC_TAG_TYPE_ONLYOPEN, "", WC_TAG_TYPE_DISABLED, 0, NULL, NULL},
-        {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>", 
+        {"Q", "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>",
          WC_TAG_TYPE_12, "<span class=\"inquote\">[/q]</span></blockquote>", WC_TAG_TYPE_12, 0,
          "<blockquote class=\"quote\"><span class=\"inquote\">[q]</span><b>Цитата:</b><br>",
          "<div align=\"right\"><i>%s</i><span class=\"inquote\"> [/q]</span></div></blockquote>"},
@@ -387,19 +387,19 @@ size_t ParseBoardTag(char *s, char **par1, char **par2)
 
 /* check and expand board tags -> HTML tags
  * return value: function return 1 if successfull, overwise 0
- * tagtype - tag type (index in TagConvTable) and taglen = 1, 2 
+ * tagtype - tag type (index in TagConvTable) and taglen = 1, 2
  */
 int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, int index)
 {
         int tagdirection = 0; /* open by default */
-        
+
         if(tag1[0] == '/')  {
                 tagdirection = 1;
                 tag1++;
         }
 
         *restag = NULL;
-        
+
         for(int i=0; i < BoardTagCount; i++) {
                 if(strcmp(tag1, TagConvTable[i].tag) == 0) {
                         if(index && !TagConvTable[i].index) {
@@ -440,7 +440,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                         strcpy(*restag, TagConvTable[i].topentag);
                                 }
                                 return 1;
-                                
+
                         case WC_TAG_TYPE_2:
                                 /* check for valid param count
                                 */
@@ -467,12 +467,12 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
 									return 0;
 						} else {
 							for (size_t i = 0; i < strlen(tag2); ++i)
-								if (!((tag2[i] >= 'A' && tag2[i] <= 'Z') || 
+								if (!((tag2[i] >= 'A' && tag2[i] <= 'Z') ||
 								      (tag2[i] >= 'a' && tag2[i] <= 'z')))
 									return 0;  // only letters are allowed
 						}
 					}
-					
+
 					if (!parsedtag2)
 						parsedtag2 = tag2;
 					*restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
@@ -496,12 +496,12 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                         return 1;
                                 }
                                 return 1;
-                                
+
                         case WC_TAG_TYPE_12:
                                 /* temporary not used */
-                                
+
                                 return 0;
-                                
+
                         case WC_TAG_TYPE_ONLYOPEN:
                                 /* check for valid param count
                                 */
@@ -525,7 +525,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
 
 /* filtering smile codes and board tags taking into account index flag
  * and message flags MESSAGE_ENABLED_SMILES MESSAGE_ENABLED_TAGS
- * return value 1 if all successfull, or 0 if string was cutted, 
+ * return value 1 if all successfull, or 0 if string was cutted,
  * because of ml limitation
  * **** input : s - string, ml - max result string length, Flags - flags of message,
  * index - whether text is a subject or an altname.
@@ -550,7 +550,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
         // ignore starting newline
         while(*s == '\r' || *s == '\n')
                 ++s;
-        
+
         // ignore ending newline
         {
                 size_t k = strlen(s);
@@ -648,7 +648,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                 if(tag1[0] == '/') {
                                         if(opentag) {
                                                 /* closing tag */
-                                                
+
                                                 if (tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE
 						 || tt == TEX_TAG_TYPE || tt == TUB_TAG_TYPE) // allow tag and space parsing again
                                                         status &= 0xFFFFFFFE;
@@ -669,7 +669,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                                         }
                                                         status &= ~0x80u;
                                                         *RF = *RF | MESSAGE_HAVE_TEX;
-                                                }						
+                                                }
 
                                                 if (tt == TUB_TAG_TYPE ) {
                                                         if(!urldisable) {
@@ -677,7 +677,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                                         }
                                                         status &= ~0x80u;
                                                         *RF = *RF | MESSAGE_HAVE_TUB;
-                                                }						
+                                                }
 
                                                 if(tt == URL_TAG_TYPE) { /* there was a url tag */
                                                         if(!urldisable) {
@@ -699,7 +699,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                                 }
                                                 else {
                                                         // expand tags or ignore(cut) them
-                                                        if((Flags & BOARDTAGS_CUT_TAGS) == 0 && 
+                                                        if((Flags & BOARDTAGS_CUT_TAGS) == 0 &&
                                                            !(index && currentdsm & CONFIGURE_clr && (tt == RED_TAG_TYPE || tt == COLOR_TAG_TYPE))) {
                                                                 //
                                                                 //        PATCH for PIC tag

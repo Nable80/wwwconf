@@ -35,7 +35,7 @@ void print2log(const char *s, ...)
         }
         ss[0] = 0;
         va_list marker;
-        
+
 /*        if((f = fopen(LOG_FILE, "a")) != NULL) {
                 fprintf(f, "entering:");
                 fclose(f);

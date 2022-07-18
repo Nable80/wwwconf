@@ -160,14 +160,14 @@ int log2file(int level, const char *format, ...)
         va_start(ap, format);
         res = vlog2file(level, format, ap);
         va_end(ap);
-        
+
         return res;
 }
 
 int vlog2file(int level, const char *format, va_list ap)
 {
         static FILE *f;
- 
+
         if (f == NULL && (f = fopen(LOGFILE, "a")) == NULL) {
                 SYSERR();
                 goto fail;

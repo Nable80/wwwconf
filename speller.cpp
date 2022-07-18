@@ -30,11 +30,11 @@ char* CodeHttpString(char *s, int allocmem, int type)
                 r = (char*)(&rs);
                 rr = r;
         }
-        for(; *s != 0; s++) {        
-                if( ( (*s >= 'A' && *s <='Z') || (*s >= 'a' && *s <='z') || (*s >= '0' && *s <='9') ) || 
+        for(; *s != 0; s++) {
+                if( ( (*s >= 'A' && *s <='Z') || (*s >= 'a' && *s <='z') || (*s >= '0' && *s <='9') ) ||
                         ( (*s == '.' || *s == '_' || *s == '-' || *s == '~' || *s == '/' || *s == ':') && type == URL_ENCODE ) ||
                         ( (*s == '.' || *s == '_' || *s == '-' || *s == '@') && type == MAIL_ENCODE) ){
-                                                                 
+
                         r[0] = *s;
                         r+=1;
                 } else {
@@ -204,13 +204,13 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
  *  - removes excess PDF characters;
  *  - adds missing PDF characters at the end.
  * We use tags instead of BiDi markers so PDF means a close tag (</span>).
- * Also there is one more thing. Due to existence of weak and neutral 
+ * Also there is one more thing. Due to existence of weak and neutral
  * characters it's need to place the special zero-width strong-direction
  * character (Left-to-Right Mark (LRM, &#8206;) or Right-To-Left Mark (RLM,
  * &#8207;)) to guarantee that punctuation and whitespace symbols will
  * have desirable direction. So the function *added* this symbol to the end of the
  * output string (LRM in our case). But:
- * It cuased some errors in displaying on buggy software (i.e. xterm or putty 
+ * It cuased some errors in displaying on buggy software (i.e. xterm or putty
  * (buggy) + w3m). In addition LRM placed there always is got to clipboard when
  * text is copypasted.
  * So it was decided to replace LRM by an empty span with the LRE marker.
@@ -283,7 +283,7 @@ char *FilterBiDi(const char *s)
 
 	if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + strlen(DESIGN_BIDI_LTR_GUARD) + 1)))
 		printhtmlerrormes("realloc");
-	
+
 	if (level) {
 		size_t i;
 		for (i = 0; i < level; ++i)
@@ -396,14 +396,14 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
                 tags_in_header = true;
 
         if(strlen(mes->MessageHeader) == 0 || strcmp(mes->MessageHeader, " ") == 0) return MSG_CHK_ERROR_NOMSGHEADER;
-        
+
 #if MSG_REQUIRED_BODY
         if(strlen(body) == 0) return MSG_CHK_ERROR_NOMSGBODY;
 #endif
-        
+
         // banned check + restriction check
 #if BANNED_CHECK
-        
+
         reason = (char*)malloc(MAX_STRING);
         if((f = fopen(F_BANNEDIP, FILE_ACCESS_MODES_R)) != NULL) {
                 while(!feof(f)) {
@@ -438,9 +438,9 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         else print2log(LOG_WARN_UNABLETOOPENFILE, F_BANNEDIP);
         free(reason);
 #endif
-        
+
         /* HTML Filtering and WWWConf Tags parsing option */
-        
+
         /* filter HTML in Headers */
         if((CFlags & MSG_CHK_ALLOW_HTML) == 0) {
                 // HTML tags check and filtering (%lt, %gt)
@@ -515,7 +515,7 @@ static char* replace(const char *s, const char *find, const char *subst)
                         + strlen(s)%strlen(subst) + 1;
         else
                 allocnum  = strlen(s) + 1;
-        
+
         if ( (ss = (char*) malloc(allocnum)) == NULL)
                 printhtmlerror();
 
@@ -531,10 +531,10 @@ static char* replace(const char *s, const char *find, const char *subst)
         }
 
         strcpy(ssp, s);
-        
+
         if ( (ss = (char*) realloc(ss, strlen(ss) + 1)) == NULL)
                 printhtmlerror();
-        
+
         return ss;
 }
 
@@ -548,7 +548,7 @@ char *FilterControl(const char *s)
 
         if ( (ss = (char*) malloc(strlen(s) + 1)) == NULL)
                 printhtmlerror();
-        
+
         sp = s;
         ssp = ss;
         while (*sp) {
@@ -609,7 +609,7 @@ char *DefilterHTMLTags(const char *s)
 
         if (!s)
                 return NULL;
-        
+
         if ( (ss = (char*) calloc(strlen(s) + 1, 1)) == NULL)
                 printhtmlerror();
 

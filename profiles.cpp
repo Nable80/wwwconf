@@ -27,7 +27,7 @@ int isLoginStrValid(char *s)
 }
 
 /* write SProfile_FullUserInfo structure, allocating space for it automatically
- * return 1 if successfull, otherwise zero 
+ * return 1 if successfull, otherwise zero
  */
 int CProfiles::WriteFullInfo(DWORD *idx, SProfile_FullUserInfo *FI)
 {
@@ -44,9 +44,9 @@ int CProfiles::WriteFullInfo(DWORD *idx, SProfile_FullUserInfo *FI)
 
         if((*idx = fdf.AllocFreeSpace(sizeof(SProfile_FullUserInfo) - sizeof(char*) +
                 FI->size)) == 0xFFFFFFFF) {
-                if(fdf.errnum != FREEDBFILE_ERROR_ALLOK) 
+                if(fdf.errnum != FREEDBFILE_ERROR_ALLOK)
                         return 0;
-                
+
                 if(wcfseek(Fp_b, 0, SEEK_END) != 0)
                         return 0;
                 *idx = wcftell(Fp_b);
@@ -64,8 +64,8 @@ int CProfiles::WriteFullInfo(DWORD *idx, SProfile_FullUserInfo *FI)
 
         return 1;
 }
-/* read SProfile_FullUserInfo structure 
- * return 1 if successfull, otherwise zero 
+/* read SProfile_FullUserInfo structure
+ * return 1 if successfull, otherwise zero
  */
 int CProfiles::ReadFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
 {
@@ -74,7 +74,7 @@ int CProfiles::ReadFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
                 return 0;
         if(!fCheckedRead(FI, sizeof(SProfile_FullUserInfo) - sizeof(char*), Fp_b))
                 return 0;
-        
+
         // prepare "about" string length
         FI->AboutUser = (char*)malloc(FI->size + 1);
 
@@ -89,7 +89,7 @@ int CProfiles::ReadFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
 }
 /* delete SProfile_FullUserInfo structure from profile body database
  * by index [idx] and mark space as free
- * return 1 if successfull, otherwise zero 
+ * return 1 if successfull, otherwise zero
  */
 int CProfiles::DeleteFullInfo(DWORD idx)
 {
@@ -130,7 +130,7 @@ int CProfiles::ReadUInfo(DWORD idx, SProfile_UserInfo *FI)
 }
 
 /* write new info structure SProfile_UserInfo and return it index in *idx
- * and seek to the find place 
+ * and seek to the find place
  * DESTROY curent position of Fp_i file !!!
  * return 1 if successfull, otherwise zero returned
  */
@@ -144,7 +144,7 @@ int CProfiles::GetSpaceforUInfo(DWORD *idx)
         if((*idx = fdf.AllocFreeSpace(sizeof(SProfile_UserInfo))) == 0xFFFFFFFF) {
                 if(fdf.errnum != FREEDBFILE_ERROR_ALLOK)
                         return 0;
-                
+
                 if(wcfseek(Fp_i, 0, SEEK_END) != 0)
                         return 0;
                 *idx = wcftell(Fp_i);
@@ -172,7 +172,7 @@ int CProfiles::DeleteUInfo(DWORD idx)
 {
         /* mark free space */
         CFreeDBFile fdf(F_PROF_FREENIDX, sizeof(SProfile_UserInfo));
-        if(fdf.errnum != FREEDBFILE_ERROR_ALLOK)        
+        if(fdf.errnum != FREEDBFILE_ERROR_ALLOK)
                 return 0;
         if(fdf.MarkFreeSpace(idx, sizeof(SProfile_UserInfo)) != FREEDBFILE_ERROR_ALLOK)
                 return 0;
@@ -182,7 +182,7 @@ int CProfiles::DeleteUInfo(DWORD idx)
 
 
 /* add new user to profile database
- * return PROFILE_RETURN_ALLOK if successfull, otherwise standart error codes 
+ * return PROFILE_RETURN_ALLOK if successfull, otherwise standart error codes
  */
 int CProfiles::AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index)
 {
@@ -219,37 +219,37 @@ int CProfiles::AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                 newprf->vs.lsel = CONFIGURE_SETTING_DEFAULT_lsel;
                 newprf->vs.tt = CONFIGURE_SETTING_DEFAULT_tt;
                 newprf->vs.tz = DATETIME_DEFAULT_TIMEZONE;
-                
+
                 // New status = 0
                 newprf->Status = 0;
                 for( i=0; i<PROFILES_FAV_THREADS_COUNT; i++)
                         newprf->favs[i]=0;
-                        
+
                 /* create new index */
                 if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                         goto Unlock_and_return;
                 if((Fp_b = wcfopen(F_PROF_BODY, FILE_ACCESS_MODES_RW)) == NULL)
                         goto Unlock_and_return;
-                
+
                 /********* lock Fp_i, Fp_b files *********/
                 lock_file(Fp_i);
                 lock_file(Fp_b);
-                
+
                 // read unique user ID
                 if(!fCheckedRead(&(newprf->UniqID), sizeof(newprf->UniqID), Fp_i))
                         goto Unlock_and_return;
                 (newprf->UniqID)++;
-                
+
                 // read user count
                 if(!fCheckedRead(&ucount, sizeof(ucount), Fp_i))
                         goto Unlock_and_return;
                 // increment user count
                 ucount++;
-                
+
                 // get free index for user info structure
                 if(GetSpaceforUInfo(&idx) == 0)
                         goto Unlock_and_return;
-                
+
                 if(ui_index != NULL) *ui_index = idx;
 
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
@@ -278,15 +278,15 @@ int CProfiles::AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                         goto Unlock_and_return;
                 if(!fCheckedWrite(&ucount, sizeof(ucount), Fp_i))
                         goto Unlock_and_return;
-                
+
                 unlock_file(Fp_i);
                 unlock_file(Fp_b);
                 /********* unlock Fp_i, Fp_b files *********/
-                
+
                 wcfclose(Fp_i);
                 wcfclose(Fp_b);
                 return PROFILE_RETURN_ALLOK;
-                
+
 Unlock_and_return:
                 // error - unlock and exit
                 if(Fp_i) {
@@ -304,7 +304,7 @@ Unlock_and_return:
 }
 
 /* delete user [name] from profile database
- * return PROFILE_RETURN_ALLOK if successfull, otherwise standart error codes 
+ * return PROFILE_RETURN_ALLOK if successfull, otherwise standart error codes
  */
 int CProfiles::DeleteUser(char *name)
 {
@@ -434,21 +434,21 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
 
                 if((Fp_b = wcfopen(F_PROF_BODY, FILE_ACCESS_MODES_RW)) == NULL)
                         goto Do_Exit;
-                
+
                 /********* lock Fp_i, Fp_b *********/
                 lock_file(Fp_i);
                 lock_file(Fp_b);
 
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                         goto Do_Exit;
-                        
+
                 if(!fCheckedRead(&pi, sizeof(pi), Fp_i))
                         goto Do_Exit;
 
                 if(strcmp(pi.username, newprf->username) == 0) {
 
                         if(wcfseek(Fp_i, idx, SEEK_SET) != 0) goto Do_Exit;
-                        
+
                         if(ui_index != NULL) *ui_index = idx;
 
                         if(FullUI != NULL) {
@@ -552,7 +552,7 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
 
                 if((Fp_b = wcfopen(F_PROF_BODY, FILE_ACCESS_MODES_R)) == NULL)
                         goto Do_Exit;
-                
+
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                         goto Do_Exit;
 
@@ -561,7 +561,7 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
 
                 if(strcmp(pi.username, name) == 0) {
                         // profile found
-                                        
+
                         if(ui != NULL) {
                                 memcpy(ui, &pi, sizeof(pi));
                         }
@@ -575,7 +575,7 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
                         wcfclose(Fp_b);
                         wcfclose(Fp_i);
                         return PROFILE_RETURN_ALLOK;
-                        
+
                 }
 
                 /* name not found - not exist */
@@ -690,7 +690,7 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
                                 return 0;
                         }
                         readed = readed / sizeof(SProfile_UserInfo);
-                        
+
                         for(i = 0; i < readed; i++) {
                                 // find this in our indexes (test for deleted profile)
                                 while(ii[curii] < ((i + allc*ULIST_PROFILE_READ_COUNT)*sizeof(SProfile_UserInfo) + ii[0])) curii++;

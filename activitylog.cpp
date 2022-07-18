@@ -184,7 +184,7 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                 if(fin) {
                         WCFILE *f2;
                         DWORD buf[3];
-                        // add to achive 
+                        // add to achive
                         fCheckedRead(&hitcnt, 4, f);
                         fCheckedRead(&hostcnt, 4, f);
 

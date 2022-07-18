@@ -23,12 +23,12 @@
 
 const char *GetBoardUrl();
 
-// VERSION 
+// VERSION
 #define VERSION                "2.0 PRE BETA5"
 
 
 /****************** Log&Debug ******************/
-// can be 0 or 1 
+// can be 0 or 1
 // 0 - disabled [Recomended]
 // 1 - enabled
 #define _DEBUG_        1
@@ -120,7 +120,7 @@ const char *GetBoardUrl();
 #define USE_HTML_BOTTOMBANNER        1
 #define USE_HTML_TOPBANNER                1
 
-//delete unused accounts 
+//delete unused accounts
 #define CLEANUP_IDLE_USERS 1
 
 /********************* DEFAULT USER AND MESSAGE PARAMETERS *******************/
@@ -162,13 +162,13 @@ const char *GetBoardUrl();
                                                                                                         // NOTE: it's not absolute path on server
                                                                                                         // it's only HTTP path
 
-#define HTTP_REFERER_CHECK        0        
+#define HTTP_REFERER_CHECK        0
 // this string should be in HTTP_REFERER to pass the test
 #define ALLOWED_HTTP_REFERER "mipt.cc"
 
 // MAIL
 
-// WC_TYPE 
+// WC_TYPE
 // 1 - via smtp  ( localhost or remote server)
 // 2 - via command line (sendmail in unix like system)
 
@@ -436,7 +436,7 @@ struct SMessage
         DWORD MIndex;
         /* size of message body */
         DWORD msize;
-        
+
         SMessage()
         : IPAddr(0), UniqUserID(0), Flag(0),
                 Date(0), MDate(0), Level(0), Topics(0), Readed(0),

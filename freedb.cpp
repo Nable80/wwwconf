@@ -96,7 +96,7 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
         SFreeDBEntry fs;
         DWORD rr;
         WCFILE *ffb;
-        
+
         if(!init) {
                 errnum = FREEDBFILE_ERROR_NOT_INITIALIZED;
                 return 0xFFFFFFFF;
@@ -139,11 +139,11 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
 
                         // make wasted space, if block too small
                         if(fs.size < wasted_block) fs.size = 0;
-                        
+
                         if(!fCheckedWrite(&fs, sizeof(SFreeDBEntry), ffb)) {
                                 unlock_and_freedb_io_error1()
                         }
-                        
+
                         freedb_unlock_file();
                         wcfclose(ffb);
                         // unlock FFB semaphore

@@ -122,7 +122,7 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
 
         if(( (id[0] != 0 || id[1] != 0) && Uid != 0) || (id[0] == 0 && id[1] == 0 && Uid == 0))
                 return 0;        // incorrect params
-        
+
         if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
                 return 0;
 
@@ -194,7 +194,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         DWORD rr, i, cn=0;
 
         if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_R)) == NULL) return 0;
-                                                                
+
         buf = (SSavedAuthSeq*)malloc(SEQUENCE_READ_COUNT*sizeof(SSavedAuthSeq));
         *buflist = (char**)malloc(sizeof(char**));
         if (buf == NULL || *buflist == NULL) {
@@ -206,7 +206,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
 
         /******** lock f ********/
         logins_lock_file();
-                                                                
+
         do {
                 rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
 
@@ -218,7 +218,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
                         *buflist = NULL;
                         unlock_and_logins_io_error();
                 }
-                                                                                                                                                                                                                                                                                                                                
+
                 rr = rr/sizeof(SSavedAuthSeq);
                 for(i = 0; i < rr; i++) {
                         if( Uid==0 || (buf[i].UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) == Uid ){
@@ -244,7 +244,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         /********* unlock f *********/
         wcfclose(f);
         *sc = cn;
-        return 1;        
+        return 1;
 }
 
 /* check and update sequence 'id' with ttl - Time To Live
@@ -255,7 +255,7 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
         SSavedAuthSeq *buf;
         WCFILE *f;
         DWORD rr, i, cn, fpos;
-        
+
         if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_RW)) == NULL)
                 return 0;
         buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
@@ -298,10 +298,10 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
                                 }
 
                                 free(buf);
-                                
+
                                 logins_unlock_file();
                                 /********* unlock f *********/
-                                
+
                                 wcfclose(f);
                                 return 1;
                         }
@@ -417,9 +417,9 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
         }
 }
 
-/* check sequence seq for activity, set LU to this sequence and 
+/* check sequence seq for activity, set LU to this sequence and
  * return 1 if successfull, otherwise return 0
- 
+
  lIP == 0 - checking existing seq and Uid == seq.UniqID without updating (!!!)
  Uid ==0 full checking with updating
 
@@ -444,7 +444,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         }
 
 
-                        
+
                         if(uprof.GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("call to CProfiles::GetFullInfo() failed at CUserLogin::CheckSession(), line %d"
@@ -503,12 +503,12 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
         }
         // seqence cannot be found
 
-        goto SessionErrorEnd; 
-        
+        goto SessionErrorEnd;
+
 SessionError2:
 
         if(CloseAuthSequence(seq, 0) == 0) {}
-                                
+
         free(pui);
         free(pfui);
         pui = NULL;
@@ -576,4 +576,4 @@ DWORD CUserLogin::GenerateListSessionForUser(char ***list, DWORD *scounter, DWOR
 {
         if( GenerateListAuthSequence(list, scounter, Uniqid) == 1) return 1;
         return 0;
-}        
+}

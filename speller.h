@@ -78,7 +78,7 @@ char* FilterWhitespaces(char *s);
 int PrepareTextForPrint(char *msg, char **res, BYTE index, DWORD flags);
 
 /* check message for correct and check HTML Tags, bad words list, and banned user */
-int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason, 
+int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
                                          DWORD CFlags, DWORD *RetFlags, bool fRegged = true);
 
 /* replace ascii control characters (1-31, 127) by a space */
