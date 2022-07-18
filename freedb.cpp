@@ -166,8 +166,7 @@ CFreeDBFile::CFreeDBFile(const char *ifname, DWORD wasted_b)
                 errnum = FREEDBFILE_ERROR_INVALID_FILE;
                 return;
         }
-        fname = (char*)malloc(strlen(ifname) + 1);
-        strcpy(fname, ifname);
+        fname = strdup(ifname);
         wasted_block = wasted_b;
         errnum = FREEDBFILE_ERROR_ALLOK;
         init = 1;

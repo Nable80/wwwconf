@@ -1833,6 +1833,9 @@ char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing)
         else
                 *x = 0; // temporary change '&' to '\0'
         rres = res = (char *)malloc(maxl + 1);
+        if (!res) {
+                return NULL;
+        }
         s = s + strlen(find);
         if(argparsing) {
                 while(*s != '\0' && res - rres < maxl) {
@@ -1894,8 +1897,7 @@ void ParseCookie()
         //if(s) print2log(s);
         
         if(s != NULL) {
-                c = (char*)malloc(strlen(s) + 1);
-                strcpy(c, s);
+                c = strdup(s);
 
                 // After this strget() we will have all %XX parsed ! So we should
                 // disable %XX parsing
@@ -2078,13 +2080,11 @@ void ParseCookie()
         }
 
         if(!cookie_name){
-                cookie_name = (char*)malloc(1);
-                cookie_name[0] = 0;
+                cookie_name = strdup("");
         }
         
         if(!cookie_seq) {
-                cookie_seq = (char*)malloc(1);
-                cookie_seq[0] = 0;
+                cookie_seq = strdup("");
         }
 }
 
@@ -2159,6 +2159,7 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
 
 int main()
 {
+        const char *qst;
         char *deal, *st, *mesb;
         char *par; // parameters string
         char *tmp;
@@ -2184,39 +2185,31 @@ int main()
 
         /* get cookie string, if available, and parse it */
         ParseCookie();
-        
 
 #if STABLE_TITLE == 0
         // set default title
-        ConfTitle = (char*)malloc(strlen(TITLE_WWWConfBegining) + 1);
-        strcpy(ConfTitle, TITLE_WWWConfBegining);
+        ConfTitle = strdup(TITLE_WWWConfBegining);
 #endif
 
-
-
         // get parameters with we have been run
-        if((st = getenv(QUERY_STRING)) != NULL)
-        {
-                deal = (char*)malloc(strlen(st) + 2);
-                strcpy(deal, st);
+        if((qst = getenv(QUERY_STRING)) == NULL || qst[0] == '\0') {
+                qst = "index";
         }
-        else deal = NULL;
-        
-        if(deal == NULL || (strcmp(deal,"") == 0))
-        {
-                deal = (char*)malloc(20);
-                strcpy(deal,"index");
+        if ((deal = (char*)malloc(strlen(qst) + 2)) == NULL) {
+                abort();
         }
+        sprintf(deal, "%s&", qst);
 
         // detect IP
         if((tmp = getenv(REMOTE_ADDR)) != NULL)
         {
-                Cip = (char*)malloc(strlen(tmp) + 1);
-                strcpy(Cip, tmp);
+                Cip = strdup(tmp);
         }
         else {
-                Cip = (char*)malloc(strlen(TAG_IP_NOT_DETECTED) + 1);
-                strcpy(Cip, TAG_IP_NOT_DETECTED);
+                Cip = strdup(TAG_IP_NOT_DETECTED);
+        }
+        if (Cip == NULL) {
+                abort();
         }
 
         // translate IP
@@ -2248,8 +2241,6 @@ int main()
 #if _DEBUG_ == 1
         //        print2log("Entering from : %s, deal=%s", Cip, deal);
 #endif
-
-        strcat(deal,"&");
 
         /************ get user info from session ************/
         {

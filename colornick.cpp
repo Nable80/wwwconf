@@ -15,7 +15,6 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
         init = 0;
         classinit = 0;
         AltNamesStruct ns;
-        char *ts;
         DWORD rd;
 
         // try to open existing file
@@ -39,9 +38,12 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
                         return;
                 }
                 if(!rd) break;
-                ts = (char*)malloc(MAX_ALT_NICK_SIZE);
-                strcpy(ts, ns.aname);
-                nmap[ns.uid] = ts;
+                char *ts = strdup(ns.aname);
+                // there shouldn't be any duplicates here but let's check it anyway
+                if (!nmap.emplace(ns.uid, ts).second) {
+                        print2log("duplicate altname record for uid %d: '%s'", ns.uid, ts);
+                        free(ts);
+                }
         }
         wcfclose(f);
 
@@ -53,9 +55,11 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
 
 CAltNamesParser::~CAltNamesParser()
 {
-        std::tr1::unordered_map<DWORD, char*>::iterator it;
-        for(it = nmap.begin(); it != nmap.end(); it++) {
-                free(it->second);
+        for (auto& it: nmap) {
+                free(it.second);
+                // GCC's static analyzer complains about possible double-free
+                // without this line. Who can explain it?
+                it.second = NULL;
         }
         nmap.clear();
 }
@@ -67,6 +71,9 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         AltNamesStruct ns;
                         memset(&ns, 0, sizeof(ns));
                         char *s2 = (char*)malloc(MAX_ALT_NICK_SIZE);
+                        if (s2 == NULL) {
+                                return 0;
+                        }
                         strcpy(s2, altname);
                         nmap[uid] = s2;
                         // save to file
@@ -88,6 +95,9 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         memset(&ns, 0, sizeof(ns));
                         DWORD pos, fn = 0;
                         char *s1, *s2 = (char*)malloc(MAX_ALT_NICK_SIZE);
+                        if (s2 == NULL) {
+                                return 0;
+                        }
                         strcpy(s2, altname);
                         s1 = nmap[uid];
                         free(s1);
@@ -122,8 +132,8 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
 int CAltNamesParser::DeleteAltName(DWORD uid)
 {
         if(classinit) {
-                std::tr1::unordered_map<DWORD, char*>::iterator it;
-                if(nmap.find(uid) != nmap.end()) {
+                auto it = nmap.find(uid);
+                if(it != nmap.end()) {
                         AltNamesStruct ns;
                         DWORD pos, rd, fn = 0;
                         char cb[100000];
@@ -155,7 +165,6 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                         unlock_file(f);
                         wcfclose(f);
                 
-                        it = nmap.find(uid);
                         free(it->second);
                         nmap.erase(it);
 
@@ -168,8 +177,9 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
 int CAltNamesParser::NameToAltName(DWORD uid, char *altname)
 {
         if(classinit) {
-                if(nmap.find(uid) != nmap.end()) {
-                        strcpy(altname, nmap[uid]);
+                const auto it = nmap.find(uid);
+                if(it != nmap.end() && it->second) {
+                        strcpy(altname, it->second);
                         return 1;
                 }
         }

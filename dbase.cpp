@@ -2642,13 +2642,14 @@ int DB_Base::DB_ChangeInvisibilityFlag(DWORD root, int invf)
  * behaviour depend of code:
  * if code == 0 - invert current value of flag
  * if code == 1 - set collapsed flag
- * if code == 0 - clean collapsed flag
+ * if code == 2 - clean collapsed flag
  * return value : 1 if flag set, or 2 if flag not set 
+ * TODO: add proper locking
  */
 int DB_Base::DB_ChangeRollMessage(DWORD root, int code)
 {
-        SMessage *msgs;
-        
+        SMessage msgs;
+
         /* translate virtual to real index */
         root = TranslateMsgIndex(root);
         if(root == NO_MESSAGE_CODE)
@@ -2656,7 +2657,6 @@ int DB_Base::DB_ChangeRollMessage(DWORD root, int code)
         
         /* read message */
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_RW)) == NULL) {
-                wcfclose(fm);
                 return 0;
         }
 
@@ -2665,54 +2665,48 @@ int DB_Base::DB_ChangeRollMessage(DWORD root, int code)
                 return 0;
         }
 
-        msgs = (SMessage *)malloc(sizeof(SMessage) + 1);
-
-        if(!fCheckedRead(msgs, sizeof(SMessage), fm)) {
+        if(!fCheckedRead(&msgs, sizeof(SMessage), fm)) {
                 wcfclose(fm);
-                free(msgs);
                 return 0;
         }
 
         /* update flag */
-        DWORD flg = msgs->Flag;
+        DWORD flg = msgs.Flag;
         if(code == 0) {
-                if(msgs->Flag & MESSAGE_COLLAPSED_THREAD)
-                        msgs->Flag = msgs->Flag & (~MESSAGE_COLLAPSED_THREAD);
+                if(msgs.Flag & MESSAGE_COLLAPSED_THREAD)
+                        msgs.Flag &= ~MESSAGE_COLLAPSED_THREAD;
                 else
-                        msgs->Flag = msgs->Flag | MESSAGE_COLLAPSED_THREAD;
+                        msgs.Flag |= MESSAGE_COLLAPSED_THREAD;
         }
         else
         if(code == 1) {
-                msgs->Flag = msgs->Flag | MESSAGE_COLLAPSED_THREAD;
+                msgs.Flag |= MESSAGE_COLLAPSED_THREAD;
         }
         else
         if(code == 2) {
-                msgs->Flag = msgs->Flag & (~MESSAGE_COLLAPSED_THREAD);
+                msgs.Flag &= ~MESSAGE_COLLAPSED_THREAD;
         }
         else {
                 /* invalid code value */
                 wcfclose(fm);
-                free(msgs);
                 return 0;
         }
-        if(flg == msgs->Flag) {
+        if(flg == msgs.Flag) {
                 wcfclose(fm);
-                free(msgs);
-                return (!(msgs->Flag & MESSAGE_COLLAPSED_THREAD)) + 1;
+                return (!(msgs.Flag & MESSAGE_COLLAPSED_THREAD)) + 1;
         }
 
         // write message
-        if(wcfseek(fm, root, SEEK_SET) != 0) printhtmlerror();
-        if(!fCheckedWrite(msgs, sizeof(SMessage), fm)) {
+        if(wcfseek(fm, root, SEEK_SET) != 0) {
                 wcfclose(fm);
-                free(msgs);
+                printhtmlerror();
+        }
+        if(!fCheckedWrite(&msgs, sizeof(SMessage), fm)) {
+                wcfclose(fm);
                 return 0;
         }
         wcfclose(fm);
-        int res = (!(msgs->Flag & MESSAGE_COLLAPSED_THREAD)) + 1;
-        free(msgs);
-
-        return res;
+        return (!(msgs.Flag & MESSAGE_COLLAPSED_THREAD)) + 1;
 }
 
 /* set "invisible" flag for messages with Level > root.Level in (thread)
@@ -2767,7 +2761,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         
         // array for storing selecting messages
         *mescnt = 0;
-        *msgsel = (DWORD*)malloc(1);
+        *msgsel = NULL;
 
         // save virtual index
         viroot = root;
@@ -2776,13 +2770,18 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         root = TranslateMsgIndex(root);
         if(root == NO_MESSAGE_CODE) return 0; // invalid or nonexisting index
         
-        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE+1);
-        msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER+1);
+        msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER);
         
         // get EndLevel (current Level of root)
-        if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-        if(wcfseek(fm, root, SEEK_SET) == -1) printhtmlerror();
-        if(!fCheckedRead(msgs, sizeof(SMessage), fm)) printhtmlerror();
+        if (!msgs || (fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) {
+                free(msgs);
+                printhtmlerror();
+        }
+        if (wcfseek(fm, root, SEEK_SET) == -1 || !fCheckedRead(msgs, sizeof(SMessage), fm)) {
+                free(msgs);
+                wcfclose(fm);
+                printhtmlerror();
+        }
         EndLevel = msgs->Level;
         wcfclose(fm);
         
@@ -2793,7 +2792,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         // find index in index file
         fl = wcftell(fi);
         
-        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE + 1);
+        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE);
         
         while(fl > 0) {
                 DWORD toread;
@@ -2805,8 +2804,8 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
                         toread = fl;
                         fl = 0;
                 }
-                if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
-                if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
+                if(wcfseek(fi, fl, SEEK_SET) == -1) { free(buf); printhtmlerror(); }
+                if(!fCheckedRead(buf, toread, fi)) { free(buf); printhtmlerror(); }
                 i = (toread + 1) / sizeof(SMessageTable);
                 while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
@@ -2816,6 +2815,7 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
         }
         
         // not found in indexes - fatal error
+        free(buf);
         return 0;
         
 PT_Found:

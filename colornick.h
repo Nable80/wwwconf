@@ -9,8 +9,8 @@
 #ifndef COLORNICK_H_INCLUDED
 #define COLORNICK_H_INCLUDED
 
+#include <unordered_map>
 #include "basetypes.h"
-#include <tr1/unordered_map>
 
 #define MAX_REAL_NICK_SIZE        30
 #define MAX_ALT_NICK_SIZE        300
@@ -20,7 +20,7 @@ private:
         int classinit;
         WCFILE *f;
         char ifname[1000];
-        std::tr1::unordered_map<DWORD, char*> nmap;
+        std::unordered_map<DWORD, char*> nmap;
 #pragma pack(push, 1)
         typedef struct _AltNamesStruct {
                 DWORD uid;

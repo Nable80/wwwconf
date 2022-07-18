@@ -11,7 +11,7 @@ CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversi
 
 # Compiler-specific flags
 ifeq ($(CXX), clang++)
-CXXFLAGS += -Wno-invalid-source-encoding -Wno-error=pragma-pack
+CXXFLAGS += -Wno-invalid-source-encoding
 else
 CXXFLAGS += -Wuseless-cast -fanalyzer
 endif

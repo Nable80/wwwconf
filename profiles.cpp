@@ -309,7 +309,7 @@ Unlock_and_return:
 int CProfiles::DeleteUser(char *name)
 {
         DWORD idx, ucount;
-        SProfile_UserInfo *pi;
+        SProfile_UserInfo pi;
         Fp_i = NULL;
         Fp_b = NULL;
 
@@ -320,8 +320,6 @@ int CProfiles::DeleteUser(char *name)
                 return PROFILE_RETURN_INVALID_LOGIN;
 
         case HASHINDEX_ER_OK:
-                pi = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-
                 // index exist - try to read block
                 if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                         goto Do_Exit;
@@ -336,11 +334,11 @@ int CProfiles::DeleteUser(char *name)
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                         goto Do_Exit;
 
-                if(!fCheckedRead(pi, sizeof(SProfile_UserInfo), Fp_i))
+                if(!fCheckedRead(&pi, sizeof(pi), Fp_i))
                         goto Do_Exit;
 
-                if(strcmp(pi->username, name) == 0) {
-                        if(DeleteFullInfo(pi->FullInfo_ID) == 0)
+                if(strcmp(pi.username, name) == 0) {
+                        if(DeleteFullInfo(pi.FullInfo_ID) == 0)
                                 goto Do_Exit;
 
                         if(DeleteUInfo(idx) == 0)
@@ -354,7 +352,7 @@ int CProfiles::DeleteUser(char *name)
                                 goto Do_Exit;
                         if(!fCheckedRead(&ucount, sizeof(ucount), Fp_i))
                                 goto Do_Exit;
-                        ucount++;
+                        ucount++; // what, why is it incremented?
                         if(wcfseek(Fp_i, sizeof(DWORD), SEEK_SET) != 0)
                                 goto Do_Exit;
                         if(!fCheckedWrite(&ucount, sizeof(ucount), Fp_i))
@@ -367,7 +365,8 @@ int CProfiles::DeleteUser(char *name)
                         wcfclose(Fp_i);
                         wcfclose(Fp_b);
 
-                        free(pi);
+                        Fp_i = NULL;
+                        Fp_b = NULL;
                         return PROFILE_RETURN_ALLOK;
                 }
 
@@ -377,8 +376,8 @@ int CProfiles::DeleteUser(char *name)
 
                 wcfclose(Fp_i);
                 wcfclose(Fp_b);
-
-                free(pi);
+                Fp_i = NULL;
+                Fp_b = NULL;
                 return PROFILE_RETURN_INVALID_LOGIN;
 
         case HASHINDEX_ER_FORMAT:
@@ -397,10 +396,12 @@ Do_Exit:
         if(Fp_i) {
                 unlock_file(Fp_i);
                 wcfclose(Fp_i);
+                Fp_i = NULL;
         }
         if(Fp_b) {
                 unlock_file(Fp_b);
                 wcfclose(Fp_b);
+                Fp_b = NULL;
         }
 
         return PROFILE_RETURN_DB_ERROR;
@@ -413,7 +414,7 @@ Do_Exit:
 int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index)
 {
         DWORD idx;
-        SProfile_UserInfo *pi;
+        SProfile_UserInfo pi;
         Fp_i = NULL;
         Fp_b = NULL;
 
@@ -427,8 +428,6 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                 return PROFILE_RETURN_INVALID_LOGIN;
 
         case HASHINDEX_ER_OK:
-                pi = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-
                 // index exist - try to read block
                 if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                         goto Do_Exit;
@@ -443,10 +442,10 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                         goto Do_Exit;
                         
-                if(!fCheckedRead(pi, sizeof(SProfile_UserInfo), Fp_i))
+                if(!fCheckedRead(&pi, sizeof(pi), Fp_i))
                         goto Do_Exit;
 
-                if(strcmp(pi->username, newprf->username) == 0) {
+                if(strcmp(pi.username, newprf->username) == 0) {
 
                         if(wcfseek(Fp_i, idx, SEEK_SET) != 0) goto Do_Exit;
                         
@@ -454,26 +453,26 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
 
                         if(FullUI != NULL) {
                                 // delete old and save new full info
-                                if(DeleteFullInfo(pi->FullInfo_ID) == 0)
+                                if(DeleteFullInfo(pi.FullInfo_ID) == 0)
                                         goto Do_Exit;
 
                                 if(WriteFullInfo(&(newprf->FullInfo_ID), FullUI) == 0)
                                         goto Do_Exit;
                         }
                         else {
-                                newprf->FullInfo_ID = pi->FullInfo_ID;
+                                newprf->FullInfo_ID = pi.FullInfo_ID;
                         }
 
                         // save old dinamic board information
-                        newprf->postcount = pi->postcount;
-                        newprf->UniqID = pi->UniqID;
-                        newprf->persmsg = pi->persmsg;
-                        newprf->lastIP = pi->lastIP;
-                        newprf->persmescnt = pi->persmescnt;
-                        newprf->readpersmescnt = pi->readpersmescnt;
-                        newprf->postedmescnt = pi->postedmescnt;
-                        newprf->postedpersmsg = pi->postedpersmsg;
-                        newprf->RefreshCount = pi->RefreshCount;
+                        newprf->postcount = pi.postcount;
+                        newprf->UniqID = pi.UniqID;
+                        newprf->persmsg = pi.persmsg;
+                        newprf->lastIP = pi.lastIP;
+                        newprf->persmescnt = pi.persmescnt;
+                        newprf->readpersmescnt = pi.readpersmescnt;
+                        newprf->postedmescnt = pi.postedmescnt;
+                        newprf->postedpersmsg = pi.postedpersmsg;
+                        newprf->RefreshCount = pi.RefreshCount;
 
                         // and finally save user profile
                         if(!fCheckedWrite(newprf, sizeof(SProfile_UserInfo), Fp_i))
@@ -486,7 +485,8 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                         wcfclose(Fp_i);
                         wcfclose(Fp_b);
 
-                        free(pi);
+                        Fp_i = NULL;
+                        Fp_b = NULL;
                         return PROFILE_RETURN_ALLOK;
                 }
 
@@ -497,7 +497,8 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
                 wcfclose(Fp_i);
                 wcfclose(Fp_b);
 
-                free(pi);
+                Fp_i = NULL;
+                Fp_b = NULL;
                 return PROFILE_RETURN_INVALID_LOGIN;
 
         case HASHINDEX_ER_FORMAT:
@@ -516,10 +517,12 @@ Do_Exit:
         if(Fp_i) {
                 unlock_file(Fp_i);
                 wcfclose(Fp_i);
+                Fp_i = NULL;
         }
         if(Fp_b) {
                 unlock_file(Fp_b);
                 wcfclose(Fp_b);
+                Fp_b = NULL;
         }
 
         return PROFILE_RETURN_DB_ERROR;
@@ -533,7 +536,7 @@ Do_Exit:
 int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index)
 {
         DWORD idx;
-        SProfile_UserInfo *pi;
+        SProfile_UserInfo pi;
 
         int ret = GetIndexOfString(name, &idx);
         // error code returned - next strings - analizing it
@@ -543,8 +546,6 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
                 return PROFILE_RETURN_INVALID_LOGIN;
 
         case HASHINDEX_ER_OK:
-                pi = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-
                 // index exist - try to read block
                 if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_R)) == NULL)
                         goto Do_Exit;
@@ -555,23 +556,22 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
                 if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                         goto Do_Exit;
 
-                if(!fCheckedRead(pi, sizeof(SProfile_UserInfo), Fp_i))
+                if(!fCheckedRead(&pi, sizeof(pi), Fp_i))
                         goto Do_Exit;
 
-                if(strcmp(pi->username, name) == 0) {
+                if(strcmp(pi.username, name) == 0) {
                         // profile found
                                         
                         if(ui != NULL) {
-                                memcpy(ui, pi, sizeof(*pi));
+                                memcpy(ui, &pi, sizeof(pi));
                         }
                         if(Fui != NULL) {
                                 // read SProfile_FullUserInfo
-                                if(ReadFullInfo(pi->FullInfo_ID, Fui) == 0)
+                                if(ReadFullInfo(pi.FullInfo_ID, Fui) == 0)
                                         goto Do_Exit;
                         }
                         if(ui_index != NULL) *ui_index = idx;
 
-                        free(pi);
                         wcfclose(Fp_b);
                         wcfclose(Fp_i);
                         return PROFILE_RETURN_ALLOK;
@@ -579,7 +579,6 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
                 }
 
                 /* name not found - not exist */
-                free(pi);
                 wcfclose(Fp_b);
                 wcfclose(Fp_i);
                 return PROFILE_RETURN_INVALID_LOGIN;
@@ -596,7 +595,14 @@ int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUse
         }
 
 Do_Exit:
-
+        if (Fp_i) {
+                wcfclose(Fp_i);
+                Fp_i = NULL;
+        }
+        if (Fp_b) {
+                wcfclose(Fp_b);
+                Fp_b = NULL;
+        }
         return PROFILE_RETURN_DB_ERROR;
 }
 

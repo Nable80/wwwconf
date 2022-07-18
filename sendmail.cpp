@@ -19,7 +19,6 @@ void buffer_new(struct buffer_st *b)
 {
   b->length = 512;
   b->data = (char *)malloc(b->length);
-  b->data[0] = 0;
   b->ptr = b->data;
   b->offset = 0;
 }
@@ -35,11 +34,6 @@ void buffer_add(struct buffer_st *b, char c)
   }
 }
 
-void buffer_end(struct buffer_st *b)
-{
-    b->data[b->offset++]= 0;
-}
-
 void buffer_delete(struct buffer_st *b)
 {
   free(b->data);
@@ -53,9 +47,7 @@ void base64_encode(struct buffer_st *b, const char *source, size_t length)
 {
   int i, hiteof = 0;
   size_t offset = 0;
-  
-  buffer_new(b);
-  
+
   while (!hiteof) {
     unsigned char igroup[3];
     char ogroup[4];
@@ -98,7 +90,7 @@ void base64_encode(struct buffer_st *b, const char *source, size_t length)
   }
    //buffer_add(b, '\r');
   //buffer_add(b, '\n');
- buffer_end(b);
+  buffer_add(b, '\0');
 }
 
 
@@ -214,6 +206,10 @@ int wcSendMail(char *to, char *subj, char *body)
 
         
         buffer_st subj_base64;
+        buffer_new(&subj_base64);
+        if (!subj_base64.data) {
+                return 0;
+        }
         base64_encode(&subj_base64, subj ,strlen(subj) );
         
         //print2log("body %s to %s", body, to);
@@ -239,6 +235,10 @@ int wcSendMail(char *to, char *subj, char *body)
         struct buffer_st subj_base64;
         FILE* sendmail_pipe;
 
+        buffer_new(&subj_base64);
+        if (!subj_base64.data) {
+                return 0;
+        }
         base64_encode(&subj_base64, subj, strlen(subj));
         
         if ((sendmail_pipe = popen(MA_SENDER, FILE_ACCESS_MODES_W))) {

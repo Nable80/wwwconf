@@ -583,6 +583,10 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
         else
                 st = (char*) malloc(3*ml);
 
+        if (st == NULL) {
+                abort();
+        }
+
         st[0] = 0;
         opentag = 0;
         for(;;) {

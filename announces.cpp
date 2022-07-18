@@ -220,6 +220,7 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
         }
         else {
                 // announce not found
+                free(an);
                 unlock_file(f);
                 wcfclose(f);
                 return ANNOUNCES_RETURN_NOT_FOUND;
@@ -289,6 +290,7 @@ int UpdateGlobalAnnounce(DWORD id, char *username, DWORD uniqid, char *announce,
         }
         else {
                 // announce not found
+                free(an);
                 unlock_file(f);
                 wcfclose(f);
                 return ANNOUNCES_RETURN_NOT_FOUND;

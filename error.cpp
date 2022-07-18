@@ -19,6 +19,7 @@ int error_type;
  *                %s                string
  *                %d[f]        DWORD (if 'f' as hex)
  *                %b[f]        BYTE (if 'f' as hex)
+ * TODO: replace this function with a regular vfprintf, all special specifiers are unused anyway
  */
 void print2log(const char *s, ...)
 {
@@ -29,6 +30,9 @@ void print2log(const char *s, ...)
         //
         char xx[100];
         char *ss = (char*)malloc(500*strlen(s));
+        if (!ss) {
+                return;
+        }
         ss[0] = 0;
         va_list marker;
         

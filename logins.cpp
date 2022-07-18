@@ -42,6 +42,10 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
                 }
         }
         buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        if (buf == NULL) {
+                wcfclose(f);
+                return 0;
+        }
 
         /******** lock f ********/
         logins_lock_file();
@@ -123,6 +127,10 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
                 return 0;
 
         buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
+        if (!buf) {
+                wcfclose(f);
+                return 0;
+        }
 
         //******** lock f ********
         logins_lock_file();
@@ -188,7 +196,13 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         if((f = wcfopen(F_AUTHSEQ, FILE_ACCESS_MODES_R)) == NULL) return 0;
                                                                 
         buf = (SSavedAuthSeq*)malloc(SEQUENCE_READ_COUNT*sizeof(SSavedAuthSeq));
-        if(!(*buflist = (char**)malloc(sizeof(char**)))) return 0;
+        *buflist = (char**)malloc(sizeof(char**));
+        if (buf == NULL || *buflist == NULL) {
+                wcfclose(f);
+                free(buf);
+                free(*buflist);
+                return 0;
+        }
 
         /******** lock f ********/
         logins_lock_file();
@@ -210,7 +224,11 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
                         if( Uid==0 || (buf[i].UniqID & (~SEQUENCE_IP_CHECK_DISABLED)) == Uid ){
                                 // TODO: replace this monster with structures
                                 *buflist = (char**)realloc(*buflist, (cn+1)*sizeof(char**));
-                                (*buflist)[cn] = (char*)malloc(5*sizeof(DWORD) + 1);
+                                char *bufline = (char*)calloc(5, sizeof(DWORD));
+                                if (bufline == NULL) {
+                                        abort();
+                                }
+                                (*buflist)[cn] = bufline;
                                 memcpy((*buflist)[cn], &buf[i].ExpireDate, sizeof(DWORD));
                                 memcpy((*buflist)[cn] + 4, &buf[i].IP, sizeof(DWORD));
                                 memcpy((*buflist)[cn] + 8, &buf[i].ID[0], sizeof(DWORD));
@@ -290,9 +308,11 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
                 }
         }
 
+        free(buf);
         logins_unlock_file();
         /********* unlock f *********/
 
+        wcfclose(f);
         return -1;
 }
 

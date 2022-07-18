@@ -367,6 +367,9 @@ int GenerateHashwordList(char **names)
 
 #define GHL_REALLOC_BLOCK_SIZE 20000
         *names = ss = (char*)malloc(GHL_REALLOC_BLOCK_SIZE);
+        if (!ss) {
+                return HASHINDEX_ER_IO_READ;
+        }
         *ss = 0;
         curalloced = GHL_REALLOC_BLOCK_SIZE;
 
@@ -441,24 +444,33 @@ int GenerateIndexList(DWORD **index)
         HASHINDEX_BLOCKINFO bi;
         char *fs;
 
-#define GIL_REALLOC_BLOCK_SIZE 2000*sizeof(DWORD)
-        *index = (DWORD*)malloc(GIL_REALLOC_BLOCK_SIZE);
-        curalloced = GIL_REALLOC_BLOCK_SIZE;
-
         if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_R)) == NULL)
                 return HASHINDEX_ER_IO_CREATE;
+
+#define GIL_REALLOC_BLOCK_SIZE 2000*sizeof(DWORD)
+        *index = (DWORD*)malloc(GIL_REALLOC_BLOCK_SIZE);
+        if (*index == NULL) {
+                wcfclose(f);
+                return HASHINDEX_ER_IO_READ;
+        }
+        curalloced = GIL_REALLOC_BLOCK_SIZE;
 
         for(hash = 0; hash < HASHTAB_LEN; hash++) {
                 pos = hash*HASHINDEX_BLOCK_SIZE;
                 for(;;) {
                         if(wcfseek(f, pos, SEEK_SET) != 0) {
+                                free(*index);
+                                *index = NULL;
                                 hi_unlock_file();
+                                wcfclose(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
                         
                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                 free(*index);
+                                *index = NULL;
                                 hi_unlock_file();
+                                wcfclose(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
 

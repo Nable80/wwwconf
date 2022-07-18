@@ -49,8 +49,13 @@ int CheckReadValidity(DWORD IP, DWORD MsgIndex)
 
                         lock_file(f);
 
-                        SSpamQueue *mbuf = (SSpamQueue*)malloc(SPAMQUEUE_LENGTH*sizeof(SSpamQueue) + 1);
-                        memset(mbuf, 0, sizeof(SSpamQueue)*SPAMQUEUE_LENGTH);
+                        // TODO: replace this sequence with a single truncate() call
+                        SSpamQueue *mbuf = (SSpamQueue*)calloc(SPAMQUEUE_LENGTH, sizeof(SSpamQueue));
+                        if (!mbuf) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
 
                         if(!fCheckedWrite(mbuf, SPAMQUEUE_LENGTH*sizeof(SSpamQueue), f)) {
                                 unlock_file(f);
@@ -210,9 +215,13 @@ int CheckPostfromIPValidity(DWORD IP, int TimeInterval)
                         }
 
                         // create and save read list
-
-                        SReadQueue *mbuf = (SReadQueue*)malloc(READQUEUE_LENGTH*sizeof(SReadQueue) + 1);
-                        memset(mbuf, 0, sizeof(SReadQueue)*READQUEUE_LENGTH);
+                        // TODO: replace this sequence with a single truncate() call
+                        SReadQueue *mbuf = (SReadQueue*)calloc(READQUEUE_LENGTH, sizeof(SReadQueue));
+                        if (!mbuf) {
+                                unlock_file(f);
+                                wcfclose(f);
+                                printhtmlerror();
+                        }
 
                         if(!fCheckedWrite(mbuf, READQUEUE_LENGTH*sizeof(SReadQueue), f)) {
                                 unlock_file(f);

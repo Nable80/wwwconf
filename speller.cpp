@@ -18,9 +18,12 @@ char* CodeHttpString(char *s, int allocmem, int type)
 {
         static char rs[SPELLER_INTERNAL_BUFFER_SIZE];
         char *r, *rr;
-        DWORD sl = (DWORD)strlen(s);
+        size_t sl = strlen(s);
         if(allocmem) {
                 rr = r = (char*)malloc(3*sl + 10);
+                if (r == NULL) {
+                        return NULL;
+                }
         }
         else {
                 if(sl > SPELLER_INTERNAL_BUFFER_SIZE/3) return NULL;
@@ -60,10 +63,9 @@ int FilterBadWords(char *s)
 {
         FILE *f;
         char dic[MAX_STRING];
-        char *sx, *ss = (char*)malloc(strlen(s) + 1);
+        char *sx, *ss = strdup(s);
         char c;
         int x = 0;
-        strcpy(ss, s);
         ss = toupperstr(ss);
         if((f = fopen(F_BADWORDS, FILE_ACCESS_MODES_R)) != NULL)
         {
@@ -87,6 +89,7 @@ int FilterBadWords(char *s)
                                 }
                         }
                 }
+                fclose(f);
         }
         else print2log(LOG_WARN_UNABLETOOPENFILE, F_BADWORDS);
         free(ss);
@@ -503,6 +506,9 @@ static char* replace(const char *s, const char *find, const char *subst)
         const char *sp;
         char *ss, *ssp;
         size_t allocnum;
+        if (s == NULL) {
+                return NULL;
+        }
 
         if (strlen(subst) > strlen(find))
                 allocnum = strlen(subst)*(strlen(s)/strlen(find))
