@@ -59,8 +59,12 @@ int CProfiles::WriteFullInfo(DWORD *idx, SProfile_FullUserInfo *FI)
         /* write SProfile_FullUserInfo */
         if(!fCheckedWrite(FI, sizeof(SProfile_FullUserInfo) - sizeof(char*), Fp_b))
                 return 0;
-        if(!fCheckedWrite(FI->AboutUser, FI->size, Fp_b))
-                return 0;
+        /* AboutUser may be NULL or empty string, skip the second write if it's true */
+        if (FI->size) {
+                if(!fCheckedWrite(FI->AboutUser, FI->size, Fp_b)) {
+                        return 0;
+                }
+        }
 
         return 1;
 }
@@ -847,7 +851,7 @@ int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
         else {
                 if(*tocount == 0) {
                         // only new messages
-                        toread = ui.persmescnt - ui.readpersmescnt;
+                        toread = (DWORD)ui.persmescnt - (DWORD)ui.readpersmescnt;
                 }
                 else {
                         // selected count

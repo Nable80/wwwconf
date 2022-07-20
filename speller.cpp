@@ -12,7 +12,7 @@
 #include "messages.h"
 #include "boardtags.h"
 
-#define TO_HEX(a) (a > 9 ? (a - 10) + 'A': a + '0')
+#define TO_HEX(a) (char)((a) > 9 ? ((a) - 10) + 'A': (a) + '0')
 
 char* CodeHttpString(char *s, int allocmem, int type)
 {
@@ -39,8 +39,8 @@ char* CodeHttpString(char *s, int allocmem, int type)
                         r+=1;
                 } else {
                         r[0] = '%';
-                        r[1] = TO_HEX( (((*s) & 0x00000000F0) >> 4));
-                        r[2] = TO_HEX( ( (*s) & 0x000000000F) );
+                        r[1] = TO_HEX(((*s) & 0xF0) >> 4);
+                        r[2] = TO_HEX(((*s) & 0x0F));
                         r+=3;
                 }
         }

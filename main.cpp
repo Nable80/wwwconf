@@ -131,7 +131,7 @@ const char *ACTIONS[] = {
         "edit"
 };
 
-char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing = true);
+char* strget(char *par,const char *find, size_t maxl, char end, bool argparsing = true);
 
 /* toupper string using CP1251
  */
@@ -141,7 +141,7 @@ char* toupperstr(char *s)
         DWORD k = (DWORD)strlen(s);
         for(DWORD i = 0; i < k; i++) {
                 if(s[i] >= 'à' && s[i] <= 'ÿ') {
-                        s[i] -= ('à' - 'À');
+                        s[i] = (char)(s[i] - 'à' + 'À');
                 }
                 else {
                         if(!(s[i] >= 'À' && s[i] <= 'ß'))
@@ -175,7 +175,7 @@ int getAction(char* par)
         return -1;
 }
 
-static void PrintBoardError(const char *s1, const char *s2, int code, DWORD msgid = 0)
+static void PrintBoardError(const char *s1, const char *s2, DWORD code, DWORD msgid = 0)
 {
         printf(DESIGN_GLOBAL_BOARD_MESSAGE, s1, s2);
         if(code & HEADERSTRING_REFRESH_TO_MAIN_PAGE)
@@ -200,7 +200,7 @@ static void PrintBanList()
 
 /* Prints post message form
  */
-static void PrintMessageForm(SMessage *msg, char *body, DWORD s, int code, DWORD flags = 0)
+static void PrintMessageForm(SMessage *msg, char *body, DWORD s, DWORD code, DWORD flags = 0)
 {
         char tstr[2][100];
 
@@ -528,7 +528,7 @@ static void PrintConfig()
 <TR><TD ALIGN=RIGHT>" DESIGN_CONFIGURE_CHECKALL "</TD></TR><TR><TD ALIGN=RIGHT>");
         for(DWORD i = 0; i < TOPICS_COUNT; i++)
         {
-                if(currenttopics & (1<<i))
+                if (currenttopics & (1U << i))
                         strcpy(str4, RADIO_CHECKED);
                 else str4[0] = 0;
                 printf("%s <INPUT TYPE=CHECKBOX NAME=\"topic%lu\" %s><br>\n",
@@ -1262,7 +1262,7 @@ int PrintAboutUserInfo(char *name)
                 puts("<BR><P><TABLE BORDER=1 CELLSPACING=0 CELLPADDING=6 BGCOLOR=\"#FFFFFF\"><TR><TH ALIGN=RIGHT>");
                 for(i = 0; i < USERRIGHT_COUNT; i++)
                 {
-                        if( (ui.right & (1<<i)) != 0)
+                        if (ui.right & (1U << i))
                                 strcpy(sel, RADIO_CHECKED);
                         else sel[0] = 0;
                         printf("%s <INPUT TYPE=CHECKBOX NAME=\"right%d\" %s><BR>",
@@ -1819,7 +1819,7 @@ char inline parsesym(char s)
 /* find and return key [find] in string [par] between [find] and "&"
 * par is limited to maxl+1 (including '\0')
 */
-char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing)
+char* strget(char *par,const char *find, size_t maxl, char end, bool argparsing)
 {
         bool bZend = false;
         char *res, *rres;
@@ -1838,7 +1838,7 @@ char* strget(char *par,const char *find, WORD maxl, char end, bool argparsing)
         }
         s = s + strlen(find);
         if(argparsing) {
-                while(*s != '\0' && res - rres < maxl) {
+                while(*s != '\0' && res < rres + maxl) {
                         if(*s == '%' && x > s + 2) {
                                 if((a = parsesym(*(s + 1))) == 20) {
                                         s++; continue; // ignore invalid %
@@ -2525,12 +2525,12 @@ int main()
                 DWORD oldct = currenttopics;
                 if(topicsoverride) {
                         if(topicsoverride > TOPICS_COUNT) currenttopics = 0xffffffff;        // all
-                        else currenttopics = (1<<(topicsoverride-1));
+                        else currenttopics = 1U << (topicsoverride - 1);
                 }
 
                 for (int i = 0; i < TOPICS_COUNT; ++i)
-                        if (currenttopics & (1 << i))
-                                currenttopics_map |= (1 << Topics_List_map[i]);
+                        if (currenttopics & (1U << i))
+                                currenttopics_map |= (1U << Topics_List_map[i]);
                 if (currenttopics_map & 1)
                         currenttopics_map |= blanktopics;
 #endif
@@ -3411,7 +3411,7 @@ int main()
                                                         {
                                                                 if(strcmp(ss, "on") == 0)
                                                                 {
-                                                                        currenttopics |= (1<<i);
+                                                                        currenttopics |= 1U << i;
                                                                 }
                                                                 free(ss);
                                                         }
@@ -4028,7 +4028,7 @@ int main()
                                                         {
                                                                 if(strcmp(ss, "on") == 0)
                                                                 {
-                                                                        right |= (1<<i);
+                                                                        right |= 1U << i;
                                                                 }
                                                                 free(ss);
                                                         }

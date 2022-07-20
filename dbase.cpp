@@ -233,7 +233,7 @@ int DB_Base::printhtmlbuffer(SMessage *buf, DWORD size, int p/*direction*/, int 
 
 #if TOPICS_SYSTEM_SUPPORT
                         // check for topic match our topic mask
-                        if (!((1 << buf[i].Topics) & currenttopics_map)) {
+                        if (!((1U << buf[i].Topics) & currenttopics_map)) {
                                 invflag = 0;
                                 collapsed = 1;
                                 skipped |= 0xf0000000;
