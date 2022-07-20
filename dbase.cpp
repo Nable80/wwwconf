@@ -2141,9 +2141,7 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 DWORD tmp;
 
                 if ( (parnum = getparent(num)) == NO_MESSAGE_CODE) {
-                        char errmes[100];
-                        sprintf(errmes, "error at %s:%d: parent of %s not found.", __FILE__, __LINE__, num_s);
-                        print2log(errmes);
+                        print2log("error at %s:%d: parent of %lu not found.", __FILE__, __LINE__, num);
                         if (is_xmlfp) {
                                 char *r;
                                 if ( (r = (char*) malloc(XML_MES_STATUS_BASELEN +

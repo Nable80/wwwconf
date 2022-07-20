@@ -678,7 +678,7 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 /**************************** log messages *******************************/
 #define LOG_SPAM_TRY                                "Spam try from %s:, deal=%s"
 #define LOG_UNKNOWN_URL                                "Unknown URL request from : %s, deal=%s"
-#define LOG_UNHANDLED                                "UNHANDLED EXCEPTION at %s at line %d from : %s\n\tError: %s\t\tQUERY_STRING=%s"
+#define LOG_UNHANDLED                                "UNHANDLED EXCEPTION at %s at line %lu from : %s\n\tError: %s\t\tQUERY_STRING=%s"
 #define LOG_UNHANDLED_HTML                        "UNHANDLED EXCEPTION at %s at line %lu from : %s<BR><table width=100%% cellpadding=1 cellspacing=1 border=1 bgcolor=#E1E1E1><TR><TD>%s</TD><TD>QUERY_STRING=%s</TD></TR></TABLE>"
 #define LOG_ERRORTYPEUNKN                        "Unknown"
 #define LOG_ACCESS_DENIED                        "Access denied from : %s, deal=%s"

@@ -14,120 +14,37 @@
 
 int error_type;
 
-/* print message to logfile
- * s - format string
- *                %s                string
- *                %d[f]        DWORD (if 'f' as hex)
- *                %b[f]        BYTE (if 'f' as hex)
- * TODO: replace this function with a regular vfprintf, all special specifiers are unused anyway
- */
-void print2log(const char *s, ...)
+/* print message to logfile */
+__attribute__ ((format (printf, 1, 2)))
+void print2log(const char *format, ...)
 {
-        DWORD i = 0, c = 0;
         FILE *f;
-        //
-        // POTENTIAL BUG HERE
-        //
-        char xx[100];
-        char *ss = (char*)malloc(500*strlen(s));
-        if (!ss) {
-                return;
-        }
-        ss[0] = 0;
-        va_list marker;
-
-/*        if((f = fopen(LOG_FILE, "a")) != NULL) {
-                fprintf(f, "entering:");
-                fclose(f);
-        }*/
-
-        // Initialize variable arguments
-        va_start(marker, s);
-        DWORD slen = strlen(s);
-        while(i < slen)
-        {
-                if(s[i] == '%') {
-                        if(i + 1 < slen) {
-                                i++;
-                                switch(s[i]) {
-                                        case 'd':
-                                                {
-                                                        bool fhex = false;
-                                                        if(i + 1 < slen && s[i+1] == 'f')
-                                                        {
-                                                                fhex = true;
-                                                                i++;
-                                                        }
-                                                        DWORD x = va_arg(marker, DWORD);
-                                                        if(!fhex) sprintf(xx,"%lu", x);
-                                                        else {
-                                                                sprintf(xx,"%lx", x);
-                                                                strcat(ss, "0x");
-                                                        }
-                                                        strcat(ss, xx);
-                                                        break;
-                                                }
-                                        case 's':
-                                                {
-                                                        char *x = va_arg(marker, char*);
-                                                        if(x) strcat(ss, x);
-                                                        else strcat(ss, "null");
-                                                        break;
-                                                }
-                                        case 'b':
-                                                {
-                                                        bool fhex = false;
-                                                        if(i + 1 < slen && s[i+1] == 'f')
-                                                        {
-                                                                fhex = true;
-                                                                i++;
-                                                        }
-                                                        unsigned x = va_arg(marker, unsigned);
-                                                        sprintf(xx, fhex ? "0x%x" : "%u", x & 0xFF);
-                                                        strcat(ss, xx);
-                                                        break;
-                                                }
-                                        default:
-                                                {
-                                                        char tmp[3];
-                                                        tmp[0] = s[i-1];
-                                                        tmp[1] = s[i];
-                                                        tmp[2] = 0;
-                                                        strcat(ss, tmp);
-                                                }
-                                }
-                                c = strlen(ss);
-                        }
-                        else {
-                                ss[c] = s[i];
-                                c++;
-                                ss[c] = 0;
-                        }
-
-                }
-                else {
-                        ss[c] = s[i];
-                        c++;
-                        ss[c] = 0;
-                }
-                i++;
-        }
-        // Reset variable arguments
-        va_end(marker);
-
         time_t t;
-        char *p;
-        if((f = fopen(LOG_FILE, "a")) != NULL) {
-                t = time(NULL);
-                t += 3600*DATETIME_DEFAULT_TIMEZONE;
-                p = asctime(gmtime(&t));
-                p[strlen(p) - 1] = 0;
-                fprintf(f, "%s : %s\n", p, ss);
+        char time_prefix[sizeof("YYYY-mm-dd HH:MM:SS : ")] = "";
+
+        if ((f = fopen(LOG_FILE, "a")) != NULL) {
+                // try to ensure that our write will be atomic
+                lock_file(f);
+
+                // print time prefix
+                t = time(NULL) + 3600 * DATETIME_DEFAULT_TIMEZONE;
+                strftime(time_prefix, sizeof(time_prefix), "%Y-%m-%d %H:%M:%S : ", gmtime(&t));
+                fputs(time_prefix, f);
+
+                // then the actual log message
+                va_list ap;
+                va_start(ap, format);
+                vfprintf(f, format, ap);
+                va_end(ap);
+
+                // and finally a terminating '\n'
+                fputc('\n', f);
+
+                // flush and release resources
+                unlock_file(f);
                 fclose(f);
         }
-        free(ss);
 }
-
 
 /* print error to file [file] at line [line] and message then immediately exit */
 [[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s)

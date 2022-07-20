@@ -16,7 +16,8 @@
         sprintf(ss, p, s); \
         printwidehtmlerror(__FILE__, __LINE__, ss); }
 
-void print2log(const char *s, ...);
+__attribute__ ((format (printf, 1, 2))) void print2log(const char *format, ...);
+
 [[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s);
 
 extern int error_type;

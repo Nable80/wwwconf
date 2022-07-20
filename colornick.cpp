@@ -41,7 +41,7 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
                 char *ts = strdup(ns.aname);
                 // there shouldn't be any duplicates here but let's check it anyway
                 if (!nmap.emplace(ns.uid, ts).second) {
-                        print2log("duplicate altname record for uid %d: '%s'", ns.uid, ts);
+                        print2log("duplicate altname record for uid %lu: '%s'", ns.uid, ts);
                         free(ts);
                 }
         }

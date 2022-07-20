@@ -3544,7 +3544,7 @@ int main()
                                         }
                                         free(st);
                                 }
-print2log("incor pass %s", par);
+                                print2log("incor pass %s", par);
                                 printpassworderror(deal);
                                 goto End_part;
                         }
@@ -3691,7 +3691,7 @@ print2log("incor pass %s", par);
                                         Tittle_cat(TITLE_ClosingMessage);
 
                                         DB.DB_ChangeCloseThread(tmp, 1);
-                                        print2log("Message %d (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                        print2log("Message %lu (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                         PrintBottomLines();
@@ -3723,7 +3723,7 @@ print2log("incor pass %s", par);
                         else {
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 1);
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %d (%s (by %s)) was hided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was hided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
 
                                 Tittle_cat(TITLE_HidingMessage);
 
@@ -3759,7 +3759,7 @@ print2log("incor pass %s", par);
 
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 0);
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %d (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
@@ -3798,7 +3798,7 @@ print2log("incor pass %s", par);
 
                                         DB.DB_ChangeCloseThread(tmp, 0);
                                         if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                        print2log("Message %d (%s (by %s)) was opened by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                        print2log("Message %lu (%s (by %s)) was opened by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2,
                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE);
@@ -3833,7 +3833,7 @@ print2log("incor pass %s", par);
 
                                 DB.DB_ChangeRollThreadFlag(tmp);
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %d (%s (by %s)) was (un)rolled by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was (un)rolled by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
                                         tmp);
@@ -3868,7 +3868,7 @@ print2log("incor pass %s", par);
                                 Tittle_cat(TITLE_DeletingMessage);
 
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %d (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 DB.DB_DeleteMessages(tmp);
 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
@@ -4400,7 +4400,7 @@ print2log("incor pass %s", par);
                                                 PrintBoardError(MESSAGEMAIN_messagechanged, MESSAGEMAIN_messagechanged2,
                                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
                                                 PrintBottomLines();
-                                                print2log("Topic of message %d (%s (by %s)) was changed from [%s] to [%s] by %s", tmp, mes.MessageHeader, mes.AuthorName,
+                                                print2log("Topic of message %lu (%s (by %s)) was changed from [%s] to [%s] by %s", MsgNum, mes.MessageHeader, mes.AuthorName,
                                                         Topics_List[oldTopic], Topics_List[Topic], ULogin.pui->username);
                                                 goto End_part;
                                         }
@@ -5000,7 +5000,7 @@ print2log("incor pass %s", par);
 
                                                                 if(cgann_num && refid) {
                                                                         DeleteGlobalAnnounce(cgann_num, 0);
-                                                                        print2log("Announce %d was deleted during update", cgann_num);
+                                                                        print2log("Announce %lu was deleted during update", cgann_num);
                                                                 }
 
                                                                 if(!cgann_num) {
@@ -5063,7 +5063,7 @@ print2log("incor pass %s", par);
                                         if(DeleteGlobalAnnounce(MsgNum, ((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) ? 0 : ULogin.LU.UniqID) == ANNOUNCES_RETURN_OK) {
                                                 Tittle_cat(TITLE_GlobalAnnWasDeleted);
 
-                                                print2log("Global Announce %d was deleted by user %s", MsgNum, ULogin.pui->username);
+                                                print2log("Global Announce %lu was deleted by user %s", MsgNum, ULogin.pui->username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_wasdeleted, MESSAGEMAIN_globann_wasdeleted2, 0);
                                                 PrintBottomLines();
@@ -5071,7 +5071,7 @@ print2log("incor pass %s", par);
                                         else {
                                                 Tittle_cat(TITLE_Error);
 
-                                                print2log("Global Announce %d cannot be deleted by user %s", MsgNum, ULogin.pui->username);
+                                                print2log("Global Announce %lu cannot be deleted by user %s", MsgNum, ULogin.pui->username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_cannotdel, MESSAGEMAIN_globann_cannotdel2, 0);
                                                 PrintBottomLines();
