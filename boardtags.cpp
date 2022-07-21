@@ -136,6 +136,9 @@ static int ReparseUrl(char **ss, char **dd, int index, DWORD status)
                         oldcs = *s;
                         *s = 0;
                         dtmp = (char*)malloc(strlen(olds)*2+strlen(PARSED_URL_TMPL_IDX));
+                        if (dtmp == NULL) {
+                                abort();
+                        }
 			if (index) {
 				static int id;
 				++id;

@@ -867,8 +867,10 @@ int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
 
         msg = (SPersonalMessage*)malloc(toread*sizeof(SPersonalMessage));
 
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
+        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL) {
+                free(msg);
                 return PROFILE_RETURN_DB_ERROR;
+        }
         curpos = ui.persmsg;
         for(i = 0; i < toread; i++) {
                 if(wcfseek(fp, curpos, SEEK_SET) != 0)
@@ -904,8 +906,10 @@ skip_to_msg_read:
 
         msg = (SPersonalMessage*)malloc(fromread*sizeof(SPersonalMessage));
 
-        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL)
+        if((fp = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_R)) == NULL) {
+                free(msg);
                 return PROFILE_RETURN_DB_ERROR;
+        }
         curpos = ui.postedpersmsg;
         for(i = 0; i < fromread; i++) {
                 if(wcfseek(fp, curpos, SEEK_SET) != 0)
