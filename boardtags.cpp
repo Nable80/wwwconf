@@ -175,8 +175,12 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
         if(status & 1) {
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-		        if (ReparseUrl(&s, &d, index, status))
+		        if (ReparseUrl(&s, &d, index, status)) {
 				*flg = 1;
+				if (*s == 0) {
+					break;
+				}
+			}
 #endif
 
                         if(*s != '\r') {
@@ -206,6 +210,9 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
                         if (ReparseUrl(&s, &d, index, status)) {
 				*flg = 1;
 				ws = 0;
+				if (*s == 0) {
+					break;
+				}
 			}
 #endif
 
@@ -256,11 +263,11 @@ int ParseSmiles_smartstrcat(char *d, char *s, int index, DWORD status, DWORD *fl
                         ss[i] = si;
                         ss += i;
                 }
-                if(*ss == 0) break;
 
 #if TRY_AUTO_URL_PREPARSE
                 if (ReparseUrl(&ss, &dd, index, status)) *flg = 1;
 #endif
+                if (*ss == 0) break;
 
                 for(unsigned int j = 0; j < BoardPicCount; j++) {
                         if(strlen(PicConvTable[j].tag) <= strlen(ss) && !index &&
