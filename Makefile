@@ -27,7 +27,7 @@ DBTOOL_OBJS=$(DBTOOL_SRCS:.cpp=.o)
 debug: OPT_FLAGS=-g3 -ggdb3 -O0
 debug: all
 
-release: OPT_FLAGS=-g -O2 -fomit-frame-pointer -flto
+release: OPT_FLAGS=-g -O2 -fomit-frame-pointer -flto=auto
 release: all
 
 all: index.cgi dbtool
