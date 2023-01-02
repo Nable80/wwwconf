@@ -96,7 +96,7 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
                         printhtmlerror();
                 id--;
                 if(wcfseek(f, 0, SEEK_END) == 0) {
-                        fCheckedWrite(&id, sizeof(id), f);
+                        wcfwrite(&id, 1, sizeof(id), f);
                 }
                 unlock_file(f);
                 wcfclose(f);

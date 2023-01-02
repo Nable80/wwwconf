@@ -23,30 +23,27 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
 
         if((f = wcfopen(F_ACTIVITYLOG1, FILE_ACCESS_MODES_RW)) == NULL) {
                 // create file
-                if((f = wcfopen(F_ACTIVITYLOG1, FILE_ACCESS_MODES_CW)) != NULL)
-                {
-                        DWORD x[2];
-                        memset(x,0,8);
-                        fCheckedWrite(&x, 8, f);
-                        wcfclose(f);
-                        f = wcfopen(F_ACTIVITYLOG1, FILE_ACCESS_MODES_RW);
-                        if(f) lock_file(f);
+                if ((f = wcfopen(F_ACTIVITYLOG1, FILE_ACCESS_MODES_CW)) == NULL) {
+                        goto failed;
                 }
-                else goto failed;
+                lock_file(f);
+                DWORD x[2] = {0, 0};
+                if (!fCheckedWrite(x, sizeof(x), f) || wcfseek(f, 0, SEEK_SET)) {
+                        goto failed;
+                }
         }
         else lock_file(f);
+
         if((f1 = wcfopen(F_ACTIVITYLOG2, FILE_ACCESS_MODES_RW)) == NULL) {
                 // create file
-                if((f1 = wcfopen(F_ACTIVITYLOG2, FILE_ACCESS_MODES_CW)) != NULL)
-                {
-                        DWORD x[2];
-                        memset(x,0,8);
-                        fCheckedWrite(&x, 8, f1);
-                        wcfclose(f1);
-                        f1 = wcfopen(F_ACTIVITYLOG2, FILE_ACCESS_MODES_RW);
-                        if(f1) lock_file(f1);
+                if ((f1 = wcfopen(F_ACTIVITYLOG2, FILE_ACCESS_MODES_CW)) == NULL) {
+                        goto failed;
                 }
-                else goto failed;
+                lock_file(f1);
+                DWORD x[2] = {0, 0};
+                if (!fCheckedWrite(x, sizeof(x), f1) || wcfseek(f1, 0, SEEK_SET)) {
+                        goto failed;
+                }
         }
         else lock_file(f1);
 
@@ -62,9 +59,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         // find file for displaying (it will be f1)
         if(crtime - 2*ACTIVITY_CONTROL_TIME <= tm  && tm < crtime - ACTIVITY_CONTROL_TIME )
         {
-		std::swap(f, f1);
-		std::swap(tm, tm1);
-		std::swap(fin, fin1);
+                std::swap(f, f1);
+                std::swap(tm, tm1);
+                std::swap(fin, fin1);
 
                 // to know path to the file
                 swapdone = !swapdone;
@@ -83,9 +80,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         }
         if(crtime - ACTIVITY_CONTROL_TIME <= tm1 && tm1 < crtime)
         {
-		std::swap(f, f1);
-		std::swap(tm, tm1);
-		std::swap(fin, fin1);
+                std::swap(f, f1);
+                std::swap(tm, tm1);
+                std::swap(fin, fin1);
 
                 // to know path to the file
                 swapdone = !swapdone;
@@ -117,19 +114,22 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         free(buf);
                         wcfflush(f1);
                         // truncate end of file
-                        if (truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, 4))
+                        if (truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, sizeof(DWORD)) || wcfseek(f1, 0, SEEK_END)) {
                                 printhtmlerror();
-                        wcfseek(f1, 0, SEEK_END);
+                        }
                         rr = 1;
-                        fCheckedWrite(&rr, 4, f1);
-                        fCheckedWrite(&hitcnt, 4, f1);
-                        fCheckedWrite(&hostcnt, 4, f1);
+                        if (!fCheckedWrite(&rr, sizeof(rr), f1)
+                                || !fCheckedWrite(&hitcnt, sizeof(hitcnt), f1)
+                                || !fCheckedWrite(&hostcnt, sizeof(hostcnt), f1)) {
+                                goto failed;
+                        }
                         finalizedone = 1;
                 }
                 else {
                         // just read info from file
-                        fCheckedRead(&hitcnt, 4, f1);
-                        fCheckedRead(&hostcnt, 4, f1);
+                        if (!fCheckedRead(&hitcnt, sizeof(hitcnt), f1) || !fCheckedRead(&hostcnt, sizeof(hostcnt), f1)) {
+                                goto failed;
+                        }
                 }
                 // release file lock as soon as possible (won't wait for the end of this fuction)
                 wcfflush(f1);
@@ -159,8 +159,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                                         buf[i].Count++;
                                         buf[i].Time = (DWORD)time(NULL);
                                         done = 1;
-                                        wcfseek(f, pos, SEEK_SET);
-                                        fCheckedWrite(buf, sizeof(SActivityLogRecord)*(i+1), f);
+                                        if (wcfseek(f, pos, SEEK_SET) || !fCheckedWrite(buf, sizeof(SActivityLogRecord)*(i+1), f)) {
+                                                goto failed;
+                                        }
                                         break;
                                 }
                         }
@@ -172,21 +173,19 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         ss.Count = 1;
                         ss.IP = IP;
                         ss.Time = crtime;
-                        wcfseek(f, 0, SEEK_END);
-                        fCheckedWrite(&ss, sizeof(SActivityLogRecord), f);
+                        if (wcfseek(f, 0, SEEK_END) || !fCheckedWrite(&ss, sizeof(SActivityLogRecord), f)) {
+                                goto failed;
+                        }
                 }
         }
         else {
-                DWORD rr;
-                SActivityLogRecord ss;
-
                 // if it's filalized file, let's add activity to the history
                 if(fin) {
                         WCFILE *f2;
-                        DWORD buf[3];
                         // add to achive
-                        fCheckedRead(&hitcnt, 4, f);
-                        fCheckedRead(&hostcnt, 4, f);
+                        if (!fCheckedRead(&hitcnt, sizeof(hitcnt), f) || !fCheckedRead(&hostcnt, sizeof(hostcnt), f)) {
+                                goto failed;
+                        }
 
                         if((f2 = wcfopen(F_ACTIVITYARCH, FILE_ACCESS_MODES_RW)) == NULL) {
                                 // create file
@@ -195,31 +194,40 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
 
                         if(f2 != NULL) {
                                 lock_file(f2);
-                                wcfseek(f2, 0, SEEK_END);
-                                buf[0] = tm; buf[1] = hitcnt; buf[2] = hostcnt;
-                                fCheckedWrite(&buf, 12, f2);
+                                if (wcfseek(f2, 0, SEEK_END) == 0) {
+                                        off_t saved_end = wcftell(f2);
+                                        DWORD buf[3] = {tm, hitcnt, hostcnt};
+                                        if (!fCheckedWrite(buf, sizeof(buf), f2)) {
+                                                ftruncate(fileno(f2), saved_end);
+                                        }
+                                }
                                 wcfflush(f2);
                                 unlock_file(f2);
                                 wcfclose(f2);
                         }
                 }
 
+
+                wcfflush(f);
+                if (truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, sizeof(DWORD)) || wcfseek(f, sizeof(DWORD), SEEK_SET)) {
+                        printhtmlerror();
+                }
+
+                DWORD rr = 0;
+                SActivityLogRecord ss;
                 ss.Count = 1;
                 ss.IP = IP;
                 ss.Time = crtime;
-
-                wcfflush(f);
-                if (truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, 4))
-                        printhtmlerror();
-                wcfseek(f, 4, SEEK_SET);
-                rr = 0;
-                fCheckedWrite(&rr, 4, f);
-                fCheckedWrite(&ss, sizeof(SActivityLogRecord), f);
+                if (!fCheckedWrite(&rr, sizeof(rr), f) || !fCheckedWrite(&ss, sizeof(ss), f)) {
+                        goto failed;
+                }
                 // make header
-                wcfseek(f, 0, SEEK_SET);
-                if(!finalizedone) rr = crtime;
-                else rr = tm1 + ACTIVITY_CONTROL_TIME;
-                fCheckedWrite(&rr, 4, f);
+                if (wcfseek(f, 0, SEEK_SET) == 0) {
+                        rr = finalizedone ? (tm1 + ACTIVITY_CONTROL_TIME) : crtime;
+                        if (!fCheckedWrite(&rr, sizeof(rr), f)) {
+                                goto failed;
+                        }
+                }
         }
 failed:
         if(f) {

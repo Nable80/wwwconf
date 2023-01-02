@@ -83,17 +83,18 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
                                 return 0;         // file MUST exist
                         lock_file(f);
-                        wcfseek(f, 0, SEEK_END);
-                        fCheckedWrite(&ns, sizeof(ns), f);
+                        int res = 0;
+                        if (wcfseek(f, 0, SEEK_END) == 0 && fCheckedWrite(&ns, sizeof(ns), f)) {
+                                res = 1;
+                        }
                         unlock_file(f);
                         wcfclose(f);
-                        return 1;
+                        return res;
                 }
                 else {
                         // update
                         AltNamesStruct ns;
                         memset(&ns, 0, sizeof(ns));
-                        DWORD pos, fn = 0;
                         char *s1, *s2 = (char*)malloc(MAX_ALT_NICK_SIZE);
                         if (s2 == NULL) {
                                 return 0;
@@ -106,8 +107,9 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
                                 return 0;         // file MUST exist
                         lock_file(f);
+                        int res = 0;
                         while(!wcfeof(f)) {
-                                pos = wcftell(f);
+                                DWORD pos = wcftell(f);
                                 if(!fCheckedRead(&ns, sizeof(ns), f)) {
                                         wcfclose(f);
                                         return 0;
@@ -115,15 +117,15 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                                 if(ns.uid == uid) {
                                         strcpy(ns.rname, name);
                                         strcpy(ns.aname, altname);
-                                        wcfseek(f, pos, SEEK_SET);
-                                        fn = 1;
+                                        if (wcfseek(f, pos, SEEK_SET) == 0 && fCheckedWrite(&ns, sizeof(ns), f)) {
+                                                res = 1;
+                                        }
                                         break;
                                 }
                         }
-                        if(fn) fCheckedWrite(&ns, sizeof(ns), f);
                         unlock_file(f);
                         wcfclose(f);
-                        return 1;
+                        return res;
                 }
         }
         return 0;        // Already exist
@@ -136,6 +138,8 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                 if(it != nmap.end()) {
                         AltNamesStruct ns;
                         DWORD pos, rd, fn = 0;
+                        int res = 1;
+                        // FIXME
                         char cb[100000];
                         // delete from file (first of all - let's find)
                         if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
@@ -158,17 +162,24 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                                         break;
                                 }
                         }
-                        if(fn) fCheckedWrite(cb, rd, f);
-                        pos = wcftell(f);
-                        if (truncate(ifname, pos))
-                                printhtmlerror();
+                        if (fn) {
+                                if (fCheckedWrite(cb, rd, f)) {
+                                        pos = wcftell(f);
+                                        if (truncate(ifname, pos)) {
+                                                printhtmlerror();
+                                        }
+                                }
+                                else {
+                                        res = 0;
+                                }
+                        }
                         unlock_file(f);
                         wcfclose(f);
 
                         free(it->second);
                         nmap.erase(it);
 
-                        return 1;
+                        return res;
                 }
         }
         return 0;
