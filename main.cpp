@@ -3313,14 +3313,14 @@ int main()
 
                                 if(par != NULL) {
 
-#define READ_PARAM_MASK(param, var, mask) {                             \
+#define READ_PARAM_MASK(param, var, mask) do {                          \
         char *ss = strget(par, param, 20, '&');                         \
         if(ss && !strcmp(ss, "1"))                                      \
                 var |= mask;                                            \
         else                                                            \
                 var &= (~mask);                                         \
         free(ss);                                                       \
-}
+} while (0)
 
                                         // read disable smiles
                                         READ_PARAM_MASK("dsm=", currentdsm, CONFIGURE_dsm);
@@ -3341,7 +3341,7 @@ int main()
                                         // read disable bot defense
                                         READ_PARAM_MASK("bot=", currentdsm, CONFIGURE_bot);
 
-#define READ_PARAM_NUM(param, var, vardefault) {                        \
+#define READ_PARAM_NUM(param, var, vardefault) do {                     \
        char *st, *ss = strget(par, param, 20, '&');                     \
        errno = 0;                                                       \
        var = vardefault;                                                \
@@ -3351,9 +3351,9 @@ int main()
                        var = tmp;                                       \
        }                                                                \
        free(ss);                                                        \
-}
+} while (0)
 
-#define READ_PARAM_INUM(param, var, vardefault) {                       \
+#define READ_PARAM_INUM(param, var, vardefault) do {                    \
        char *st, *ss = strget(par, param, 20, '&');                     \
        errno = 0;                                                       \
        var = vardefault;                                                \
@@ -3363,7 +3363,7 @@ int main()
                        var = tmp;                                       \
        }                                                                \
        free(ss);                                                        \
-}
+} while (0)
 
                                         // read lsel (show type selection)
                                         READ_PARAM_NUM("lsel=", currentlsel, CONFIGURE_SETTING_DEFAULT_lsel);

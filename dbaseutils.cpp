@@ -8,14 +8,10 @@ DWORD Fsize(const char *s)
         WCFILE *f;
         DWORD r;
         if((f = wcfopen(s, FILE_ACCESS_MODES_R)) == NULL) {
-                        char ss[10000];
-                        sprintf(ss, LOG_GETFILESIZEFAILED, s);
-                        printhtmlerrormes(ss);
+                        printhtmlerrorat(LOG_GETFILESIZEFAILED, s);
         }
         if(wcfseek(f, 0, SEEK_END) != 0) {
-                        char ss[10000];
-                        sprintf(ss, LOG_GETFILESIZEFAILED, s);
-                        printhtmlerrormes(ss);
+                        printhtmlerrorat(LOG_GETFILESIZEFAILED, s);
         }
         r = wcftell(f);
         wcfclose(f);

@@ -130,7 +130,7 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
 
         if(allocmem) {
                 if (!(st = (char*)malloc(6*strlen(s) + 1))) // 6 == strlen("&quot;")
-                        printhtmlerrormes("malloc");
+                        abort();
         } else {
                 st = tb;
                 if (ml > SPELLER_INTERNAL_BUFFER_SIZE)
@@ -139,7 +139,7 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
 
 #define REPLACE(subst)                                               \
 {                                                                    \
-        if (!(is_enough = st+strlen(subst) <= os+(ml-1)))            \
+        if (!(is_enough = (st+strlen(subst) <= os+(ml-1))))          \
                 break;                                               \
         strcpy(st, subst);                                           \
         ++s;                                                         \
@@ -153,11 +153,11 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
         while(*s != '\0' && st < os+(ml-1) && is_enough)
                 switch (*s) {
                 case '<':
-                        REPLACE("&lt;");
+                        REPLACE("&lt;")
                 case '>':
-                        REPLACE("&gt;");
+                        REPLACE("&gt;")
                 case '"':
-                        REPLACE("&quot;");
+                        REPLACE("&quot;")
                 case '&':
                         if ( (ulen = unicode_len(s))) {
                                 if (!(is_enough = st+ulen <= os+(ml-1)))
@@ -166,8 +166,10 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
                                 s += ulen;
                                 st += ulen;
                                 break;
-                        } else
-                                REPLACE("&amp;");
+                        }
+                        else {
+                                REPLACE("&amp;")
+                        }
                 default:
                         *st = *s;
                         ++s;
@@ -177,8 +179,9 @@ char* FilterHTMLTags(const char *s, size_t ml, int allocmem)
         *st = '\0';
         if (allocmem)
                 if (!(os = (char *)realloc(os, strlen(os) +1)))
-                        printhtmlerrormes("realloc");
+                        abort();
         return os;
+#undef REPLACE
 }
 
 
@@ -231,7 +234,7 @@ char *FilterBiDi(const char *s)
         // 7 is a length of NCR for the Unicode BiDi chararacters
         // allocate a max possible size
         if (!(os = (char*) malloc(DESIGN_BIDI_MAXLEN*(strlen(s)/7) + strlen(s)%7 + 1)))
-                printhtmlerrormes("malloc");
+                abort();
 
 	if (!(*s)) {
 		*os = '\0';
@@ -282,7 +285,7 @@ char *FilterBiDi(const char *s)
         *ss = '\0';
 
 	if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + strlen(DESIGN_BIDI_LTR_GUARD) + 1)))
-		printhtmlerrormes("realloc");
+		abort();
 
 	if (level) {
 		size_t i;
@@ -527,7 +530,7 @@ static char* replace(const char *s, const char *find, const char *subst)
                 ssp += sp - s;
                 strcpy(ssp, subst);
                 ssp += strlen(subst);
-                s = sp + strlen(find);;
+                s = sp + strlen(find);
         }
 
         strcpy(ssp, s);

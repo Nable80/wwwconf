@@ -235,8 +235,8 @@ typedef unsigned long DWORD;
 #define wcftell (DWORD)ftello
 #define wcfflush fflush
 
-#define lock_file(a)        {fflush(a);flock(fileno(a), LOCK_EX);}
-#define unlock_file(a)        {fflush(a);flock(fileno(a), LOCK_UN);}
+#define lock_file(a)        do { fflush(a); flock(fileno(a), LOCK_EX); } while (0)
+#define unlock_file(a)        do { fflush(a); flock(fileno(a), LOCK_UN); } while (0)
 
 //string case-insensitive compare
 #define strcmpi strcasecmp
@@ -261,8 +261,8 @@ typedef unsigned long DWORD;
 #define RADIO_CHECKED                " CHECKED"
 #define LISTBOX_SELECTED        " SELECTED"
 
-#define fCheckedRead(buffer, size, f)        (wcfread(buffer, 1, size, f) == size)
-#define fCheckedWrite(buffer, size, f)        (wcfwrite(buffer, 1, size, f) == size)
+#define fCheckedRead(buffer, size, f)        (wcfread(buffer, 1, size, f) == (size))
+#define fCheckedWrite(buffer, size, f)        (wcfwrite(buffer, 1, size, f) == (size))
 typedef unsigned char BYTE;
 #define M_IN(x,a,b) (((x)>=(a))&&((x)<=(b)))
 

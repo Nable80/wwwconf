@@ -9,11 +9,8 @@
 #include "basetypes.h"
 #include "freedb.h"
 
-#define unlock_and_freedb_io_error1() {unlock_file(ffb);errnum = FREEDBFILE_ERROR_IO_ERROR;return FREEDBFILE_ERROR_IO_ERROR;}
-#define freedb_io_error1() {errnum = FREEDBFILE_ERROR_IO_ERROR; return FREEDBFILE_ERROR_IO_ERROR;}
-#define freedb_lock_file() {lock_file(ffb);}
-#define freedb_unlock_file() {unlock_file(ffb)}
-
+#define unlock_and_freedb_io_error1() do { unlock_file(ffb); errnum = FREEDBFILE_ERROR_IO_ERROR; return FREEDBFILE_ERROR_IO_ERROR; } while (0)
+#define freedb_io_error1() do { errnum = FREEDBFILE_ERROR_IO_ERROR; return FREEDBFILE_ERROR_IO_ERROR; } while (0)
 
 /* mark free space block with size bsize and index bIndex
  * if successfull return FREEDB_ERROR_ALLOK
@@ -34,12 +31,12 @@ DWORD CFreeDBFile::MarkFreeSpace(DWORD bIndex, DWORD bsize)
 
         if((ffb = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
                 if((ffb = wcfopen(fname, FILE_ACCESS_MODES_CW)) == NULL) {
-                        freedb_io_error1()
+                        freedb_io_error1();
                 }
                 else {
                         wcfclose(ffb);
                         if((ffb = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
-                                freedb_io_error1()
+                                freedb_io_error1();
                         }
                 }
         }
@@ -48,8 +45,7 @@ DWORD CFreeDBFile::MarkFreeSpace(DWORD bIndex, DWORD bsize)
                 freedb_io_error1();
         }
 
-        /********* lock WCFILE *********/
-        freedb_lock_file();
+        lock_file(ffb);
 
         int alreadyfind = 0;
         while(!wcfeof(ffb)) {
@@ -73,16 +69,15 @@ DWORD CFreeDBFile::MarkFreeSpace(DWORD bIndex, DWORD bsize)
         }
         if(!alreadyfind) {
                 if(wcfseek(ffb, 0, SEEK_END) != 0) {
-                        unlock_and_freedb_io_error1()
+                        unlock_and_freedb_io_error1();
                 }
                 fs.size = bsize;
                 fs.index = bIndex;
                 if(!fCheckedWrite(&fs, sizeof(SFreeDBEntry), ffb)) {
-                        unlock_and_freedb_io_error1()
+                        unlock_and_freedb_io_error1();
                 }
         }
-        freedb_unlock_file();
-        /******* unlock ffb WCFILE *******/
+        unlock_file(ffb);
         wcfclose(ffb);
         errnum = FREEDBFILE_ERROR_ALLOK;
         return FREEDBFILE_ERROR_ALLOK;
@@ -104,12 +99,12 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
 
         if((ffb = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
                 if((ffb = wcfopen(fname, FILE_ACCESS_MODES_CW)) == NULL) {
-                        freedb_io_error1()
+                        freedb_io_error1();
                 }
                 else {
                         wcfclose(ffb);
                         if((ffb = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
-                                freedb_io_error1()
+                                freedb_io_error1();
                         }
                 }
         }
@@ -118,8 +113,7 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
                 freedb_io_error1();
         }
 
-        /******** lock ffb *********/
-        freedb_lock_file();
+        lock_file(ffb);
 
         while(!wcfeof(ffb)) {
                 if((rr = (DWORD)wcfread(&fs, 1, sizeof(SFreeDBEntry), ffb)) != sizeof(SFreeDBEntry)) {
@@ -131,7 +125,7 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
                 if(fs.size >= size) {
                         rr = wcftell(ffb) - sizeof(SFreeDBEntry);
                         if(wcfseek(ffb, rr, SEEK_SET) != 0) {
-                                unlock_and_freedb_io_error1()
+                                unlock_and_freedb_io_error1();
                         }
 
                         fs.size = fs.size - size;
@@ -141,19 +135,17 @@ DWORD CFreeDBFile::AllocFreeSpace(DWORD size)
                         if(fs.size < wasted_block) fs.size = 0;
 
                         if(!fCheckedWrite(&fs, sizeof(SFreeDBEntry), ffb)) {
-                                unlock_and_freedb_io_error1()
+                                unlock_and_freedb_io_error1();
                         }
 
-                        freedb_unlock_file();
+                        unlock_file(ffb);
                         wcfclose(ffb);
                         // unlock FFB semaphore
                         return fs.index - size;
                 }
         }
 
-        freedb_unlock_file();
-        /********* unlock ffb *********/
-
+        unlock_file(ffb);
         wcfclose(ffb);
 
         return 0xFFFFFFFF;

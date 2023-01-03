@@ -10,15 +10,11 @@
 #define ERROR_H_INCLUDED
 
 #define printhtmlerror() printwidehtmlerror(__FILE__, __LINE__, "")
-#define printhtmlerrormes(s) printwidehtmlerror(__FILE__, __LINE__, s)
-#define printhtmlerrorat(p, s) { \
-        char ss[10000]; \
-        sprintf(ss, p, s); \
-        printwidehtmlerror(__FILE__, __LINE__, ss); }
+#define printhtmlerrorat(s, p) printwidehtmlerror(__FILE__, __LINE__, s, p)
 
 __attribute__ ((format (printf, 1, 2))) void print2log(const char *format, ...);
 
-[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s);
+[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s, const char *p = NULL);
 
 extern int error_type;
 

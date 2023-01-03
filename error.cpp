@@ -5,6 +5,7 @@
     copyright            : (C) 2001 by Alexander Bilichenko
     email                : pricer@mail.ru
  ***************************************************************************/
+#include <cstdio>
 
 #include "basetypes.h"
 #include "stdarg.h"
@@ -47,8 +48,14 @@ void print2log(const char *format, ...)
 }
 
 /* print error to file [file] at line [line] and message then immediately exit */
-[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s)
+[[ noreturn ]] void printwidehtmlerror(const char *file, DWORD line, const char *s, const char *p)
 {
+        // handle error messages with a parameter:
+        char *ss = NULL;
+        if (s && p && asprintf(&ss, s, p) >= 0) {
+                s = ss;
+        }
+
 #if ENABLE_LOG
         print2log(LOG_UNHANDLED, file, line, getenv(REMOTE_ADDR),
                 (s && (*s != 0)) ? s : LOG_ERRORTYPEUNKN, getenv(QUERY_STRING));
@@ -59,11 +66,13 @@ void print2log(const char *format, ...)
                 if (s && *s)
                         printf("<description>%s</description>", s);
                 printf("</error>");
+                free(ss);
                 exit(0);
         } else if (error_type == ERROR_TYPE_XMLFP || error_type == ERROR_TYPE_PLAIN) {
                 printf(PLAIN_START "Error at %s:%lu", file, line);
                 if (s && *s)
                         printf(":%s.", s);
+                free(ss);
                 exit(0);
         }
 
@@ -86,5 +95,6 @@ void print2log(const char *format, ...)
 #endif
         printf("</HTML>");
         fflush(stdout);
+        free(ss);
         exit(0);
 }

@@ -12,7 +12,7 @@ CXXFLAGS += -fsanitize=address,undefined
 
 # Compiler-specific flags
 ifeq ($(CXX), clang++)
-CXXFLAGS += -Wno-invalid-source-encoding
+CXXFLAGS += -Wno-invalid-source-encoding -Wextra-semi-stmt #-Weverything -Wno-zero-as-null-pointer-constant -Wno-old-style-cast
 else
 CXXFLAGS += -Wuseless-cast -fanalyzer
 endif
@@ -53,5 +53,5 @@ dbtool: $(DBTOOL_OBJS) .depend
 
 clean:
 	@rm -f *.o .depend
-	@rm -f index.cgi dbtool 
+	@rm -f index.cgi dbtool
 	@echo Clean complete

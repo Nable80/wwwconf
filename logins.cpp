@@ -11,9 +11,7 @@
 #include "logins.h"
 #include "error.h"
 
-#define unlock_and_logins_io_error() {unlock_file(f); wcfclose(f); return 0;}
-#define logins_lock_file() {lock_file(f);}
-#define logins_unlock_file() {unlock_file(f);}
+#define unlock_and_logins_io_error() do { unlock_file(f); wcfclose(f); return 0; } while (0)
 
 /* create authorization sequence with ttl - Time To Live for user *ui
  * and store it to ui.ID
@@ -48,7 +46,7 @@ DWORD OpenAuthSequence(SSavedAuthSeq *ui)
         }
 
         /******** lock f ********/
-        logins_lock_file();
+        lock_file(f);
 
         ii = 0;
         while(!wcfeof(f)) {
@@ -103,7 +101,7 @@ L_Try:
         if(!fCheckedWrite(ui, sizeof(SSavedAuthSeq), f))
                 unlock_and_logins_io_error();
 
-        logins_unlock_file();
+        unlock_file(f);
         /********* unlock f *********/
 
         wcfclose(f);
@@ -133,7 +131,7 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
         }
 
         //******** lock f ********
-        logins_lock_file();
+        lock_file(f);
 
         while(!wcfeof(f)) {
                 if((rr = wcfread(((char*)buf + ii*sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT), 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f)) !=
@@ -174,7 +172,7 @@ int CloseAuthSequence(DWORD id[2], DWORD Uid)
         free(buf);
 
         //******** unlock f ********
-        logins_unlock_file();
+        unlock_file(f);
 
         wcfclose(f);
         return changed;
@@ -205,7 +203,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         }
 
         /******** lock f ********/
-        logins_lock_file();
+        lock_file(f);
 
         do {
                 rr = wcfread(buf, 1, sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT, f);
@@ -240,7 +238,7 @@ int GenerateListAuthSequence(char ***buflist, DWORD *sc, DWORD Uid)
         } while(rr == SEQUENCE_READ_COUNT);
 
         free(buf);
-        logins_unlock_file();
+        unlock_file(f);
         /********* unlock f *********/
         wcfclose(f);
         *sc = cn;
@@ -261,8 +259,7 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
         buf = (SSavedAuthSeq*)malloc(sizeof(SSavedAuthSeq)*SEQUENCE_READ_COUNT);
 
         /******** lock f ********/
-        logins_lock_file();
-
+        lock_file(f);
 
         while(!wcfeof(f)) {
                 fpos = wcftell(f);
@@ -299,7 +296,7 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
 
                                 free(buf);
 
-                                logins_unlock_file();
+                                unlock_file(f);
                                 /********* unlock f *********/
 
                                 wcfclose(f);
@@ -309,7 +306,7 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
         }
 
         free(buf);
-        logins_unlock_file();
+        unlock_file(f);
         /********* unlock f *********/
 
         wcfclose(f);

@@ -8,11 +8,6 @@
 
 #include "hashindex.h"
 
-#define hi_lock_file()                {lock_file(f);}
-#define hi_unlock_file()        {unlock_file(f);}
-
-#define OFILE_NAME F_PROF_INDEX
-
 /*                                Index WCFILE format
  *        db 10, [name], 13, [Index=DWORD 4 bytes]
  *  ........................................
@@ -64,17 +59,17 @@ int GetIndexOfString(char *s, DWORD *Index)
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
-        if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_RW)) == NULL)
+        if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 return HASHINDEX_ER_IO_READ;
 
         for(;;) {
                 if(wcfseek(f, hash, SEEK_SET) != 0) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         return HASHINDEX_ER_IO_READ;
                 }
 
                 if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         return HASHINDEX_ER_IO_READ;
                 }
 
@@ -118,14 +113,14 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
-        if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_RW)) == NULL) {
+        if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_RW)) == NULL) {
                 //
                 //        try to create new index WCFILE
                 //
-                if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_CW)) == NULL)
+                if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_CW)) == NULL)
                         return HASHINDEX_ER_IO_CREATE;
 
-                hi_lock_file();
+                lock_file(f);
 
                 memset(buf, 0, HASHINDEX_BLOCK_SIZE);
                 bi.Used = sizeof(HASHINDEX_BLOCKINFO);
@@ -134,18 +129,18 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
 
                 for(i = 0; i < HASHTAB_LEN; i++) {
                         if(!fCheckedWrite(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                                hi_unlock_file();
+                                unlock_file(f);
                                 wcfclose(f);
                                 return HASHINDEX_ER_IO_WRITE;
                         }
                 }
 
-                hi_unlock_file();
+                unlock_file(f);
         }
         //
         //        Lock index WCFILE
         //
-        hi_lock_file();
+        lock_file(f);
 
         neededsize = strlen(s) + 4 /* for Index*/  + 2 /* for 10 and 13 signatures*/;
         prepbuf[0] = 10;
@@ -157,13 +152,13 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
         oldhash = 0xffffffff;
         for(;;) {
                 if(wcfseek(f, hash, SEEK_SET) != 0) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         wcfclose(f);
                         return HASHINDEX_ER_IO_READ;
                 }
 
                 if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         wcfclose(f);
                         return HASHINDEX_ER_IO_READ;
                 }
@@ -174,7 +169,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                 //
                 if(mstrstr(buf+sizeof(bi), prepbuf,
 			   bi.Used-sizeof(HASHINDEX_BLOCKINFO)) != NULL) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         wcfclose(f);
                         return HASHINDEX_ER_ALREADY_EXIST;
                 }
@@ -209,7 +204,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                                 //        Need to create new hash block and link it to the chain
                                 //
                                 if(wcfseek(f, 0, SEEK_END) != 0) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_READ;
                                 }
@@ -220,18 +215,18 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                                 memcpy(buf, &nbi, sizeof(nbi));
                                 memcpy(&buf[sizeof(HASHINDEX_BLOCKINFO)], prepbuf, neededsize);
                                 if(!fCheckedWrite(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_WRITE;
                                 }
                                 bi.Next = newhash;
                                 if(wcfseek(f, hash, SEEK_SET) != 0) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_READ;
                                 }
                                 if(!fCheckedWrite(&bi, sizeof(bi), f)) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_WRITE;
                                 }
@@ -243,13 +238,13 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                                 if(hash != oldhash) {
                                         hash = oldhash;
                                         if(wcfseek(f, hash, SEEK_SET) != 0) {
-                                                hi_unlock_file();
+                                                unlock_file(f);
                                                 wcfclose(f);
                                                 return HASHINDEX_ER_IO_READ;
                                         }
 
                                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                                                hi_unlock_file();
+                                                unlock_file(f);
                                                 wcfclose(f);
                                                 return HASHINDEX_ER_IO_READ;
                                         }
@@ -259,13 +254,13 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                                 memcpy(&buf[bi.Used], prepbuf, neededsize + 1); // including term zero
                                 bi.Used = (WORD)(bi.Used + neededsize);
                                 if(wcfseek(f, hash, SEEK_SET) != 0) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_READ;
                                 }
                                 memcpy(buf, &bi, sizeof(bi));
                                 if(!fCheckedWrite(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                                        hi_unlock_file();
+                                        unlock_file(f);
                                         wcfclose(f);
                                         return HASHINDEX_ER_IO_WRITE;
                                 }
@@ -275,7 +270,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                 }
         }
 
-        hi_unlock_file();
+        unlock_file(f);
         wcfclose(f);
 
         return HASHINDEX_ER_OK;
@@ -295,18 +290,18 @@ int DeleteStringFromHashedIndex(const char *s)
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
-        if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_RW)) == NULL)
+        if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 return HASHINDEX_ER_IO_READ;
-        hi_lock_file();
+        lock_file(f);
 
         for(;;) {
                 if(wcfseek(f, hash, SEEK_SET) != 0) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         return HASHINDEX_ER_IO_READ;
                 }
 
                 if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         return HASHINDEX_ER_IO_READ;
                 }
 
@@ -329,14 +324,14 @@ int DeleteStringFromHashedIndex(const char *s)
                         memset(&(buf[bi.Used - len-1]), 0, len+1);
 
                         if(wcfseek(f, hash, SEEK_SET) != 0) {
-                                hi_unlock_file();
+                                unlock_file(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
                         bi.Used = (WORD)(bi.Used - len);
                         memcpy(buf, &bi, sizeof(bi));
 
                         if(!fCheckedWrite(buf, HASHINDEX_BLOCK_SIZE, f)) {
-                                hi_unlock_file();
+                                unlock_file(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
 
@@ -344,14 +339,14 @@ int DeleteStringFromHashedIndex(const char *s)
                 }
 
                 if(bi.Next == HASHINDEX_NULL) {
-                        hi_unlock_file();
+                        unlock_file(f);
                         wcfclose(f);
                         return HASHINDEX_ER_NOT_FOUND;
                 }
                 else hash = bi.Next;
         }
 
-        hi_unlock_file();
+        unlock_file(f);
         wcfclose(f);
 
         return HASHINDEX_ER_OK;
@@ -373,20 +368,20 @@ int GenerateHashwordList(char **names)
         *ss = 0;
         curalloced = GHL_REALLOC_BLOCK_SIZE;
 
-        if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_R)) == NULL)
+        if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_R)) == NULL)
                 return HASHINDEX_ER_IO_CREATE;
 
         for(hash = 0; hash < HASHTAB_LEN; hash++) {
                 pos = hash*HASHINDEX_BLOCK_SIZE;
                 for(;;) {
                         if(wcfseek(f, pos, SEEK_SET) != 0) {
-                                hi_unlock_file();
+                                unlock_file(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
 
                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                 free(*names);
-                                hi_unlock_file();
+                                unlock_file(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
 
@@ -444,7 +439,7 @@ int GenerateIndexList(DWORD **index)
         HASHINDEX_BLOCKINFO bi;
         char *fs;
 
-        if((f = wcfopen(OFILE_NAME, FILE_ACCESS_MODES_R)) == NULL)
+        if((f = wcfopen(F_PROF_INDEX, FILE_ACCESS_MODES_R)) == NULL)
                 return HASHINDEX_ER_IO_CREATE;
 
 #define GIL_REALLOC_BLOCK_SIZE 2000*sizeof(DWORD)
@@ -461,7 +456,7 @@ int GenerateIndexList(DWORD **index)
                         if(wcfseek(f, pos, SEEK_SET) != 0) {
                                 free(*index);
                                 *index = NULL;
-                                hi_unlock_file();
+                                unlock_file(f);
                                 wcfclose(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
@@ -469,7 +464,7 @@ int GenerateIndexList(DWORD **index)
                         if(!fCheckedRead(buf, HASHINDEX_BLOCK_SIZE, f)) {
                                 free(*index);
                                 *index = NULL;
-                                hi_unlock_file();
+                                unlock_file(f);
                                 wcfclose(f);
                                 return HASHINDEX_ER_IO_READ;
                         }
