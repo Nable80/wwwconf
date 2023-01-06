@@ -112,9 +112,8 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                                 }
                         }
                         free(buf);
-                        wcfflush(f1);
                         // truncate end of file
-                        if (truncate(swapdone ? F_ACTIVITYLOG1 : F_ACTIVITYLOG2, sizeof(DWORD)) || wcfseek(f1, 0, SEEK_END)) {
+                        if (wcfflush(f1) || ftruncate(fileno(f1), sizeof(DWORD)) || wcfseek(f1, 0, SEEK_END)) {
                                 printhtmlerror();
                         }
                         rr = 1;
@@ -132,7 +131,6 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                         }
                 }
                 // release file lock as soon as possible (won't wait for the end of this fuction)
-                wcfflush(f1);
                 unlock_file(f1);
                 wcfclose(f1);
                 f1 = NULL;
@@ -197,19 +195,16 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                                 if (wcfseek(f2, 0, SEEK_END) == 0) {
                                         off_t saved_end = wcftell(f2);
                                         DWORD buf[3] = {tm, hitcnt, hostcnt};
-                                        if (!fCheckedWrite(buf, sizeof(buf), f2)) {
+                                        if (!fCheckedWrite(buf, sizeof(buf), f2) || wcfflush(f2)) {
                                                 ftruncate(fileno(f2), saved_end);
                                         }
                                 }
-                                wcfflush(f2);
                                 unlock_file(f2);
                                 wcfclose(f2);
                         }
                 }
 
-
-                wcfflush(f);
-                if (truncate(swapdone ? F_ACTIVITYLOG2 : F_ACTIVITYLOG1, sizeof(DWORD)) || wcfseek(f, sizeof(DWORD), SEEK_SET)) {
+                if (wcfflush(f) || ftruncate(fileno(f), sizeof(DWORD)) || wcfseek(f, 0, SEEK_END)) {
                         printhtmlerror();
                 }
 
@@ -231,12 +226,10 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
         }
 failed:
         if(f) {
-                wcfflush(f);
                 unlock_file(f);
                 wcfclose(f);
         }
         if(f1) {
-                wcfflush(f1);
                 unlock_file(f1);
                 wcfclose(f1);
         }

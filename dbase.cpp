@@ -1666,11 +1666,12 @@ LB_MsgFound:
 
         free(tmp);
 
-        if(!oldroot) fisize-=sizeof(SMessageTable);
-
-        if(!oldroot) if(truncate(F_INDEX, fisize) != 0) {
-                unlock_file(fi);
-                printhtmlerror();
+        if(!oldroot) {
+                fisize -= sizeof(SMessageTable);
+                if (wcfflush(fi) || ftruncate(fileno(fi), fisize)) {
+                        unlock_file(fi);
+                        printhtmlerror();
+                }
         }
 
         unlock_file(fi);

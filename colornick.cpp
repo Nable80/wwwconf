@@ -165,7 +165,7 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                         if (fn) {
                                 if (fCheckedWrite(cb, rd, f)) {
                                         pos = wcftell(f);
-                                        if (truncate(ifname, pos)) {
+                                        if (wcfflush(f) || ftruncate(fileno(f), pos)) {
                                                 printhtmlerror();
                                         }
                                 }

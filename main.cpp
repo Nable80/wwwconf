@@ -5381,16 +5381,14 @@ int main()
                                 }
 
                                 WCFILE *BAN_FILE;
-                                if ((BAN_FILE = wcfopen(F_BANNEDIP, FILE_ACCESS_MODES_RW)) == NULL) printhtmlerror();
+                                if ((BAN_FILE = wcfopen(F_BANNEDIP, FILE_ACCESS_MODES_CW)) == NULL) printhtmlerror();
                                 lock_file(BAN_FILE);
 
                                 if ( !fCheckedWrite(ban_list, strlen(ban_list), BAN_FILE)  )  {
                                         unlock_file(BAN_FILE);
+                                        wcfclose(BAN_FILE);
                                         printhtmlerror();
                                 }
-
-                                if (truncate(F_BANNEDIP, strlen(ban_list)))
-                                        printhtmlerror();
 
                                 unlock_file(BAN_FILE);
                                 wcfclose(BAN_FILE);

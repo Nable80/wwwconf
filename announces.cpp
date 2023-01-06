@@ -92,7 +92,7 @@ int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, 
         siz = wcftell(f);
         if(!fCheckedWrite(&an, sizeof(SGlobalAnnounce), f)) {
                 // rolling back
-                if (truncate(F_GLOBAL_ANN, siz))
+                if (wcfflush(f) || ftruncate(fileno(f), siz))
                         printhtmlerror();
                 id--;
                 if(wcfseek(f, 0, SEEK_END) == 0) {
@@ -210,10 +210,8 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
                         return ANNOUNCES_RETURN_DB_ERROR;
                 }
                 free(an);
-                // !!!!!!!!!!!!
-                wcfflush(f);
                 // truncate end of file
-                if (truncate(F_GLOBAL_ANN, fsize))
+                if (wcfflush(f) || ftruncate(fileno(f), fsize))
                         printhtmlerror();
                 unlock_file(f);
                 wcfclose(f);
