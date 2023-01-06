@@ -154,7 +154,7 @@ public:
         void DB_PrintHtmlIndex(DWORD mtc);
         int DB_PrintMessageBody(DWORD root);
         void Profile_UserName(char *name, char *tostr, DWORD reg, int doparsehtml = 1);
-	DWORD getparent(DWORD);
+        DWORD getparent(DWORD);
 };
 
 #endif

@@ -33,8 +33,8 @@ STagConvert TagConvTable[BoardTagCount] = {
         {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"TEX", "<img src=\"https://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"TUB", "<iframe class=\"youtube-player\" type=\"text/html\" src=\"https://www.youtube.com/embed/",
-	 WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0, NULL, NULL},
-	{"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL}
+         WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL}
 };
 
 SPicConvert PicConvTable[BoardPicCount] = {
@@ -139,12 +139,12 @@ static int ReparseUrl(char **ss, char **dd, int index, DWORD status)
                         if (dtmp == NULL) {
                                 abort();
                         }
-			if (index) {
-				static int id;
-				++id;
-				sprintf(dtmp, PARSED_URL_TMPL_IDX, olds, id, id, id, olds);
+                        if (index) {
+                                static int id;
+                                ++id;
+                                sprintf(dtmp, PARSED_URL_TMPL_IDX, olds, id, id, id, olds);
                         } else
-				sprintf(dtmp, PARSED_URL_TMPL, olds, olds);
+                                sprintf(dtmp, PARSED_URL_TMPL, olds, olds);
                         strcpy(d, dtmp);
                         d+=strlen(dtmp);
                         free(dtmp);
@@ -175,12 +175,12 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
         if(status & 1) {
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
-		        if (ReparseUrl(&s, &d, index, status)) {
-				*flg = 1;
-				if (*s == 0) {
-					break;
-				}
-			}
+                        if (ReparseUrl(&s, &d, index, status)) {
+                                *flg = 1;
+                                if (*s == 0) {
+                                        break;
+                                }
+                        }
 #endif
 
                         if(*s != '\r') {
@@ -208,12 +208,12 @@ int inline smartstrcat(char *d, char *s, int index, DWORD status, DWORD *flg)
                 while(*s != 0) {
 #if TRY_AUTO_URL_PREPARSE
                         if (ReparseUrl(&s, &d, index, status)) {
-				*flg = 1;
-				ws = 0;
-				if (*s == 0) {
-					break;
-				}
-			}
+                                *flg = 1;
+                                ws = 0;
+                                if (*s == 0) {
+                                        break;
+                                }
+                        }
 #endif
 
                         if (*s != '\r' && !(ws && (*s == ' ' || *s == '\t'))) {
@@ -455,37 +455,37 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                 /* check for valid param count
                                 */
                                 if(tag2 == NULL)
-				 	return 0;
+                                        return 0;
                                 if(!tagdirection) {
                                         /* opening */
                                         char *parsedtag2 = NULL;
 
                                         if (i == URL_TAG_TYPE) {
                                                 if(strncmp(tag2, "http:", 5) != 0 && strncmp(tag2, "ftp:",   4) != 0 &&
-						   strncmp(tag2, "file:", 5) != 0 && strncmp(tag2, "https:", 6) != 0 &&
-						   strncmp(tag2, "smb:",  4) != 0) {
+                                                   strncmp(tag2, "file:", 5) != 0 && strncmp(tag2, "https:", 6) != 0 &&
+                                                   strncmp(tag2, "smb:",  4) != 0) {
                                                         parsedtag2 = (char*)malloc(strlen(tag2) + 10);
                                                         strcpy(parsedtag2, "http://");
                                                         strcat(parsedtag2, tag2);
-						}
-					} else if (i == COLOR_TAG_TYPE) {
-						if (tag2[0] == '#') {
-							for (size_t i = 1; i < 7; ++i)
-								if (!((tag2[i] >= '0' && tag2[i] <= '9') ||
-								      (tag2[i] >= 'A' && tag2[i] <= 'F') ||
-								      (tag2[i] >= 'a' && tag2[i] <= 'f')))
-									return 0;
-						} else {
-							for (size_t i = 0; i < strlen(tag2); ++i)
-								if (!((tag2[i] >= 'A' && tag2[i] <= 'Z') ||
-								      (tag2[i] >= 'a' && tag2[i] <= 'z')))
-									return 0;  // only letters are allowed
-						}
-					}
+                                                }
+                                        } else if (i == COLOR_TAG_TYPE) {
+                                                if (tag2[0] == '#') {
+                                                        for (size_t i = 1; i < 7; ++i)
+                                                                if (!((tag2[i] >= '0' && tag2[i] <= '9') ||
+                                                                      (tag2[i] >= 'A' && tag2[i] <= 'F') ||
+                                                                      (tag2[i] >= 'a' && tag2[i] <= 'f')))
+                                                                        return 0;
+                                                } else {
+                                                        for (size_t i = 0; i < strlen(tag2); ++i)
+                                                                if (!((tag2[i] >= 'A' && tag2[i] <= 'Z') ||
+                                                                      (tag2[i] >= 'a' && tag2[i] <= 'z')))
+                                                                        return 0;  // only letters are allowed
+                                                }
+                                        }
 
-					if (!parsedtag2)
-						parsedtag2 = tag2;
-					*restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
+                                        if (!parsedtag2)
+                                                parsedtag2 = tag2;
+                                        *restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
 
                                         /* use sprintf() to insert tag2 into result
                                          * (format of topentag as %s instead of tag2)
@@ -500,7 +500,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                                 tclosetag = TagConvTable[i].tclosetag2;
                                         else
                                                 tclosetag = TagConvTable[i].tclosetag;
-					*restag = (char*)malloc(strlen(tclosetag) + 1 + strlen(tag2));
+                                        *restag = (char*)malloc(strlen(tclosetag) + 1 + strlen(tag2));
                                         sprintf(*restag, tclosetag, tag2);
                                         *restag = (char*)realloc(*restag, strlen(*restag) + 1);
                                         return 1;
@@ -616,7 +616,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                 if (reff && ((status & 0x80) == 0))
                                         *RF |= MESSAGE_HAVE_URL;
                         } else {
-			        smartstrcat(st, s, index, status, &reff);
+                                smartstrcat(st, s, index, status, &reff);
                                 if (reff && ((status & 0x80) == 0))
                                         *RF |= MESSAGE_HAVE_URL;
                         }
@@ -660,7 +660,7 @@ int FilterBoardTags(char *s, char **r, int index, DWORD ml, DWORD Flags, DWORD *
                                                 /* closing tag */
 
                                                 if (tt == PRE_TAG_TYPE || tt == PIC_TAG_TYPE
-						 || tt == TEX_TAG_TYPE || tt == TUB_TAG_TYPE) // allow tag and space parsing again
+                                                 || tt == TEX_TAG_TYPE || tt == TUB_TAG_TYPE) // allow tag and space parsing again
                                                         status &= 0xFFFFFFFE;
                                                 if(tt == PRE_TAG_TYPE)
                                                         status = beforePreStatus;

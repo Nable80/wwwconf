@@ -1,29 +1,29 @@
 .nd {
-        display: none;
+    display: none;
 }
 
 span.nobr {
-        white-space: nowrap;
+    white-space: nowrap;
 }
 
 span.wbr {
-        white-space: normal;
+    white-space: normal;
 }
 
 span.lro, span.rlo {
-        unicode-bidi: bidi-override;
+    unicode-bidi: bidi-override;
 }
 
 span.lre, span.rle {
-        unicode-bidi: embed;
+    unicode-bidi: embed;
 }
 
 span.lro, span.lre {
-        direction: ltr;
+    direction: ltr;
 }
 
 span.rlo, span.rle {
-        direction: rtl;
+    direction: rtl;
 }
 
 a {text-decoration: none;}
@@ -33,11 +33,9 @@ BIG {font-size: 120%;font-weight: bold;}
 
 DD DL{margin-left:-15px;}
 
-.cl,  .cs {font-family: Verdana, Arial; font-size: 70%}
+.cl, .cs {font-family: Verdana, Arial; font-size: 70%}
 
-
-/***********************************
-/* other  */
+/* other */
 
 body {
     background-color: #f0f0f0;
@@ -52,148 +50,146 @@ img, table, body, form {
 
 div.menu
 {
-	padding: 2px;
-	background-color: #e1e1e1;
-	text-align:center;
-	font-size: 70%;
-	font-family: Verdana, Arial;
+    padding: 2px;
+    background-color: #e1e1e1;
+    text-align:center;
+    font-size: 70%;
+    font-family: Verdana, Arial;
 }
 
 div.menu a, div.menu a:visited
 {
-	text-decoration: underline;
-	margin:0 4px;
-	color: #00f;
-	font-size: 100%;
+    text-decoration: underline;
+    margin:0 4px;
+    color: #00f;
+    font-size: 100%;
 
-}	
+}
 
-/* boardtags [url][c][/c][/url] */ 
+/* boardtags [url][c][/c][/url] */
 a span.btc
 {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* info */
-div.info 
+div.info
 {
-	font-family: Verdana, Arial;
-	font-size: 70%;
-	padding:10px;  
-	margin:0px;
-	background-color: #e1e1e1;
+    font-family: Verdana, Arial;
+    font-size: 70%;
+    padding:10px;
+    margin:0px;
+    background-color: #e1e1e1;
 }
 
 div.info input, div.info select
 {
-	font-family: Verdana, Arial;
-	font-size: 100%;
+    font-family: Verdana, Arial;
+    font-size: 100%;
 }
 
 div.left_info
-{	
-	float: left;
-	width: 60%;
+{
+    float: left;
+    width: 60%;
 }
 
 div.right_info
 {
-	float: right;
-	width: 30%;
-	text-align:right;
-} 
+    float: right;
+    width: 30%;
+    text-align:right;
+}
 
-
-/* index  */
+/* index */
 
 ul.g ul, ul.w ul {
-        padding: 0 0 0 25px;
-        margin: 0;
+    padding: 0 0 0 25px;
+    margin: 0;
 }
 
 ul.g > span, ul.w > span, ul.g ul > span, ul.w ul > span {
-        display: inline-table;
+    display: inline-table;
 }
 
 ul.g, ul.w {
-	font-size: 75%;
-        margin: 0;
-	padding: 4px 0 2px 10px;
+    font-size: 75%;
+    margin: 0;
+    padding: 4px 0 2px 10px;
 }
 
 ul.g {
-	border-top: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
-	background-color:#E9E9E9;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    background-color:#E9E9E9;
 }
 
 ul.g a, ul.w a {
-	font-size: 133%;
+    font-size: 133%;
 }
 
 ul.g a span.marker, ul.w a span.marker {
-        font-size: 75%;
-        color: black;
+    font-size: 75%;
+    color: black;
 }
 
 div.an
 {
-	font-family: Verdana, Arial;
-	padding: 3px;
-	margin: 5px 3%;
-	font-size: 70%;
-	border: 1px solid #aaa;
-	background-color:#ddd;
+    font-family: Verdana, Arial;
+    padding: 3px;
+    margin: 5px 3%;
+    font-size: 70%;
+    border: 1px solid #aaa;
+    background-color:#ddd;
 }
 
 span.e, span.e a, span.e a:visited
 {
-	color: #cc0000;
-	font-weight: bold;
-	font-size: 120%;
-	
+    color: #cc0000;
+    font-weight: bold;
+    font-size: 120%;
 }
 
 span.roll2, span.roll2 a
 {
-	font-size: 100%;
+    font-size: 100%;
 }
 
 span.roll1
 {
-	color: #900000;
+    color: #900000;
 }
 
 span.close
 {
-	color: #900000;
+    color: #900000;
 }
 
 .strike
 {
-	text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 div.ibody {
-        font-size: 133%;
-        border-top: 1px solid #999;
-        border-bottom: 1px solid #999;
+    font-size: 133%;
+    border-top: 1px solid #999;
+    border-bottom: 1px solid #999;
 }
 
 div.ibody a {
-        font-size: 100%;
+    font-size: 100%;
 }
 
 div.ierror {
-        font-size: 133%;
-        border-top: 1px solid red;
-        border-bottom: 1px solid red;
+    font-size: 133%;
+    border-top: 1px solid red;
+    border-bottom: 1px solid red;
 }
 
 div.iload {
-        font-size: 133%;
-        border-top: 1px dashed #999;
-        border-bottom: 1px dashed #999;
+    font-size: 133%;
+    border-top: 1px dashed #999;
+    border-bottom: 1px dashed #999;
 }
 
 /* message */
@@ -204,94 +200,93 @@ div.body, div.sign {padding: 25px;}
 
 /* nickname */
 a.nn {
-	color: #00f;
-	font-weight: bold;
+    color: #00f;
+    font-weight: bold;
 }
 
 span.unreg {
-        font-weight: bold;
+    font-weight: bold;
 }
 
 span.unreg:after {
-        content: "\a0 (unreg)"; /* \a0 is &nbsp;*/
-        font-size: smaller;
-        font-weight: normal;
+    content: "\a0 (unreg)"; /* \a0 is &nbsp;*/
+    font-size: smaller;
+    font-weight: normal;
 }
 
 span.reg {
-	color: #207025;
-	font-size: 133%;
-	font-weight: bold;
+    color: #207025;
+    font-size: 133%;
+    font-weight: bold;
 }
 span.unr {
-	color: #207025;
-	font-size: 125%;
-	font-weight: bold;
+    color: #207025;
+    font-size: 125%;
+    font-weight: bold;
 }
 
 span.own {
-	color: red;
-	font-size: 133%;
-	font-weight: bold;
+    color: red;
+    font-size: 133%;
+    font-weight: bold;
 }
 
 span.sel {
-	color: #FF9900;
-	font-size: 133%;
-	font-weight: bold;
+    color: #FF9900;
+    font-size: 133%;
+    font-weight: bold;
 }
 
-
 span.own a, span.reg a, span.unr a, span.sel a {
-        font-size: 100%;
+    font-size: 100%;
 }
 
 /* privates*/
 div.pr_to{
-	padding: 3px;
-	margin:  1px 10px 20px 10px;
-	background-color: #bbbbff;
-	border: 1px solid #777;
+    padding: 3px;
+    margin:  1px 10px 20px 10px;
+    background-color: #bbbbff;
+    border: 1px solid #777;
 }
 
 div.pr_from{
-	padding: 3px;
-	margin: 1px 10px 20px 10px;
-	background-color: #ffbbbb;
-	border: 1px solid #777;
+    padding: 3px;
+    margin: 1px 10px 20px 10px;
+    background-color: #ffbbbb;
+    border: 1px solid #777;
 }
 
 div.pr_info{
-	margin-left: 20px;
+    margin-left: 20px;
 }
 
 div.smiles {
-	display: none;
-	position: absolute;
-	right: 10%;
-	padding: 3px;
+    display: none;
+    position: absolute;
+    right: 10%;
+    padding: 3px;
 }
 
 table.smiles td {
-        padding: 2px;
+    padding: 2px;
 }
 
 button.style {
-	border: 0;
-	background-color: #ddd;
-	color: #222;
-	font-size: 70%;
-	font-weight: normal;
+    border: 0;
+    background-color: #ddd;
+    color: #222;
+    font-size: 70%;
+    font-weight: normal;
 }
 
 button.smile {
-        border: 0;
-        padding: 0;
-        background: transparent;
-        width: 26px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    width: 26px;
 }
 
 .youtube-player {
-	width: 640px;
-	height: 390px;
+    width: 640px;
+    height: 390px;
 }

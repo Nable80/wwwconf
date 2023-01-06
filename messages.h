@@ -859,13 +859,13 @@ extern char DESIGN_break[10];
         "onclick=\"" callback "(" argumentlist ");\">" label "</button>&nbsp;"
 
 #define DESIGN_STYLE_BUTTONS_ADD_WRAP(accesskey, width, label, title, opentag, closetag, allowsubj) \
-	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "wrap", "'" opentag "', '" closetag "', " #allowsubj)
+        DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "wrap", "'" opentag "', '" closetag "', " #allowsubj)
 
 #define DESIGN_STYLE_BUTTONS_ADD_INSERT(accesskey, width, label, title, tag, allowsubj) \
-	DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "insert", "'" tag "', " #allowsubj)
+        DESIGN_STYLE_BUTTONS_ADD(accesskey, width, label, "", title, "insert", "'" tag "', " #allowsubj)
 
-#define DESIGN_STYLE_BUTTONS_ADD_SHOWSMILE()				\
-	DESIGN_STYLE_BUTTONS_ADD("0", "55px", "smile", "smile", "таблица смайлов (alt+0)", "show", "")
+#define DESIGN_STYLE_BUTTONS_ADD_SHOWSMILE()                            \
+        DESIGN_STYLE_BUTTONS_ADD("0", "55px", "smile", "smile", "таблица смайлов (alt+0)", "show", "")
 
 #define DESIGN_STYLE_SMILES_BEGIN()                                     \
         "<div class=\"smiles\" id=\"smiles\"><table class=\"smiles\"><tr>"
@@ -876,7 +876,7 @@ extern char DESIGN_break[10];
 #define DESIGN_STYLE_SMILES_NEWLINE() "</tr><tr>"
 
 #define DESIGN_STYLE_SMILES_ADD(pic, smile)                             \
-	"<td><button type=\"button\" class=\"smile\" onclick=\"insert(' " smile " ', 0)\" title=\"" smile "\">" \
+        "<td><button type=\"button\" class=\"smile\" onclick=\"insert(' " smile " ', 0)\" title=\"" smile "\">" \
         "<img src=\"" BOARD_PIC_URL pic "\" /></button></td>"
 
 #define DESIGN_FORM_MESSAGE_BODY        "<textarea cols=\"75\" rows=\"12\" name=\"body\" class=\"post\" wrap=\"virtual\" " \

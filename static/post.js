@@ -78,8 +78,8 @@ function insert(text, allowsubj)
 
 function onSubmit(event)
 {
-	if (document.postform.subject.value.length == 0) {
+        if (document.postform.subject.value.length == 0) {
                 event.preventDefault();
-		alert('«аголовок сообщени€ не может быть пустым.');
-	}
-}	
+                alert('«аголовок сообщени€ не может быть пустым.');
+        }
+}

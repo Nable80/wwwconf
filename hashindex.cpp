@@ -8,8 +8,8 @@
 
 #include "hashindex.h"
 
-/*                                Index WCFILE format
- *        db 10, [name], 13, [Index=DWORD 4 bytes]
+/*  Index WCFILE format
+ *  db 10, [name], 13, [Index=DWORD 4 bytes]
  *  ........................................
  */
 
@@ -83,7 +83,7 @@ int GetIndexOfString(char *s, DWORD *Index)
                 //        Search for string in loaded block
                 //
                 if((fs = mstrstr(buf + sizeof(HASHINDEX_BLOCKINFO), ps,
-				 bi.Used - sizeof(HASHINDEX_BLOCKINFO))) != NULL) {
+                                 bi.Used - sizeof(HASHINDEX_BLOCKINFO))) != NULL) {
                         memcpy(Index, fs + strlen(s) + 2, 4);
                         break;
                 }
@@ -168,7 +168,7 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
                 //        Search for string in loaded block
                 //
                 if(mstrstr(buf+sizeof(bi), prepbuf,
-			   bi.Used-sizeof(HASHINDEX_BLOCKINFO)) != NULL) {
+                           bi.Used-sizeof(HASHINDEX_BLOCKINFO)) != NULL) {
                         unlock_file(f);
                         wcfclose(f);
                         return HASHINDEX_ER_ALREADY_EXIST;

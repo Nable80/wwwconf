@@ -229,17 +229,17 @@ char *FilterBiDi(const char *s)
         size_t level = 0;
         char *os, *ss;
 
-	if (!s)
-		return NULL;
+        if (!s)
+                return NULL;
         // 7 is a length of NCR for the Unicode BiDi chararacters
         // allocate a max possible size
         if (!(os = (char*) malloc(DESIGN_BIDI_MAXLEN*(strlen(s)/7) + strlen(s)%7 + 1)))
                 abort();
 
-	if (!(*s)) {
-		*os = '\0';
-		return os;
-	}
+        if (!(*s)) {
+                *os = '\0';
+                return os;
+        }
 
         ss = os;
 
@@ -251,8 +251,8 @@ char *FilterBiDi(const char *s)
                     *(s+6) == ';') {
                         const char *tag = "";
                         if (*(s+5) == '6') {   // PDF
-				// if the stack is empty
-				// don't copy unnecessary DESIGN_BIDI_CLOSE
+                                // if the stack is empty
+                                // don't copy unnecessary DESIGN_BIDI_CLOSE
                                 if (level) {
                                         tag = DESIGN_BIDI_CLOSE;
                                         --level;
@@ -284,14 +284,14 @@ char *FilterBiDi(const char *s)
                 }
         *ss = '\0';
 
-	if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + strlen(DESIGN_BIDI_LTR_GUARD) + 1)))
-		abort();
+        if (!(os = (char*) realloc(os, strlen(os) + level*strlen(DESIGN_BIDI_CLOSE) + strlen(DESIGN_BIDI_LTR_GUARD) + 1)))
+                abort();
 
-	if (level) {
-		size_t i;
-		for (i = 0; i < level; ++i)
-			strcat(os, DESIGN_BIDI_CLOSE);
-	}
+        if (level) {
+                size_t i;
+                for (i = 0; i < level; ++i)
+                        strcat(os, DESIGN_BIDI_CLOSE);
+        }
 
         strcat(os, DESIGN_BIDI_LTR_GUARD);
 

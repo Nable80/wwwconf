@@ -280,10 +280,10 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, DWORD code, DWO
         }
 
         printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=%d MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\" "
-	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", s ? 88 : 62, MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
+               "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", s ? 88 : 62, MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #else
         printf("<INPUT TYPE=TEXT NAME=\"subject\" SIZE=88 MAXLENGTH=%d VALUE=\"%s\" tabindex=\"1\""
-	       "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
+               "onfocus=\"last = document.postform.subject;\"></TD></TR>\n", MESSAGE_HEADER_LENGTH - 1, msg->MessageHeader);
 #endif
 
         DESIGN_STYLE_BUTTONS_BEGIN()
@@ -337,7 +337,7 @@ static void PrintMessageForm(SMessage *msg, char *body, DWORD s, DWORD code, DWO
 
 
         printf("<TR><TD COLSPAN=2 ALIGN=CENTER><TEXTAREA COLS=75 ROWS=12 NAME=\"body\" "
-	       "CLASS=\"post\" tabindex=\"1\" maxlength=\"%d\" "
+               "CLASS=\"post\" tabindex=\"1\" maxlength=\"%d\" "
                "onfocus=\"last = document.postform.body;\">%s</TEXTAREA></TD></TR>", 65530, body);
 
         tstr[0][0] = tstr[1][0] = 0;
@@ -712,7 +712,7 @@ void PrintHTMLHeader(DWORD code, DWORD curind, DWORD retind = 0)
         if (code & HEADERSTRING_POST_JS)
                 printf("<script type=\"text/javascript\" src=\"post.js\"></script>");
 
-	printf("<script type=\"text/javascript\" src=\"link.js\"></script>");
+        printf("<script type=\"text/javascript\" src=\"link.js\"></script>");
 
         // print output encoding (charset)
         printf(HTML_ENCODING_HEADER);
@@ -1953,7 +1953,7 @@ void ParseCookie()
                         // read tv (time value)
                         if((t  = strget(ss, "tv=", 12, '|', 0))) {
                                 tmp = strtoul(t, &st, 10);
-				if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
+                                if(((*t) != '\0' && *st == '\0') && errno != ERANGE && tmp > 0)
                                 {
                                         cookie_tv = tmp;
                                 }
@@ -2049,9 +2049,9 @@ void ParseCookie()
                                 tmp = strtoul(t, &st, 10);
                                 if(((*t) != '\0' && *st == '\0') && errno != ERANGE)
                                 {
-					currentlann = tmp;
-					ReadLastAnnounceNumber(&tmp);
-					if(currentlann > tmp) currentlann = tmp;
+                                        currentlann = tmp;
+                                        ReadLastAnnounceNumber(&tmp);
+                                        if(currentlann > tmp) currentlann = tmp;
                                 }
                                 free(t);
                         }
@@ -2142,7 +2142,7 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
                 *c_par1 = MESSAGEMAIN_incorrectpwd;
                 *c_par2 = MESSAGEMAIN_incorrectpwd2;
                 break;
-       	case MSG_CHK_ERROR_EDIT_DENIED:
+        case MSG_CHK_ERROR_EDIT_DENIED:
                 *c_par1 = MESSAGEMAIN_edit_denied;
                 *c_par2 = MESSAGEMAIN_edit_denied2;
                 break;
@@ -2587,7 +2587,7 @@ int main()
                                         int is_form = 0;
 
                                         if(FilterBoardTags(mes.MessageHeader, &an, 1,
-							   MAX_PARAMETERS_STRING, mes.Flag | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
+                                                           MAX_PARAMETERS_STRING, mes.Flag | BOARDTAGS_CUT_TAGS, &xtmp) != 1)
                                                 an = mes.MessageHeader;
 
 #if TOPICS_SYSTEM_SUPPORT
@@ -2664,10 +2664,10 @@ int main()
                 error_type = ERROR_TYPE_XML;
                 DB.PrintXmlMessage(num);
 
-		goto End_part;
+                goto End_part;
         }
 
-	if (strncmp(deal, "xmlfpread=", 10) == 0) {
+        if (strncmp(deal, "xmlfpread=", 10) == 0) {
                 char *ss;
                 DWORD num;
 
@@ -2688,8 +2688,8 @@ int main()
                 error_type = ERROR_TYPE_XMLFP;
                 DB.PrintXmlfpMessage(num);
 
-		goto End_part;
-	}
+                goto End_part;
+        }
 
         if (strncmp(deal, "xmlbody=", 8) == 0) {
                 char *ss;
@@ -2712,11 +2712,11 @@ int main()
                 error_type = ERROR_TYPE_XML;
                 DB.PrintXmlBody(num);
 
-		goto End_part;
+                goto End_part;
         }
 
         // 'xmllast&' and 9 to guarantee that a query is exactly 'xmllast'
-	if (strncmp(deal, "xmllast&", 9) == 0) {
+        if (strncmp(deal, "xmllast&", 9) == 0) {
                 if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
                         printf(XML_START XML_BANNED);
                         goto End_part;
@@ -2725,10 +2725,10 @@ int main()
                 error_type = ERROR_TYPE_XML;
                 DB.PrintXmlLastNumber();
 
-		goto End_part;
-	}
+                goto End_part;
+        }
 
-	if (strncmp(deal, "xmlfplast&", 11) == 0) {
+        if (strncmp(deal, "xmlfplast&", 11) == 0) {
                 if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
                         printf(PLAIN_START XMLFP_BANNED);
                         goto End_part;
@@ -2737,8 +2737,8 @@ int main()
                 error_type = ERROR_TYPE_XMLFP;
                 DB.PrintXmlLastNumber();
 
-		goto End_part;
-	}
+                goto End_part;
+        }
 
         if (strncmp(deal, "xmlindex&", 9) == 0) {
                 char *from_s, *to_s, *ss;
@@ -4756,9 +4756,9 @@ int main()
                         ULogin.pui->persmescnt - ULogin.pui->readpersmescnt);
                 else printf(MESSAGEMAIN_privatemsg_nonewmsg ", ");
                 printf(MESSAGEMAIN_privatemsg_allmsgcnt " %d, " MESSAGEMAIN_privatemsg_allmsgcnt1 " %d<BR>"
-		       "<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg "</A><BR>"
-		       "<A HREF=\"" MY_CGI_URL "?persmsg=all\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_showall  "</A>"
-		       "</CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
+                       "<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg "</A><BR>"
+                       "<A HREF=\"" MY_CGI_URL "?persmsg=all\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_showall  "</A>"
+                       "</CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
 
                 char tostr[1000], newm[100];
                 char *ss;

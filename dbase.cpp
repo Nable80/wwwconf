@@ -152,9 +152,9 @@ void DB_Base::Profile_UserName(char *name, char *tostr, DWORD reg, int doparseht
                 free(name_dec);
                 sprintf(tostr, DESIGN_MESSAGE_REG, str1, str);
         } else {
-		str = FilterBiDi(name);
+                str = FilterBiDi(name);
                 sprintf(tostr, DESIGN_MESSAGE_UNREG, str);
-	}
+        }
         free(str);
 }
 
@@ -507,33 +507,33 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
 #endif
 
 
-	printf(DESIGN_WBR_START);
+        printf(DESIGN_WBR_START);
 
-	char *p = header;
-	for(;;) {
-		char *pp = strstr(p, "<A");
-		if (!pp)
-			break;
-		printf("%.*s", pp - p, p);
-		p = pp;
+        char *p = header;
+        for(;;) {
+                char *pp = strstr(p, "<A");
+                if (!pp)
+                        break;
+                printf("%.*s", pp - p, p);
+                p = pp;
 
-		printf("</A>");
+                printf("</A>");
 
-		pp = strstr(p, "</A>");
-		printf("%.*s", pp - p, p);
-		p = pp;
-		printf("</A>");
-		p += 4;
+                pp = strstr(p, "</A>");
+                printf("%.*s", pp - p, p);
+                p = pp;
+                printf("</A>");
+                p += 4;
 
-		printf("<A NAME=%ld", mes->ViIndex);
-		if(MESSAGE_INDEX_PRINT_ITS_URL & style)
-			printf(" HREF=\"%s?read=%lu\"",MY_CGI_URL, mes->ViIndex);
-		if(MESSAGE_INDEX_PRINT_BLANK_URL & style)
-			printf(" TARGET=\"_blank\"");
-		printf(">");
-	}
+                printf("<A NAME=%ld", mes->ViIndex);
+                if(MESSAGE_INDEX_PRINT_ITS_URL & style)
+                        printf(" HREF=\"%s?read=%lu\"",MY_CGI_URL, mes->ViIndex);
+                if(MESSAGE_INDEX_PRINT_BLANK_URL & style)
+                        printf(" TARGET=\"_blank\"");
+                printf(">");
+        }
 
-	printf("%s ", p);
+        printf("%s ", p);
 
         //printf(DESIGN_WBR_START "%s " DESIGN_BR_END, header);
         free(header);
@@ -2039,7 +2039,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 
         //        Print body
         if(msg->msize > 0) {
-		char *pb_f = FilterBiDi(pb);
+                char *pb_f = FilterBiDi(pb);
                 printf(DESIGN_VIEW_THREAD_BODY, pb_f);
                 if (pb_f)
                         free(pb_f);
@@ -2049,7 +2049,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         //        Print signature
         if(ps) {
                 if((currentdsm & CONFIGURE_dsig) == 0) {
-			char *ps_f = FilterBiDi(ps);
+                        char *ps_f = FilterBiDi(ps);
                         printf(DESIGN_VIEW_THREAD_SIGN, ps_f);
                         if (ps_f)
                                 free(ps_f);
@@ -3171,128 +3171,128 @@ int DB_Base::DecrementMainThreadCount()
 
 DWORD DB_Base::getparent(DWORD root)
 {
-	SMessageTable *buf;
-	SMessage *msgs;
-	DWORD rr, fipos, toread;
-	DWORD fmpos, fl, oldroot, parent = 0;
-	WORD mlevel;
-	DWORD i = 0;
-	int czero = 0, bp = 0;
-	int success = 0;
-	SMessage amsg;
+        SMessageTable *buf;
+        SMessage *msgs;
+        DWORD rr, fipos, toread;
+        DWORD fmpos, fl, oldroot, parent = 0;
+        WORD mlevel;
+        DWORD i = 0;
+        int czero = 0, bp = 0;
+        int success = 0;
+        SMessage amsg;
 
-	// translate virtual to real index, and check it
-	root = TranslateMsgIndexDel(root);
-	if (root == 0 || root == NO_MESSAGE_CODE)
+        // translate virtual to real index, and check it
+        root = TranslateMsgIndexDel(root);
+        if (root == 0 || root == NO_MESSAGE_CODE)
                 printhtmlerror();
 
-	// find where is main thread message
-	if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-	if(wcfseek(fm, root, SEEK_SET) == -1) printhtmlerror();
-	if(!fCheckedRead(&amsg, sizeof(SMessage), fm)) printhtmlerror();
-	wcfclose(fm);
+        // find where is main thread message
+        if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+        if(wcfseek(fm, root, SEEK_SET) == -1) printhtmlerror();
+        if(!fCheckedRead(&amsg, sizeof(SMessage), fm)) printhtmlerror();
+        wcfclose(fm);
 
-	oldroot = amsg.ViIndex;
-	mlevel = amsg.Level;
+        oldroot = amsg.ViIndex;
+        mlevel = amsg.Level;
 
-	if(amsg.Level != 0)
-		rr = amsg.ParentThread;
-	else
-		return 0;
+        if(amsg.Level != 0)
+                rr = amsg.ParentThread;
+        else
+                return 0;
 
-	/* set root index = index of main thread message */
-	root = rr;
-	if((fi = wcfopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-	if(wcfseek(fi, 0, SEEK_END) == -1) printhtmlerror();
+        /* set root index = index of main thread message */
+        root = rr;
+        if((fi = wcfopen(F_INDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+        if(wcfseek(fi, 0, SEEK_END) == -1) printhtmlerror();
 
-	/* temporary !!! should be added index support */
-	// find index in index file
-	fl = wcftell(fi);
+        /* temporary !!! should be added index support */
+        // find index in index file
+        fl = wcftell(fi);
 
-	buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE+1);
-	msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER+1);
+        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE+1);
+        msgs = (SMessage *)malloc(sizeof(SMessage)*READ_MESSAGE_HEADER+1);
 
-	while(fl > 0) {
-		DWORD toread;
-		if(fl >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-			fl = fl - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-			toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-		}
-		else {
-			toread = fl;
-			fl = 0;
-		}
-		if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
-		if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-		i = (toread + 1) / sizeof(SMessageTable);
-		while(i-- > 0) {
-			if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
-				goto TT_Found;
-			}
-		}
-	}
+        while(fl > 0) {
+                DWORD toread;
+                if(fl >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+                        fl = fl - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                        toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                }
+                else {
+                        toread = fl;
+                        fl = 0;
+                }
+                if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
+                if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
+                i = (toread + 1) / sizeof(SMessageTable);
+                while(i-- > 0) {
+                        if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
+                                goto TT_Found;
+                        }
+                }
+        }
 
-	// not found in indexes - fatal error
-	printhtmlerror();
+        // not found in indexes - fatal error
+        printhtmlerror();
  TT_Found:
-	fl = fl + (i + 1)*sizeof(SMessageTable);
+        fl = fl + (i + 1)*sizeof(SMessageTable);
 
-	if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
-	if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
+        if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
+        if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
 
-	fipos = wcftell(fi);
+        fipos = wcftell(fi);
 
 
-	for(;;) {
-		if(fipos == 0) break;
-		else {
-			if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-				toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-				fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-			}
-			else {
-				toread = fipos;
-				fipos = 0;
-			}
-		}
-		if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
-		if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
+        for(;;) {
+                if(fipos == 0) break;
+                else {
+                        if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+                                toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                                fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                        }
+                        else {
+                                toread = fipos;
+                                fipos = 0;
+                        }
+                }
+                if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
+                if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
 
-		DWORD i = rr / sizeof(SMessageTable);
-		while (i-- > 0) {
-			if(buf[i].begin < buf[i].end ) {
-				// forward direction
-				fmpos = buf[i].begin;
-				if(!czero) fmpos = root;
-				if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
-				while(fmpos != (buf[i].end + 1)) {
-					DWORD toread;
-					if(buf[i].end - fmpos < READ_MESSAGE_HEADER*sizeof(SMessage)) {
-						toread = buf[i].end - fmpos + 1;
-						fmpos = fmpos + toread;
-					}
-					else {
-						toread = READ_MESSAGE_HEADER*sizeof(SMessage);
-						fmpos = fmpos + toread;
-					}
-					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-					for (DWORD j = 0; j < toread/sizeof(SMessage); j++) {
-						if(fmpos - toread + j*sizeof(SMessage) == root)
-							bp = 1;
-						if (bp) {
-							if (msgs[j].Level == 0 && ++czero == 2)
-								goto TT_Finish;
-							if (msgs[j].Level == mlevel - 1)
-								parent = msgs[j].ViIndex;
-							if (msgs[j].ViIndex == oldroot) {
-								success = 1;
-								goto TT_Finish;
-							}
-						}
-					}
-				}
-			} else {
-				// backward direction
+                DWORD i = rr / sizeof(SMessageTable);
+                while (i-- > 0) {
+                        if(buf[i].begin < buf[i].end ) {
+                                // forward direction
+                                fmpos = buf[i].begin;
+                                if(!czero) fmpos = root;
+                                if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
+                                while(fmpos != (buf[i].end + 1)) {
+                                        DWORD toread;
+                                        if(buf[i].end - fmpos < READ_MESSAGE_HEADER*sizeof(SMessage)) {
+                                                toread = buf[i].end - fmpos + 1;
+                                                fmpos = fmpos + toread;
+                                        }
+                                        else {
+                                                toread = READ_MESSAGE_HEADER*sizeof(SMessage);
+                                                fmpos = fmpos + toread;
+                                        }
+                                        if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
+                                        for (DWORD j = 0; j < toread/sizeof(SMessage); j++) {
+                                                if(fmpos - toread + j*sizeof(SMessage) == root)
+                                                        bp = 1;
+                                                if (bp) {
+                                                        if (msgs[j].Level == 0 && ++czero == 2)
+                                                                goto TT_Finish;
+                                                        if (msgs[j].Level == mlevel - 1)
+                                                                parent = msgs[j].ViIndex;
+                                                        if (msgs[j].ViIndex == oldroot) {
+                                                                success = 1;
+                                                                goto TT_Finish;
+                                                        }
+                                                }
+                                        }
+                                }
+                        } else {
+                                // backward direction
                                 DWORD toread;
                                 fmpos = buf[i].begin + 1;
                                 while(fmpos != buf[i].end) {
@@ -3306,34 +3306,34 @@ DWORD DB_Base::getparent(DWORD root)
                                         }
 
                                         if(wcfseek(fm, fmpos, SEEK_SET) == -1) printhtmlerror();
-					if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
-					for (DWORD jj = 0; jj < toread/sizeof(SMessage); jj++) {
+                                        if(!fCheckedRead(msgs, toread, fm)) printhtmlerror();
+                                        for (DWORD jj = 0; jj < toread/sizeof(SMessage); jj++) {
                                                 DWORD j = toread/sizeof(SMessage) - 1 - jj;
-						if(fmpos + j*sizeof(SMessage) == root)
-							bp = 1;
-						if (bp) {
-							if (msgs[j].Level == 0 && ++czero == 2)
-								goto TT_Finish;
-							if (msgs[j].Level == mlevel - 1)
-								parent = msgs[j].ViIndex;
-							if (msgs[j].ViIndex == oldroot) {
-								success = 1;
-								goto TT_Finish;
-							}
-						}
-					}
+                                                if(fmpos + j*sizeof(SMessage) == root)
+                                                        bp = 1;
+                                                if (bp) {
+                                                        if (msgs[j].Level == 0 && ++czero == 2)
+                                                                goto TT_Finish;
+                                                        if (msgs[j].Level == mlevel - 1)
+                                                                parent = msgs[j].ViIndex;
+                                                        if (msgs[j].ViIndex == oldroot) {
+                                                                success = 1;
+                                                                goto TT_Finish;
+                                                        }
+                                                }
+                                        }
                                 }
-			}
-		}
-	}
+                        }
+                }
+        }
  TT_Finish:
-	free(buf);
-	free(msgs);
-	wcfclose(fi);
-	wcfclose(fm);
+        free(buf);
+        free(msgs);
+        wcfclose(fi);
+        wcfclose(fm);
 
-	if (!success)
+        if (!success)
                 return NO_MESSAGE_CODE;
 
-	return parent;
+        return parent;
 }
