@@ -31,7 +31,7 @@ STagConvert TagConvTable[BoardTagCount] = {
         {"STRIKE", "<STRIKE>", WC_TAG_TYPE_1, "</STRIKE>", WC_TAG_TYPE_1, 1, NULL, NULL},
         {"SUP", "<SUP>", WC_TAG_TYPE_1, "</SUP>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"SUB", "<SUB>", WC_TAG_TYPE_1, "</SUB>", WC_TAG_TYPE_1, 0, NULL, NULL},
-        {"TEX", "<img src=\"https://www.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
+        {"TEX", "<img src=\"https://latex.codecogs.com/gif.latex?", WC_TAG_TYPE_1, "\">", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"TUB", "<iframe class=\"youtube-player\" type=\"text/html\" src=\"https://www.youtube.com/embed/",
          WC_TAG_TYPE_1, "?iv_load_policy=3&rel=0&fs=1\" frameborder=\"0\"></iframe>", WC_TAG_TYPE_1, 0, NULL, NULL},
         {"SPOILER", "<span style=\"color:transparent; background-color:black;\">", WC_TAG_TYPE_1, "</span>", WC_TAG_TYPE_1, 1, NULL, NULL}
