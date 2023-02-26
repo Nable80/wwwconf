@@ -616,9 +616,6 @@ extern DWORD Topics_List_map[TOPICS_COUNT];
 
 /**************************** mailing messeges ***************************/
 
-#define MAILACKN_HEADER "Content-type: text/html; charset=\"windows-1251\"\r\n\r\n"
-
-
 #define MAIL_SEND_GREETING        "<HTML>Здравствуйте, <bold><font color=#009000>"\
                 "<strong>%s</strong></font></bold>.<br />"
 

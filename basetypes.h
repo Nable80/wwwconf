@@ -167,16 +167,9 @@ const char *GetBoardUrl();
 #define ALLOWED_HTTP_REFERER "mipt.cc"
 
 // MAIL
-
-// WC_TYPE
-// 1 - via smtp  ( localhost or remote server)
-// 2 - via command line (sendmail in unix like system)
-
-#define MA_TYPE                        1
-
 #define MA_FROM                        "automailer-noreply@mipt.cc"
-// there should be smtp server ip or path to sendmail-like program
-#define MA_SENDER                 "localhost"
+// sendmail command line
+#define MA_SENDER         "/usr/sbin/sendmail -t -f '" MA_FROM "'"
 // you should place support e-mail address here:
 #define ADMIN_MAIL        ""
 
