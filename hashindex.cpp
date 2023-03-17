@@ -484,8 +484,10 @@ int GenerateIndexList(DWORD **index)
                                 if(*d == 0) break;
 
                                 d++;
-                                (*index)[si] = *((DWORD*)d);
-                                si++;
+
+                                DWORD val;
+                                memcpy(&val, d, sizeof(val));
+                                (*index)[si++] = val;
 
                                 if(si*sizeof(DWORD) >= curalloced - 40) {
                                         curalloced += GHL_REALLOC_BLOCK_SIZE;
