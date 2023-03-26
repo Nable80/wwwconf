@@ -392,11 +392,11 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 pui->LoginDate = time(NULL);
                 if(uprof.SetUInfo(LU.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
-                        print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), lined %d", __LINE__);
+                        print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
                 }
 
-                // copy Full user info if requred
+                // copy Full user info if required
                 if(Fui != NULL) memcpy(Fui, pfui, sizeof(SProfile_FullUserInfo));
                 return 1;
         }
@@ -450,7 +450,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                                 goto SessionError2;
                         }
 
-                        // security check that session was open by this account
+                        // security check that session was opened by this account
                         if(pfui->CreateDate + SEQUENCE_LIVE_TIME > SEQ.ExpireDate) {
                                 print2log("warning! session is older than account \"%s\"", pui->username);
                                 goto SessionError2;
@@ -463,7 +463,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
                         if(uprof.SetUInfo(SEQ.SIndex, pui) != 1) {
 #if ENABLE_LOG >= 1
-                                print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), lined %d", __LINE__);
+                                print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), line %d", __LINE__);
 #endif
                                 goto SessionError2;
                         }
@@ -498,8 +498,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
                 return 1;
         }
-        // seqence cannot be found
-
+        // sequence cannot be found
         goto SessionErrorEnd;
 
 SessionError2:
