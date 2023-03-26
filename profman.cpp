@@ -355,16 +355,24 @@ int main(int argc, char *argv[])
                 DWORD ind;
                 if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("User Information\n");
-                        printf("Login name : %s  Password : %s\n", ui.username, ui.password);
+                        printf("Login name: %s\n", ui.username);
+                        printf("Password: %s\n", ui.password);
+                        printf("AltName: %s\n", ui.altdisplayname);
+                        printf("Full name: %s\n", fui.FullName);
+                        printf("E-mail: %s\n", fui.Email);
                         fui.SelectedUsers[PROFILES_FULL_USERINFO_MAX_SELECTEDUSR - 1] = 0;
-                        printf("AltName : %s\n, Full name : %s, E-mail : %s\nSelected users: %s\nAbout : %s\nSignature: %s\n"
-                                   "Flags: 0x%08lx\nRefresh count : %lu\n",
-                                ui.altdisplayname, fui.FullName, fui.Email, fui.SelectedUsers, fui.AboutUser,
-                                fui.Signature, ui.Flags, ui.RefreshCount);
+                        printf("Selected users: %s\n", fui.SelectedUsers);
+                        printf("About: %s\n", fui.AboutUser);
+                        printf("Signature: %s\n", fui.Signature);
+                        printf("Flags: 0x%08lX\n", ui.Flags);
+                        printf("Refresh count: %lu\n", ui.RefreshCount);
                         printuserrigth(ui.right);
+                        // ctime result always includes '\n', we shouldn't print extra ones:
+                        printf("Creation date: %s", ctime(&fui.CreateDate));
+                        printf("Last access date: %s", ui.LoginDate ? ctime(&ui.LoginDate) : "Never logged in\n");
 
-                        printf("Creation date: %s\n", ctime(&fui.CreateDate));
-                        printf("Last access date: %s\n", ui.LoginDate ? ctime(&ui.LoginDate) : "Never logged in");
+                        // TODO: add destructor or migrate to a flexible array member to avoid this messy cleanup:
+                        free(fui.AboutUser);
                 }
                 else printerror(errcode);
                 goto go_stop;
