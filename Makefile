@@ -3,7 +3,7 @@
 .PHONY: debug release all
 
 CXX ?= g++
-CXXFLAGS = -m32 -fno-exceptions -pedantic $(OPT_FLAGS) -D_FILE_OFFSET_BITS=64
+CXXFLAGS = -m32 -pedantic $(OPT_FLAGS) -D_FILE_OFFSET_BITS=64
 CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion -Wsign-conversion
 CXXFLAGS += -fsanitize=address,undefined
 

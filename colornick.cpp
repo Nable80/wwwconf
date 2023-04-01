@@ -10,9 +10,8 @@
 #include "colornick.h"
 #include "error.h"
 
-CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
+CAltNamesParser::CAltNamesParser(const char *fname)
 {
-        init = 0;
         classinit = 0;
         AltNamesStruct ns;
         DWORD rd;
@@ -49,7 +48,6 @@ CAltNamesParser::CAltNamesParser(const char *fname, bool &init)
 
         strcpy(ifname, fname);
 
-        init = 1;
         classinit = 1;
 }
 

@@ -58,8 +58,7 @@ time_t current_minprntime;
 CUserLogin ULogin;
 
 #if USER_ALT_NICK_SPELLING_SUPPORT
-static bool cninit;
-CAltNamesParser AltNames(F_PROF_ALTNICK, cninit);
+CAltNamesParser AltNames(F_PROF_ALTNICK);
 #endif
 
 int HPrinted = 0;

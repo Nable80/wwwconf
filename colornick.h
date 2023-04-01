@@ -29,7 +29,7 @@ private:
         } AltNamesStruct, *PAltNamesStruct;
 #pragma pack(pop)
 public:
-        CAltNamesParser(const char *fname, bool &init);
+        CAltNamesParser(const char *fname);
         ~CAltNamesParser();
 
         int AddAltName(DWORD uid, char *name, char *altname);
