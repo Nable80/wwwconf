@@ -19,7 +19,6 @@ class CAltNamesParser {
 private:
         int classinit;
         WCFILE *f;
-        char ifname[1000];
         std::unordered_map<DWORD, char*> nmap;
 #pragma pack(push, 1)
         typedef struct _AltNamesStruct {
@@ -29,12 +28,16 @@ private:
         } AltNamesStruct, *PAltNamesStruct;
 #pragma pack(pop)
 public:
-        CAltNamesParser(const char *fname);
+        CAltNamesParser();
         ~CAltNamesParser();
 
         int AddAltName(DWORD uid, char *name, char *altname);
         int DeleteAltName(DWORD uid);
         int NameToAltName(DWORD uid, char *altname);
 };
+
+#if USER_ALT_NICK_SPELLING_SUPPORT
+extern CAltNamesParser AltNames;
+#endif
 
 #endif

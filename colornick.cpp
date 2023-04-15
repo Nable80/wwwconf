@@ -10,21 +10,25 @@
 #include "colornick.h"
 #include "error.h"
 
-CAltNamesParser::CAltNamesParser(const char *fname)
+#if USER_ALT_NICK_SPELLING_SUPPORT
+CAltNamesParser AltNames;
+#endif
+
+CAltNamesParser::CAltNamesParser()
 {
         classinit = 0;
         AltNamesStruct ns;
         DWORD rd;
 
         // try to open existing file
-        if((f = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
+        if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_RW)) == NULL) {
                 // not exist - try to create file
-                if((f = wcfopen(fname, FILE_ACCESS_MODES_CW)) == NULL) {
+                if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_CW)) == NULL) {
                         return;
                 }
                 else {
                         wcfclose(f);
-                        if((f = wcfopen(fname, FILE_ACCESS_MODES_RW)) == NULL) {
+                        if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_RW)) == NULL) {
                                 return;
                         }
                 }
@@ -45,8 +49,6 @@ CAltNamesParser::CAltNamesParser(const char *fname)
                 }
         }
         wcfclose(f);
-
-        strcpy(ifname, fname);
 
         classinit = 1;
 }
@@ -78,7 +80,7 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         ns.uid = uid;
                         strcpy(ns.rname, name);
                         strcpy(ns.aname, s2);
-                        if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
+                        if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_RW)) == NULL)
                                 return 0;         // file MUST exist
                         lock_file(f);
                         int res = 0;
@@ -102,7 +104,7 @@ int CAltNamesParser::AddAltName(DWORD uid, char *name, char *altname)
                         free(s1);
                         nmap[uid] = s2;
                         // save to file (first of all - let's find)
-                        if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
+                        if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_RW)) == NULL)
                                 return 0;         // file MUST exist
                         lock_file(f);
                         int res = 0;
@@ -140,7 +142,7 @@ int CAltNamesParser::DeleteAltName(DWORD uid)
                         // FIXME
                         char cb[100000];
                         // delete from file (first of all - let's find)
-                        if((f = wcfopen(ifname, FILE_ACCESS_MODES_RW)) == NULL)
+                        if((f = wcfopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_RW)) == NULL)
                                 return 0;         // file MUST exist
                         lock_file(f);
                         while(!wcfeof(f)) {

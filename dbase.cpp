@@ -19,6 +19,7 @@
 #include "main.h"
 #include "messages.h"
 #include "dbaseutils.h"
+#include "colornick.h"
 
 static int curcolor = 1;
 
@@ -56,10 +57,6 @@ char *cookie_name;
 time_t current_minprntime;
 
 CUserLogin ULogin;
-
-#if USER_ALT_NICK_SPELLING_SUPPORT
-CAltNamesParser AltNames(F_PROF_ALTNICK);
-#endif
 
 int HPrinted = 0;
 

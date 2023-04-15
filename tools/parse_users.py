@@ -31,7 +31,7 @@ data/profiles/pic/ - not used
 
 data/profiles/profbfree.db - freed ranges of profbody.db, array of SFreeDBEntry
 data/profiles/profbody.db - TODO
-data/profiles/profcnicks.db - TODO
+data/profiles/profcnicks.db - array of AltNamesStruct
 data/profiles/profifree.db - freed ranges of profindex.db, array of SFreeDBEntry
 data/profiles/profindex.db - two dwords (last_uid, total_users), then array of SProfile_UserInfo
 data/profiles/profindex.idx - custom hash table, 2000 bytes per bucket
@@ -58,6 +58,18 @@ PROFILES_FULL_USERINFO_MAX_EMAIL        = 255
 PROFILES_FULL_USERINFO_MAX_HOMEPAGE     = 70
 PROFILES_FULL_USERINFO_MAX_SELECTEDUSR  = 185
 PROFILE_PERSONAL_MESSAGE_LENGTH = 385
+# constants for AltNamesStruct:
+MAX_REAL_NICK_SIZE = 30
+MAX_ALT_NICK_SIZE = 300
+
+class AltNamesStruct(LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = (
+        ('uid', c_uint32),
+        ('rname', c_char * MAX_REAL_NICK_SIZE),
+        ('aname', c_char * MAX_ALT_NICK_SIZE),
+    )
+assert sizeof(AltNamesStruct) == 334
 
 class SActivityLogRecord(LittleEndianStructure):
     _pack_ = 4
@@ -143,8 +155,10 @@ class SProfile_UserInfo(LittleEndianStructure):
     )
 assert sizeof(SProfile_UserInfo) == 316
 
-def main(pathname):
-    assert op.basename(pathname) == 'profindex.db'
+def decode_str(raw_bytes):
+    return raw_bytes.decode('cp1251', errors='replace')
+
+def show_profiles(pathname):
     with open(pathname, 'rb') as inf:
         user_data = inf.read()
     # 2 DWORDs, then array of SProfile_UserInfo entries
@@ -155,7 +169,23 @@ def main(pathname):
     print(f'last_uid={last_uid}, total_users={total_users}, num_entries={num_entries}')
     for start in range(8, len(user_data), sizeof(SProfile_UserInfo)):
         user_info = SProfile_UserInfo.from_buffer_copy(user_data, start)
-        print(f'0x{start:08X}', user_info.username.decode('cp1251', errors='replace'))
+        print(f'0x{start:08X}:', decode_str(user_info.username))
+
+def show_altnames(pathname):
+    with open(pathname, 'rb') as inf:
+        data = inf.read()
+    # array of AltNamesStruct entries
+    assert len(data) % sizeof(AltNamesStruct) == 0
+    for start in range(0, len(data), sizeof(AltNamesStruct)):
+        entry = AltNamesStruct.from_buffer_copy(data, start)
+        print(f'0x{start:08X}: uid={entry.uid}, rname="{decode_str(entry.rname)}", aname="{decode_str(entry.aname)}"')
+
+def main(pathname):
+    fname = op.basename(pathname)
+    if fname == 'profindex.db':
+        show_profiles(pathname)
+    elif fname == 'profcnicks.db':
+        show_altnames(pathname)
 
 if __name__ == '__main__':
     main(sys.argv[1])

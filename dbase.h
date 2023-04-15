@@ -67,10 +67,6 @@ extern int HPrinted;
 
 extern CUserLogin ULogin;
 
-#if USER_ALT_NICK_SPELLING_SUPPORT
-extern CAltNamesParser AltNames;
-#endif
-
 /* ------------------------
  *  functions
  * ------------------------
