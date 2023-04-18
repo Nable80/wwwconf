@@ -198,6 +198,11 @@ int CreateProfilesDatabase()
                 return 0;
         }
         else fclose(f);
+        if((f = fopen(F_PROF_ALTNICK, FILE_ACCESS_MODES_CW)) == NULL) {
+                printf("Error creating profiles database file : %s\n", F_PROF_ALTNICK);
+                return 0;
+        }
+        else fclose(f);
 
         remove(F_PROF_INDEX);
         if(AddStringToHashedIndex("aaa", 1) != HASHINDEX_ER_OK) {
