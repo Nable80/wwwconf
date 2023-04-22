@@ -58,6 +58,9 @@ PROFILES_FULL_USERINFO_MAX_EMAIL        = 255
 PROFILES_FULL_USERINFO_MAX_HOMEPAGE     = 70
 PROFILES_FULL_USERINFO_MAX_SELECTEDUSR  = 185
 PROFILE_PERSONAL_MESSAGE_LENGTH = 385
+# hashindex constants:
+HASHINDEX_BLOCK_SIZE = 2000
+HASHINDEX_BLOCK_HDR_SIZE = 8
 # constants for AltNamesStruct:
 MAX_REAL_NICK_SIZE = 30
 MAX_ALT_NICK_SIZE = 300
@@ -171,6 +174,30 @@ def show_profiles(pathname):
         user_info = SProfile_UserInfo.from_buffer_copy(user_data, start)
         print(f'0x{start:08X}:', decode_str(user_info.username))
 
+def show_hashindex(pathname):
+    with open(pathname, 'rb') as inf:
+        idx_data = inf.read()
+    assert len(idx_data) % HASHINDEX_BLOCK_SIZE == 0
+
+    for start in range(0, len(idx_data), HASHINDEX_BLOCK_SIZE):
+        block = idx_data[start: start + HASHINDEX_BLOCK_SIZE]
+        used, next_block = unpack('<H 2x I', block[:HASHINDEX_BLOCK_HDR_SIZE])
+        assert HASHINDEX_BLOCK_HDR_SIZE <= used < HASHINDEX_BLOCK_SIZE
+        assert next_block == 0xFFFFFFFF or (next_block % HASHINDEX_BLOCK_SIZE == 0 and next_block < len(idx_data))
+        assert block[used] == 0
+        print(f'bucket at 0x{start:08X}: used={used}, next_block=0x{next_block:08X}')
+        pos = HASHINDEX_BLOCK_HDR_SIZE
+        while pos < used:
+            assert block[pos] == 0x0A # 10
+            name_start = pos + 1
+            name_end = block.index(b'\x0D', name_start) # 13
+            name_bytes = block[name_start: name_end]
+            name_index = unpack('<I', block[name_end + 1: name_end + 5])[0]
+            name_index_comment = '' if name_index % sizeof(SProfile_UserInfo) == 8 else ' (invalid)'
+            print(f'> "{decode_str(name_bytes)}" -> 0x{name_index:08X}{name_index_comment}')
+            pos = name_end + 5
+        assert pos == used
+
 def show_altnames(pathname):
     with open(pathname, 'rb') as inf:
         data = inf.read()
@@ -184,6 +211,8 @@ def main(pathname):
     fname = op.basename(pathname)
     if fname == 'profindex.db':
         show_profiles(pathname)
+    elif fname == 'profindex.idx':
+        show_hashindex(pathname)
     elif fname == 'profcnicks.db':
         show_altnames(pathname)
 
