@@ -24,6 +24,7 @@ def main(pathname):
 
     # Compactify:
     result = []
+    write_result = True
     for size, start in free_ranges:
         # Omit empty entries:
         if size == 0:
@@ -36,13 +37,19 @@ def main(pathname):
             # Check for overlaps and merge adjacent entries:
             prev_size, prev_start = result[-1]
             distance = start - (prev_start + prev_size)
-            assert distance >= 0, 'overlapping ranges'
+            if distance < 0:
+                print(f'overlapping ranges: [{prev_start}:{prev_start + prev_size}) [{start}:{start + size})')
+                write_result = False
+                continue
             if distance == 0:
                 result[-1] = (prev_size + size, prev_start)
             else:
                 result.append((size, start))
 
     # Write result:
+    if not write_result:
+        sys.exit(1)
+
     with open(pathname, 'wb') as fout:
         for entry in result:
             fout.write(pack('<II', *entry))

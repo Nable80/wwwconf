@@ -179,6 +179,7 @@ def show_hashindex(pathname):
         idx_data = inf.read()
     assert len(idx_data) % HASHINDEX_BLOCK_SIZE == 0
 
+    entries = []
     for start in range(0, len(idx_data), HASHINDEX_BLOCK_SIZE):
         block = idx_data[start: start + HASHINDEX_BLOCK_SIZE]
         used, next_block = unpack('<H 2x I', block[:HASHINDEX_BLOCK_HDR_SIZE])
@@ -191,12 +192,20 @@ def show_hashindex(pathname):
             assert block[pos] == 0x0A # 10
             name_start = pos + 1
             name_end = block.index(b'\x0D', name_start) # 13
-            name_bytes = block[name_start: name_end]
+            name = decode_str(block[name_start: name_end])
             name_index = unpack('<I', block[name_end + 1: name_end + 5])[0]
             name_index_comment = '' if name_index % sizeof(SProfile_UserInfo) == 8 else ' (invalid)'
-            print(f'> "{decode_str(name_bytes)}" -> 0x{name_index:08X}{name_index_comment}')
+            print(f'> "{name}" -> 0x{name_index:08X}{name_index_comment}')
+            entries.append((name_index, name))
             pos = name_end + 5
         assert pos == used
+    # Check for overlaps:
+    entries.sort()
+    for i in range(len(entries) - 1):
+        name_index, name = entries[i]
+        next_name_index, next_name = entries[i + 1]
+        if name_index + sizeof(SProfile_UserInfo) > next_name_index:
+            print(f'Entry for "{name}" (0x{name_index:08X}) overlaps "{next_name}" (0x{next_name_index:08X})')
 
 def show_altnames(pathname):
     with open(pathname, 'rb') as inf:
