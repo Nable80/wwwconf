@@ -25,13 +25,14 @@ def main(pathname):
                 free_ranges.append((size, start))
 
     # Find the maximum end address and allocate bitmap:
-    bmap_size = max(x[0] + x[1] for x in free_ranges, default=0)
+    bmap_size = max((x[0] + x[1] for x in free_ranges), default=0)
     if bmap_size == 0:
         return
     bmap = bitarray(bmap_size, endian='big')
     bmap.setall(0)
     for size, start in free_ranges:
-        assert not bmap[start: start + size].any(), 'overlapping ranges'
+        if bmap[start: start + size].any():
+            print(f'range [{start}:{start + size}) overlaps another one')
         bmap[start: start + size] = 1
 
     # Write result:
