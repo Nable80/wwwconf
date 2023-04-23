@@ -196,7 +196,9 @@ int RegisterActivityFrom(DWORD IP, DWORD &hostcnt, DWORD &hitcnt)
                                         off_t saved_end = wcftell(f2);
                                         DWORD buf[3] = {tm, hitcnt, hostcnt};
                                         if (!fCheckedWrite(buf, sizeof(buf), f2) || wcfflush(f2)) {
-                                                ftruncate(fileno(f2), saved_end);
+                                                if (ftruncate(fileno(f2), saved_end)) {
+                                                        printhtmlerror();
+                                                }
                                         }
                                 }
                                 unlock_file(f2);

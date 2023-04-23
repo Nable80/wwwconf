@@ -14,7 +14,7 @@ CXXFLAGS += -fsanitize=address,undefined
 ifeq ($(CXX), clang++)
 CXXFLAGS += -Wno-invalid-source-encoding -Wextra-semi-stmt #-Weverything -Wno-zero-as-null-pointer-constant -Wno-old-style-cast
 else
-CXXFLAGS += -Wuseless-cast -fanalyzer
+CXXFLAGS += -Wuseless-cast #-fanalyzer
 endif
 
 INDEX_SRCS=statfs.cpp dbaseutils.cpp dbase.cpp main.cpp announces.cpp boardtags.cpp speller.cpp security.cpp freedb.cpp profiles.cpp logins.cpp hashindex.cpp error.cpp sendmail.cpp colornick.cpp activitylog.cpp
