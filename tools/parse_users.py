@@ -216,6 +216,52 @@ def show_altnames(pathname):
         entry = AltNamesStruct.from_buffer_copy(data, start)
         print(f'0x{start:08X}: uid={entry.uid}, rname="{decode_str(entry.rname)}", aname="{decode_str(entry.aname)}"')
 
+def show_freedb(pathname):
+    fname = op.basename(pathname)
+    # Read ranges, each entry is a pair of DWORDs (size, start):
+    free_ranges = []
+    with open(pathname, 'rb') as fin:
+        while True:
+            entry = fin.read(8)
+            if not entry:
+                break
+            free_ranges.append(unpack('<2I', entry))
+    # Check for definitely invalid entries:
+    if fname == 'profifree.db':
+        for size, start in free_ranges:
+            if start % sizeof(SProfile_UserInfo) != 8:
+                print(f'bad range start: 0x{start:08X}')
+            if size % sizeof(SProfile_UserInfo):
+                print(f'bad range size: 0x{size:08X}')
+    # Sort ranges and merge adjacent entries:
+    free_ranges.sort(key=lambda x: x[1])
+    result = []
+    for size, start in free_ranges:
+        # Omit empty entries:
+        if size == 0:
+            continue
+
+        if len(result) == 0:
+            # Append first non-empty entry as-is:
+            result.append((size, start))
+        else:
+            # Check for overlaps and merge adjacent entries:
+            prev_size, prev_start = result[-1]
+            prev_end = prev_start + prev_size
+            end = start + size
+            distance = start - prev_end
+            if distance < 0:
+                print(f'overlapping ranges: [0x{prev_start:08X}:0x{prev_end:08X}) [0x{start:08X}:0x{end:08X})')
+
+            if distance <= 0:
+                result[-1] = (max(prev_end, end) - prev_start, prev_start)
+            else:
+                result.append((size, start))
+    # Print result:
+    print('Free ranges:')
+    for size, start in result:
+        print(f'[0x{start:08X}:0x{start + size:08X})')
+
 def main(pathname):
     fname = op.basename(pathname)
     if fname == 'profindex.db':
@@ -224,6 +270,8 @@ def main(pathname):
         show_hashindex(pathname)
     elif fname == 'profcnicks.db':
         show_altnames(pathname)
+    elif fname in ('freeindex.msg', 'freemess.msg', 'profbfree.db', 'profifree.db'):
+        show_freedb(pathname)
 
 if __name__ == '__main__':
     main(sys.argv[1])

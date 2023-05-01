@@ -32,7 +32,7 @@ def main(pathname):
     bmap.setall(0)
     for size, start in free_ranges:
         if bmap[start: start + size].any():
-            print(f'range [{start}:{start + size}) overlaps another one')
+            print(f'range [0x{start:08X}:0x{start + size:08X}) overlaps another one')
         bmap[start: start + size] = 1
 
     # Write result:
