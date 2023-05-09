@@ -167,7 +167,7 @@ int CProfiles::GetSpaceforUInfo(DWORD *idx)
 }
 
 /* write count structures SProfile_UserInfo at index idx */
-int CProfiles::WriteUInfo(DWORD idx, SProfile_UserInfo *FI)
+int CProfiles::WriteUInfo(DWORD idx, const SProfile_UserInfo *FI)
 {
         if(wcfseek(Fp_i, idx, SEEK_SET) != 0)
                 return 0;
@@ -315,7 +315,7 @@ Unlock_and_return:
 /* delete user [name] from profile database
  * return PROFILE_RETURN_ALLOK if successfull, otherwise standart error codes
  */
-int CProfiles::DeleteUser(char *name)
+int CProfiles::DeleteUser(const char *name)
 {
         DWORD idx, ucount;
         SProfile_UserInfo pi;
@@ -543,7 +543,7 @@ Do_Exit:
  * also if ui not NULL return SProfile_UserInfo for found user, and if also Fui not NULL
  * return Fui information too
  */
-int CProfiles::GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index)
+int CProfiles::GetUserByName(const char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index)
 {
         DWORD idx;
         SProfile_UserInfo pi;
@@ -640,7 +640,7 @@ int CProfiles::GetUInfo(DWORD idx, SProfile_UserInfo *FI)
         return 1;
 }
 
-int CProfiles::SetUInfo(DWORD idx, SProfile_UserInfo *FI)
+int CProfiles::SetUInfo(DWORD idx, const SProfile_UserInfo *FI)
 {
         if((Fp_i = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 return 0;
@@ -750,7 +750,7 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
         return 1;
 }
 
-int CProfiles::PostPersonalMessage(char *username, DWORD userindex, char *message, char *from, DWORD userindexfrom)
+int CProfiles::PostPersonalMessage(const char *username, DWORD userindex, const char *message, const char *from, DWORD userindexfrom)
 {
         SProfile_UserInfo ui, poster_ui;
         int ret;
@@ -826,7 +826,7 @@ PostPersMsg_Error:
         return PROFILE_RETURN_DB_ERROR;
 }
 
-int CProfiles::ReadPersonalMessages(char *username, DWORD userindex,
+int CProfiles::ReadPersonalMessages(const char *username, DWORD userindex,
                                                                         SPersonalMessage **tomessages, DWORD *tocount,
                                                                         SPersonalMessage **frommessages, DWORD *fromcount)
 {
@@ -949,7 +949,7 @@ PostPersMsg_Error:
         return PROFILE_RETURN_DB_ERROR;
 }
 
-int CProfiles::ReadPersonalMessagesByDate(char *username, DWORD userindex,
+int CProfiles::ReadPersonalMessagesByDate(const char *username, DWORD userindex,
                                                                                   SPersonalMessage **tomessages, time_t todate,
                                                                                   SPersonalMessage **frommessages, time_t fromdate)
 {

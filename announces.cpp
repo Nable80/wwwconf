@@ -42,7 +42,7 @@ int ReadLastAnnounceNumber(DWORD *an)
         return ret;
 }
 
-int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, DWORD flags)
+int PostGlobalAnnounce(const char *username, DWORD uniqid, const char *announce, DWORD ttl, DWORD flags)
 {
         FILE *f;
         DWORD siz;
@@ -227,7 +227,7 @@ int DeleteGlobalAnnounce(DWORD id, DWORD uniqid)
         return ANNOUNCES_RETURN_OK;
 }
 
-int UpdateGlobalAnnounce(DWORD id, char *username, DWORD uniqid, char *announce,
+int UpdateGlobalAnnounce(DWORD id, const char *username, DWORD uniqid, const char *announce,
                 DWORD ttl, DWORD flags, DWORD updateopt)
 {
         WCFILE *f;

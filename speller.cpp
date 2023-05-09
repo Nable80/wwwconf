@@ -14,7 +14,7 @@
 
 #define TO_HEX(a) (char)((a) > 9 ? ((a) - 10) + 'A': (a) + '0')
 
-char* CodeHttpString(char *s, int allocmem, int type)
+char* CodeHttpString(const char *s, int allocmem, int type)
 {
         static char rs[SPELLER_INTERNAL_BUFFER_SIZE];
         char *r, *rr;
@@ -48,9 +48,9 @@ char* CodeHttpString(char *s, int allocmem, int type)
         return rr;
 }
 
-int IsMailCorrect(char *s)
+int IsMailCorrect(const char *s)
 {
-        char *s1;
+        const char *s1;
         if(s == NULL) return 0;
         if((s1 = strchr(s,'@')) == NULL) return 0;
         if(strlen(s1) < 4) return 0;
@@ -313,9 +313,9 @@ char* FilterWhitespaces(char *s)
 
 // check if IP in mask
 // return 1 if successfull, 0 otherwise
-int CheckIPinSubnet(char *IP, char *mask)
+static int CheckIPinSubnet(const char *IP, const char *mask)
 {
-        DWORD i = 0, sl = (DWORD)strlen(mask);
+        size_t i = 0, sl = strlen(mask);
         if(sl == 0) return 1;
         while(strlen(IP) > i && sl > i && IP[i] == mask[i]) {
                 i++;
@@ -324,7 +324,7 @@ int CheckIPinSubnet(char *IP, char *mask)
         return 0;
 }
 
-int PrepareTextForPrint(char *msg, char **res, BYTE index, DWORD flags)
+int PrepareTextForPrint(const char *msg, char **res, BYTE index, DWORD flags)
 {
         DWORD tmp;
         char *st = NULL;

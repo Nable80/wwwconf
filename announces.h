@@ -47,7 +47,7 @@ static_assert(sizeof(SGlobalAnnounce) == 571, "sizeof(SGlobalAnnounce) must be 5
 /* Post announce as selected user.
  * It don't check security permitions of poster !
  */
-int PostGlobalAnnounce(char *username, DWORD uniqid, char *announce, DWORD ttl, DWORD flags);
+int PostGlobalAnnounce(const char *username, DWORD uniqid, const char *announce, DWORD ttl, DWORD flags);
 
 /* Read annonces that implies to 'ct' date. (!!! ignored for now !!!)
  */
@@ -63,7 +63,7 @@ int ReadLastAnnounceNumber(DWORD *an);
 
 /* Update announce (using updateopt flags) by id
  */
-int UpdateGlobalAnnounce(DWORD id, char *username, DWORD uniqid, char *announce,
+int UpdateGlobalAnnounce(DWORD id, const char *username, DWORD uniqid, const char *announce,
                 DWORD ttl, DWORD flags, DWORD updateopt);
 
 #endif // of ANNOUNCES_H_INCLUDED

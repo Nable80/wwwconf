@@ -59,11 +59,11 @@ typedef enum {
 
 /* code string to http format, if allocmem = 1 - function will allocate memory for you,
  * otherwise internal buffer will be used (10K buffer) */
-char* CodeHttpString(char *s, int allocmem = 1, int type = ALL_ENCODE);
+char* CodeHttpString(const char *s, int allocmem = 1, int type = ALL_ENCODE);
 
 
 /* check email (with current #define settings) */
-int IsMailCorrect(char *s);
+int IsMailCorrect(const char *s);
 
 /* filter html tags, if allocmem = 1 - function will allocate memory for you,
  * otherwise internal buffer will be used (10K buffer) */
@@ -75,7 +75,7 @@ char* FilterBiDi(const char *s);
 char* FilterWhitespaces(char *s);
 
 /* prepare every text in this board to be printed to browser */
-int PrepareTextForPrint(char *msg, char **res, BYTE index, DWORD flags);
+int PrepareTextForPrint(const char *msg, char **res, BYTE index, DWORD flags);
 
 /* check message for correct and check HTML Tags, bad words list, and banned user */
 int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,

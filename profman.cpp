@@ -20,7 +20,7 @@
 
 int HPrinted = 0;
 
-void printusage(char *iam)
+void printusage(const char *iam)
 {
         printf("Usage %s <arg>\n"
                "Possible arguments:\n"
@@ -513,9 +513,7 @@ int main(int argc, char *argv[])
                         exit(0);
                 }
                 if((code = ul.ReadPersonalMessages(argv[2], 0, &topm, NULL, &frompm, NULL)) == PROFILE_RETURN_ALLOK) {
-                        char tostr[1000], newm[100];
-                        char *ss;
-                        SPersonalMessage *pmsg;
+                        const SPersonalMessage *pmsg;
                         int i = 0;
                         int j = 0;
                         int received = 0;        // posted or received
@@ -528,7 +526,7 @@ int main(int argc, char *argv[])
                                 while(frompm[postedcnt].Prev != 0xffffffff) postedcnt++;
                                 postedcnt++;
                         }
-                        printf("        Messages for user %s\n", argv[2]);
+                        printf("Messages for user %s\n---\n", argv[2]);
                         for(;;) {
                                 // check exit expression
                                 if(i == cnt && j == postedcnt) break;
@@ -556,29 +554,21 @@ int main(int argc, char *argv[])
                                         }
                                 }
 
-                                if(!received) {
-                                        strcpy(tostr, pmsg->NameTo);
-                                }
-                                else {
-                                        strcpy(tostr, pmsg->NameFrom);
-                                }
-
-                                ss = ctime(&pmsg->Date);
-
-                                if(received && i <= (ui.persmescnt - ui.readpersmescnt))
-                                        strcpy(newm, "Not readed");
-                                else strcpy(newm, "");
-
+                                const char *ss = ctime(&pmsg->Date);
                                 if(!received) {
                                         // posted message
-                                        printf("To user: %s, Date: %s\t\t\t%s", tostr, ss, newm);
+                                        printf("To user: %s, Date: %s", pmsg->NameTo, ss);
                                 }
                                 else {
+                                        const char *newm = "";
+                                        if (i <= ui.persmescnt - ui.readpersmescnt) {
+                                                newm = "(UNREAD) ";
+                                        }
                                         // received message
-                                        printf("From user: %s, Date: %s\t\t\t%s", tostr, ss, newm);
+                                        printf("%sFrom user: %s, Date: %s", newm, pmsg->NameFrom, ss);
                                 }
 
-                                printf("%s\n\n", pmsg->Msg);
+                                printf("%s\n---\n", pmsg->Msg);
                         }
                 }
                 else printf("ReadPersonalMessages() returned error code: %x (%s)\n", code, (code == PROFILE_RETURN_INVALID_LOGIN) ? "unknown user" : "database error");

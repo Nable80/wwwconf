@@ -165,29 +165,29 @@ protected:
         int DeleteFullInfo(DWORD idx);
 
         int GetSpaceforUInfo(DWORD *idx);
-        int WriteUInfo(DWORD idx, SProfile_UserInfo *FI);
+        int WriteUInfo(DWORD idx, const SProfile_UserInfo *FI);
         int DeleteUInfo(DWORD idx);
         int ReadUInfo(DWORD idx, SProfile_UserInfo *FI);
 public:
         static bool IsLoginValid(const char *s);
         int AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index);
         int ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index);
-        int DeleteUser(char *name);
-        int GetUserByName(char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index);
+        int DeleteUser(const char *name);
+        int GetUserByName(const char *name, SProfile_UserInfo *ui, SProfile_FullUserInfo *Fui, DWORD *ui_index);
 
         // personal messages
-        int PostPersonalMessage(char *username, DWORD userindex, char *message, char *from, DWORD userindexfrom);
-        int ReadPersonalMessages(char *username, DWORD userindex,
+        int PostPersonalMessage(const char *username, DWORD userindex, const char *message, const char *from, DWORD userindexfrom);
+        int ReadPersonalMessages(const char *username, DWORD userindex,
                         SPersonalMessage **tomessages, DWORD *tocount, SPersonalMessage **frommessages, DWORD *fromcount);
 
-        int ReadPersonalMessagesByDate(char *username, DWORD userindex,
+        int ReadPersonalMessagesByDate(const char *username, DWORD userindex,
                         SPersonalMessage **tomessages, time_t todate, SPersonalMessage **frommessages, time_t fromdate);
 
         int GenerateUserList(char ***buf, DWORD *cnt);
 
         int GetUsersCount(DWORD *uc);
         int GetUInfo(DWORD idx, SProfile_UserInfo *FI);
-        int SetUInfo(DWORD idx, SProfile_UserInfo *FI);
+        int SetUInfo(DWORD idx, const SProfile_UserInfo *FI);
         int GetFullInfo(DWORD idx, SProfile_FullUserInfo *FI);
 
         int CheckandAddFavsList(DWORD userindex, DWORD msgindex, int doadd);
