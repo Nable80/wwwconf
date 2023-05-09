@@ -23,18 +23,14 @@
 #define HASHINDEX_BLOCK_SIZE 2000
 #define HASHINDEX_NULL        0xFFFFFFFF
 
-#define MAX_HASHINDEX_STRLEN        30
-
 typedef struct _HASHINDEX_BLOCKINFO {
         WORD Used;
         DWORD Next;
 } HASHINDEX_BLOCKINFO, *PHASHINDEX_BLOCKINFO;
 
-DWORD hashstr(const char *s, DWORD m);
-
 int AddStringToHashedIndex(const char *s, DWORD Index);
 
-int GetIndexOfString(char *s, DWORD *Index);
+int GetIndexOfString(const char *s, DWORD *Index);
 
 int DeleteStringFromHashedIndex(const char *s);
 

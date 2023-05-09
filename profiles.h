@@ -169,6 +169,7 @@ protected:
         int DeleteUInfo(DWORD idx);
         int ReadUInfo(DWORD idx, SProfile_UserInfo *FI);
 public:
+        static bool IsLoginValid(const char *s);
         int AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index);
         int ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *FullUI, DWORD *ui_index);
         int DeleteUser(char *name);

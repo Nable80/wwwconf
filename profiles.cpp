@@ -12,18 +12,23 @@
 #include "freedb.h"
 #include "error.h"
 
-/* return 1 if valid, 0 otherwise
- */
-int isLoginStrValid(char *s)
+bool CProfiles::IsLoginValid(const char *s)
 {
-        while(*s != 0) {
-                if(((unsigned char)(*s)) < 32) {
-                        return 0;
+        size_t len = strlen(s);
+        if (len < 3 || len >= PROFILES_MAX_USERNAME_LENGTH) {
+                return false;
+        }
+        while (*s) {
+                unsigned char c = (unsigned char)(*s);
+                // Forbid control characters + 0x98 (undefined in cp1251).
+                // Should we forbid NBSP (0xA0) and soft hyphen (0xAD) too?
+                // TODO: detect whitespace-only and zero-width names.
+                if (c < 0x20 || c == 0x7F || c == 0x98) {
+                        return false;
                 }
                 s++;
         }
-        if(strlen(s) > PROFILES_MAX_USERNAME_LENGTH - 1) return 0;
-        return 1;
+        return true;
 }
 
 /* write SProfile_FullUserInfo structure, allocating space for it automatically
@@ -197,7 +202,7 @@ int CProfiles::AddNewUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
         Fp_i = NULL;
         Fp_b = NULL;
 
-        if(!isLoginStrValid(newprf->username) || strlen(newprf->username) < 3) {
+        if (!IsLoginValid(newprf->username)) {
                 return PROFILE_RETURN_INVALID_LOGIN;
         }
 
@@ -422,8 +427,9 @@ int CProfiles::ModifyUser(SProfile_UserInfo *newprf, SProfile_FullUserInfo *Full
         Fp_i = NULL;
         Fp_b = NULL;
 
-        if(!isLoginStrValid(newprf->username) || strlen(newprf->username) < 3)
+        if (!IsLoginValid(newprf->username)) {
                 return PROFILE_RETURN_INVALID_LOGIN;
+        }
 
         int ret = GetIndexOfString(newprf->username, &idx);
 

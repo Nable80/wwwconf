@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "hashindex.h"
+#include "profiles.h"
 
 /*  Index WCFILE format
  *  db 10, [name], 13, [Index=DWORD 4 bytes]
@@ -36,7 +37,7 @@ static char* mstrstr(char *s, char *f, DWORD size)
         return NULL;
 }
 
-DWORD hashstr(const char *s, DWORD m)
+static DWORD hashstr(const char *s, DWORD m)
 {
         DWORD sum = 0;
         for(; *s != 0; s++) {
@@ -45,17 +46,18 @@ DWORD hashstr(const char *s, DWORD m)
         return (sum % m);
 }
 
-int GetIndexOfString(char *s, DWORD *Index)
+int GetIndexOfString(const char *s, DWORD *Index)
 {
         WCFILE *f;
         DWORD hash;
         char buf[HASHINDEX_BLOCK_SIZE];
-        char ps[MAX_HASHINDEX_STRLEN + 10];
+        char ps[PROFILES_MAX_USERNAME_LENGTH + 10];
         HASHINDEX_BLOCKINFO bi;
         char *fs;
 
-        if(strlen(s) < 3 || strlen(s) > MAX_HASHINDEX_STRLEN)
+        if (!CProfiles::IsLoginValid(s)) {
                 return HASHINDEX_ER_FORMAT;
+        }
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
@@ -106,10 +108,11 @@ int AddStringToHashedIndex(const char *s, DWORD Index)
         DWORD oldhash, hash, neededsize, i;
         HASHINDEX_BLOCKINFO bi;
         char buf[HASHINDEX_BLOCK_SIZE];
-        char prepbuf[MAX_HASHINDEX_STRLEN + 10];
+        char prepbuf[PROFILES_MAX_USERNAME_LENGTH + 10];
 
-        if(strlen(s) < 3 || strlen(s) > MAX_HASHINDEX_STRLEN)
+        if (!CProfiles::IsLoginValid(s)) {
                 return HASHINDEX_ER_FORMAT;
+        }
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
@@ -282,11 +285,12 @@ int DeleteStringFromHashedIndex(const char *s)
         DWORD hash;
         HASHINDEX_BLOCKINFO bi;
         char buf[HASHINDEX_BLOCK_SIZE];
-        char ps[MAX_HASHINDEX_STRLEN + 10];
+        char ps[PROFILES_MAX_USERNAME_LENGTH + 10];
         char *fs;
 
-        if(strlen(s) < 3 || strlen(s) > MAX_HASHINDEX_STRLEN)
+        if (!CProfiles::IsLoginValid(s)) {
                 return HASHINDEX_ER_FORMAT;
+        }
 
         hash = HASHINDEX_BLOCK_SIZE * hashstr(s, HASHTAB_LEN);
 
