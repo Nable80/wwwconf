@@ -361,7 +361,7 @@ int CProfiles::DeleteUser(const char *name)
                                 goto Do_Exit;
                         if(!fCheckedRead(&ucount, sizeof(ucount), Fp_i))
                                 goto Do_Exit;
-                        ucount++; // what, why is it incremented?
+                        ucount--;
                         if(wcfseek(Fp_i, sizeof(DWORD), SEEK_SET) != 0)
                                 goto Do_Exit;
                         if(!fCheckedWrite(&ucount, sizeof(ucount), Fp_i))
