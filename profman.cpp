@@ -15,9 +15,6 @@
 #include "error.h"
 #include "logins.h"
 
-#define DIR_CREATION_MASK    511
-#define FILES_CREATION_MASK  511
-
 int HPrinted = 0;
 
 void printusage(const char *iam)
@@ -174,8 +171,8 @@ int CreateProfilesDatabase()
         }
         else {
                 DWORD x = 0;
-                fwrite(&x, 1, sizeof(x), f);
-                fwrite(&x, 1, sizeof(x), f);
+                fwrite(&x, 1, sizeof(x), f); // max UID
+                fwrite(&x, 1, sizeof(x), f); // ucount (number of users in the database)
                 fclose(f);
         }
         if((f = fopen(F_PROF_FREENIDX, FILE_ACCESS_MODES_CW)) == NULL) {
@@ -242,52 +239,40 @@ int CreateMessagesDatabase()
         return 1;
 }
 
-int CheckAndCreateFolder(const char *d, const char *s)
+int CheckAndCreateFolder(const char *dir_path)
 {
-        if(chdir(d) != 0) {
-           if(mkdir(d, DIR_CREATION_MASK) != 0) {
-                        printf("Cannot create directory %s\n", d);
-                        return 0;
+        // 0700 - read/write/search for owner, no permissions for everyone else
+        if (mkdir(dir_path, 0700) < 0) {
+                if (errno == EEXIST) {
+                        printf("%s already exists\n", dir_path);
+                        return 1;
                 }
-                else printf("%s created\n", d);
+                printf("Cannot create %s (error %d: %s)\n", dir_path, errno, strerrordesc_np(errno));
+                return 0;
         }
-        else {
-                // return to our folder
-                if(chdir(s) != 0) {
-                        printf("Cannot change directory to %s\n", s);
-                        return 0;
-                }
-        }
+        printf("%s created\n", dir_path);
         return 1;
 }
 
 int CreateFullDatabase()
 {
-        // alloc mem and save our current folder
-        char *s = (char*)malloc(2560);
-        if(getcwd(s, 2559) == NULL) {
-                printf("Cannot get current directory\n");
-                return 0;
-        }
-
-        if(!CheckAndCreateFolder(DIR_MAINDATA, s))
+        if(!CheckAndCreateFolder(DIR_MAINDATA))
                 return 0;
 
-        if(!CheckAndCreateFolder(DIR_MESSAGES, s))
+        if(!CheckAndCreateFolder(DIR_MESSAGES))
                 return 0;
 
-        if(!CheckAndCreateFolder(DIR_PROFILES, s))
+        if(!CheckAndCreateFolder(DIR_PROFILES))
                 return 0;
 
-        if(!CheckAndCreateFolder(DIR_PROF_PIC, s))
+        if(!CheckAndCreateFolder(DIR_PROF_PIC))
                 return 0;
 
-        if(!CheckAndCreateFolder(DIR_SETTINGS, s))
+        if(!CheckAndCreateFolder(DIR_SETTINGS))
                 return 0;
 
-        if(!CheckAndCreateFolder(DIR_INTERNALS, s))
+        if(!CheckAndCreateFolder(DIR_INTERNALS))
                 return 0;
-        free(s);
 
         if(!CreateProfilesDatabase())
                 return 0;
@@ -385,13 +370,6 @@ int main(int argc, char *argv[])
 
         if(argc == 2 && strcmp(argv[1], "-np") == 0) {
                 printf("Renewing private messages database...\n");
-                if((fw = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_CW)) != NULL) {
-                        wcfclose(fw);
-                }
-                else {
-                        printf("Fatal: profiles database could not be accessed !!!\n");
-                        return 0;
-                }
                 if((fw = wcfopen(F_PROF_NINDEX, FILE_ACCESS_MODES_RW)) != NULL) {
                         int i = 0;
                         lock_file(fw);
@@ -407,20 +385,25 @@ int main(int argc, char *argv[])
                                 ui.postedmescnt = 0;
                                 wcfseek(fw, pos, SEEK_SET);
                                 wcfwrite(&ui, 1, sizeof(SProfile_UserInfo), fw);
-                                wcfseek(fw, wcftell(fw), SEEK_SET);
                                 i++;
                         }
                         printf("%d users processed\n", i);
                         unlock_file(fw);
                         wcfclose(fw);
-                        printf("Done!\n");
+                        if ((fw = wcfopen(F_PROF_PERSMSG, FILE_ACCESS_MODES_CW)) != NULL) {
+                                wcfclose(fw);
+                                printf("Done!\n");
+                        }
+                        else {
+                                printf("Failed to truncate %s!!!\n", F_PROF_PERSMSG);
+                        }
                 }
                 else printf("Fatal: profiles database could not be accessed !!!\n");
                 goto go_stop;
         }
 
 
-           if(strcmp(argv[1], "-cp") == 0 && argc == 3) {
+        if (strcmp(argv[1], "-cp") == 0 && argc == 3) {
                 SProfile_FullUserInfo fui;
                 DWORD ind;
                 if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
@@ -455,7 +438,6 @@ int main(int argc, char *argv[])
                                 ui.RefreshCount = 0;
                                 wcfseek(fw, pos, SEEK_SET);
                                 wcfwrite(&ui, 1, sizeof(SProfile_UserInfo), fw);
-                                wcfseek(fw, wcftell(fw), SEEK_SET);
                                 i++;
                         }
                         printf("%d users processed\n", i);
@@ -493,7 +475,6 @@ int main(int argc, char *argv[])
 
                                 wcfseek(fw, pos, SEEK_SET);
                                 wcfwrite(&ui, 1, sizeof(SProfile_UserInfo), fw);
-                                wcfseek(fw, wcftell(fw), SEEK_SET);
                                 i++;
                         }
                         printf("%d users processed\n", i);
@@ -600,6 +581,9 @@ int main(int argc, char *argv[])
         }
 
         if (argc == 2 && strcmp(argv[1], "-fixcr") == 0) {
+                // TODO:
+                // - Fix CR/LF in private messages too.
+                // - Simplify this code: directly patch 'messages.msg' using mmap or fread/fwrite.
                 DWORD i, max;
                 char *body;
 
