@@ -11,8 +11,9 @@ CXXFLAGS += -fsanitize=address,undefined
 #CXXFLAGS += -Wcast-qual
 
 # Compiler-specific flags
-ifeq ($(CXX), clang++)
-CXXFLAGS += -Wno-invalid-source-encoding -Wextra-semi-stmt #-Weverything -Wno-zero-as-null-pointer-constant -Wno-old-style-cast
+ifeq ($(findstring clang,$(CXX)), clang)
+#CXXFLAGS += -Weverything -Wno-c++98-compat -Wno-zero-as-null-pointer-constant -Wno-old-style-cast
+CXXFLAGS += -Wno-invalid-source-encoding -Wno-invalid-utf8 -Wextra-semi-stmt
 else
 CXXFLAGS += -Wuseless-cast #-fanalyzer
 endif
