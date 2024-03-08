@@ -180,11 +180,16 @@ def show_hashindex(pathname):
     assert len(idx_data) % HASHINDEX_BLOCK_SIZE == 0
 
     entries = []
+    # block offset -> hash value for entries in this block
+    hash_value_map = { i * HASHINDEX_BLOCK_SIZE: i for i in range(256) }
     for start in range(0, len(idx_data), HASHINDEX_BLOCK_SIZE):
+        hash_value = hash_value_map[start]
         block = idx_data[start: start + HASHINDEX_BLOCK_SIZE]
         used, next_block = unpack('<H 2x I', block[:HASHINDEX_BLOCK_HDR_SIZE])
         assert HASHINDEX_BLOCK_HDR_SIZE <= used < HASHINDEX_BLOCK_SIZE
-        assert next_block == 0xFFFFFFFF or (next_block % HASHINDEX_BLOCK_SIZE == 0 and next_block < len(idx_data))
+        if next_block != 0xFFFFFFFF:
+            assert next_block % HASHINDEX_BLOCK_SIZE == 0 and next_block < len(idx_data)
+            hash_value_map[next_block] = hash_value
         assert block[used] == 0
         print(f'bucket at 0x{start:08X}: used={used}, next_block=0x{next_block:08X}')
         pos = HASHINDEX_BLOCK_HDR_SIZE
@@ -192,7 +197,9 @@ def show_hashindex(pathname):
             assert block[pos] == 0x0A # 10
             name_start = pos + 1
             name_end = block.index(b'\x0D', name_start) # 13
-            name = decode_str(block[name_start: name_end])
+            name_bytes = block[name_start: name_end]
+            assert sum(name_bytes) & 0xFF == hash_value
+            name = decode_str(name_bytes)
             name_index = unpack('<I', block[name_end + 1: name_end + 5])[0]
             name_index_comment = '' if name_index % sizeof(SProfile_UserInfo) == 8 else ' (invalid)'
             print(f'> "{name}" -> 0x{name_index:08X}{name_index_comment}')
