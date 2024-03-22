@@ -7,6 +7,7 @@ from ctypes import (
     c_uint8, c_uint16, c_uint32,
     sizeof
 )
+import datetime as dt
 import os.path as op
 from struct import pack, unpack
 import sys
@@ -17,7 +18,7 @@ Custom DB consists of the following dirs and files:
 data/internals/activitylog1.dat - TODO
 data/internals/activitylog2.dat - TODO
 data/internals/antispam.dat - TODO
-data/internals/authuser.dat - TODO
+data/internals/authuser.dat - user sessions, array of SSavedAuthSeq
 
 data/messages/freeindex.msg - TODO, array of SFreeDBEntry
 data/messages/freemess.msg - TODO, array of SFreeDBEntry
@@ -64,6 +65,8 @@ HASHINDEX_BLOCK_HDR_SIZE = 8
 # constants for AltNamesStruct:
 MAX_REAL_NICK_SIZE = 30
 MAX_ALT_NICK_SIZE = 300
+# flag in SSavedAuthSeq.uid:
+SEQUENCE_IP_CHECK_DISABLED = 0xF0000000
 
 class AltNamesStruct(LittleEndianStructure):
     _pack_ = 1
@@ -82,6 +85,17 @@ class SActivityLogRecord(LittleEndianStructure):
         ('time', c_uint32),
     ]
 assert sizeof(SActivityLogRecord) == 12
+
+class SSavedAuthSeq(LittleEndianStructure):
+    _pack_ = 4
+    _fields_ = [
+        ('sid', c_uint32 * 2), # seq = (sid[0] << 32) | sid[1]
+        ('uid', c_uint32), # upper 4 bits (why?) are used as a flag (disable IP check)
+        ('ip', c_uint32),
+        ('prof_index', c_uint32), # index in profindex.db
+        ('expiration', c_uint32), # time_t
+    ]
+assert sizeof(SSavedAuthSeq) == 24
 
 class SPersonalMessage(LittleEndianStructure):
     _pack_ = 4
@@ -160,6 +174,9 @@ assert sizeof(SProfile_UserInfo) == 316
 
 def decode_str(raw_bytes):
     return raw_bytes.decode('cp1251', errors='replace')
+
+def decode_ip(u32_val):
+    return '.'.join(str(x) for x in pack('<I', u32_val))
 
 def show_profiles(pathname):
     with open(pathname, 'rb') as inf:
@@ -269,6 +286,37 @@ def show_freedb(pathname):
     for size, start in result:
         print(f'[0x{start:08X}:0x{start + size:08X})')
 
+def show_sessions(pathname):
+    with open(pathname, 'rb') as inf:
+        data = inf.read()
+    with open(op.join(op.dirname(op.dirname(pathname)), 'profiles/profindex.db'), 'rb') as inf:
+        profile_ids = {} # offset -> uid
+        profile_names = {} # uid -> name
+        inf.seek(8)
+        while True:
+            offset = inf.tell()
+            buf = inf.read(sizeof(SProfile_UserInfo))
+            if len(buf) == 0:
+                prof_db_len = offset
+                break
+            prof = SProfile_UserInfo.from_buffer_copy(buf)
+            profile_ids[offset] = prof.uniq_id
+            profile_names[prof.uniq_id] = decode_str(prof.username)
+    # array of SSavedAuthSeq entries
+    assert len(data) % sizeof(SSavedAuthSeq) == 0
+    for start in range(0, len(data), sizeof(SSavedAuthSeq)):
+        entry = SSavedAuthSeq.from_buffer_copy(data, start)
+        assert entry.uid & SEQUENCE_IP_CHECK_DISABLED in (0, SEQUENCE_IP_CHECK_DISABLED)
+        uid = entry.uid & ~SEQUENCE_IP_CHECK_DISABLED
+        ignore_ip = ' (ignored)' if (entry.uid & SEQUENCE_IP_CHECK_DISABLED) else ''
+        ipaddr = decode_ip(entry.ip)
+        assert entry.prof_index % sizeof(SProfile_UserInfo) == 8 and entry.prof_index < prof_db_len
+        prof_uid = profile_ids[entry.prof_index]
+        prof_name = profile_names.get(uid, '-')
+        prof_check = f' (INVALID, prof_uid={prof_uid})' if prof_uid != uid else ''
+        exp_dt = dt.datetime.utcfromtimestamp(entry.expiration)
+        print(f'seq={entry.sid[0]:08x}{entry.sid[1]:08x}, uid={uid} ({prof_name}), ip={ipaddr}{ignore_ip}, prof=0x{entry.prof_index:08X}{prof_check}, exp={exp_dt:%Y-%m-%d %H:%M}')
+
 def main(pathname):
     fname = op.basename(pathname)
     if fname == 'profindex.db':
@@ -279,6 +327,8 @@ def main(pathname):
         show_altnames(pathname)
     elif fname in ('freeindex.msg', 'freemess.msg', 'profbfree.db', 'profifree.db'):
         show_freedb(pathname)
+    elif fname == 'authuser.dat':
+        show_sessions(pathname)
 
 if __name__ == '__main__':
     main(sys.argv[1])
