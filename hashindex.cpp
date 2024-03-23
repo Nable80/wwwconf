@@ -325,7 +325,7 @@ int DeleteStringFromHashedIndex(const char *s)
                         //        remove from block
                         //
                         for(; (fs - buf) < bi.Used; *fs = *(fs + len), fs++);
-                        memset(&(buf[bi.Used - len-1]), 0, len+1);
+                        memset(&buf[bi.Used - len], 0, len);
 
                         if(wcfseek(f, hash, SEEK_SET) != 0) {
                                 unlock_file(f);
