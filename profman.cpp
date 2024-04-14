@@ -247,7 +247,7 @@ int CheckAndCreateFolder(const char *dir_path)
                         printf("%s already exists\n", dir_path);
                         return 1;
                 }
-                printf("Cannot create %s (error %d: %s)\n", dir_path, errno, strerrordesc_np(errno));
+                printf("Cannot create %s (error %d: %s)\n", dir_path, errno, strerror(errno));
                 return 0;
         }
         printf("%s created\n", dir_path);

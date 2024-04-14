@@ -3,7 +3,7 @@
 .PHONY: debug release all
 
 CXX ?= g++
-CXXFLAGS = -m32 -pedantic $(OPT_FLAGS) -D_FILE_OFFSET_BITS=64
+CXXFLAGS = -std=c++17 -m32 -pedantic $(OPT_FLAGS) -D_FILE_OFFSET_BITS=64
 CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion -Wsign-conversion
 CXXFLAGS += -Wshadow
 CXXFLAGS += -fsanitize=address,undefined
@@ -41,7 +41,7 @@ all: index.cgi dbtool
 
 .depend: $(SRCS)
 	@echo "Creating .depend"
-	$(CXX) -MM -MG $(SRCS) > .depend
+	$(CXX) $(CXXFLAGS) -MM -MG $(SRCS) > .depend
 
 ifneq ($(MAKECMDGOALS), clean)
 include .depend
