@@ -453,7 +453,6 @@ static void PrintLostPasswordForm()
 static void PrintConfig()
 {
         char str1[20], str2[20], str3[20], str4[20], str5[20], str6[20], str7[20], str8[20], str9[20];
-        int i;
 
         printf("<TABLE align=center width=\"100%%\"><tr><td><FORM METHOD=POST ACTION=\"%s?configure=action\" name=\"configure\">",
                 MY_CGI_URL);
@@ -516,7 +515,7 @@ static void PrintConfig()
                 MESSAGEHEAD_configure_showhrononlyheaders);
 
         printf("<BR><BR>Часовой пояс:<BR> <SELECT NAME=\"tz\">");
-        for(i = -12; i <= 12; i++)
+        for (int i = -12; i <= 12; i++)
                 printf("<OPTION VALUE=\"%d\" %s>GMT%s%02d", i,
                 (i == currenttz) ? LISTBOX_SELECTED : "", (i>=0) ? "+" : "-", (i>0)? i : -i);
         printf("</SELECT><BR>");
@@ -1196,21 +1195,15 @@ int PrintAboutUserInfo(char *name)
                 free(about);
 
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) || (ULogin.LU.UniqID == ui.UniqID) ) {
-                        char hname[10000];
+                        char hname[NI_MAXHOST + 2 + INET_ADDRSTRLEN + 1]; // "host (ip)"
+                        char ipstr[INET_ADDRSTRLEN];
+                        inet_ntop(AF_INET, &ui.lastIP, ipstr, sizeof(ipstr));
+                        // TODO: getnameinfo
                         hostent *he;
-                        unsigned char *aa = (unsigned char *)(&ui.lastIP);
-                        sprintf(hname, "%u.%u.%u.%u", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
-                        if((he = gethostbyaddr((char*)(&ui.lastIP), 4, AF_INET)) != NULL) {
-                                // prevent saving bad hostname
-                                if(strlen(he->h_name) > 0) {
-                                        char tmp[1000];
-
-                                        strcpy(tmp, hname);
-                                        strncpy(hname, he->h_name, 9999);
-                                        strcat(hname, " (");
-                                        strcat(hname, tmp);
-                                        strcat(hname, ")");
-                                }
+                        if ((he = gethostbyaddr((const void*)&ui.lastIP, 4, AF_INET)) != NULL && *he->h_name) {
+                                snprintf(hname, sizeof(hname), "%s (%s)", he->h_name, ipstr);
+                        } else {
+                                strcpy(hname, ipstr);
                         }
                         // only for admin :)
                         if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0)
@@ -2160,11 +2153,9 @@ static void PrepareActionResult(int action, const char **c_par1, const char **c_
 int main()
 {
         const char *qst;
-        char *deal, *st, *mesb;
+        char *deal, *mesb;
         char *par; // parameters string
-        char *tmp;
         DB_Base DB;
-        SMessage mes;
 
         if(!isEnoughSpace()) {
                 printf("Content-type: text/html\n\n"
@@ -2200,37 +2191,11 @@ int main()
         }
         sprintf(deal, "%s&", qst);
 
-        // detect IP
-        if((tmp = getenv(REMOTE_ADDR)) != NULL)
-        {
-                Cip = strdup(tmp);
+        // detect IP (initialize Cip and Nip global variables)
+        if ((Cip = getenv(REMOTE_ADDR)) == NULL || (Nip = inet_addr(Cip)) == INADDR_NONE) {
+                Cip = TAG_IP_NOT_DETECTED;
+                Nip = 0;
         }
-        else {
-                Cip = strdup(TAG_IP_NOT_DETECTED);
-        }
-        if (Cip == NULL) {
-                abort();
-        }
-
-        // translate IP
-        // if it fails, we will have Nip = 0
-        // TODO: use inet_addr/inet_aton/inet_pton instead of this ugly code
-        char *tst, *tms;
-        tst = Cip;
-        {
-                for(DWORD i = 0; i < 4; i++)
-                {
-                        if((tms = strchr(tst,'.')) != NULL || (tms = strchr(tst,'\0')) != NULL)
-                        {
-                                *tms = '\0';
-                                ((uint8_t*)(&Nip))[i] = (uint8_t)atoi(tst);
-                                tst = tms + 1;
-                                if(i < 3) *tms = '.';
-                        }
-                        else break;
-                }
-        }
-        if(Nip == 0) Nip = 1;
 
 #if ACTIVITY_LOGGING_SUPPORT
         // user activity logging
@@ -2244,14 +2209,12 @@ int main()
 
         /************ get user info from session ************/
         {
-                DWORD tmp[2];
-                if(strlen(cookie_seq) == 16 && sscanf(cookie_seq, "%8lx%8lx", &tmp[0], &tmp[1]) == 2)
-                {
+                DWORD session_id[2];
+                if (strlen(cookie_seq) == 16 && sscanf(cookie_seq, "%8lx%8lx", &session_id[0], &session_id[1]) == 2) {
                         // if session code not zero let's open session
-                        if(tmp[0] != 0 && tmp[1] != 0)
-                        {
+                        if (session_id[0] && session_id[1]) {
                                 // try to open sequence
-                                if(ULogin.CheckSession(tmp, Nip, 0))
+                                if (ULogin.CheckSession(session_id, Nip, 0))
                                         strcpy(cookie_name, ULogin.pui->username);
                         }
                 }
@@ -2319,7 +2282,7 @@ int main()
                 }
 
                 int is_xml = 0;
-
+                char *st;
                 if((st = strget(deal,"index=", 16, '&')) != NULL)
                 {
                         if(strcmp(st, "rss") == 0){
@@ -2334,13 +2297,11 @@ int main()
                         } else {
                                 errno = 0;
                                 char *ss;
-                                DWORD tmp = strtoul(st, &ss, 10);
-                                if((!(*st != '\0' && *ss == '\0')) || errno == ERANGE || tmp > TOPICS_COUNT)
-                                {
+                                DWORD tovr_tmp = strtoul(st, &ss, 10);
+                                if ((!(*st != '\0' && *ss == '\0')) || errno == ERANGE || tovr_tmp > TOPICS_COUNT) {
                                         // just print common index
-                                }
-                                else {
-                                        topicsoverride = tmp;
+                                } else {
+                                        topicsoverride = tovr_tmp;
                                         entok = 1;
                                 }
                         }
@@ -2469,18 +2430,18 @@ int main()
                                         if(ga[i].Number > currentlann) {
                                                 DB.Profile_UserName(ga[i].From, uname, 1);
 
-                                                char *st = FilterHTMLTags(ga[i].Announce, MAX_PARAMETERS_STRING - 1);
-                                                char *st1 = NULL;
+                                                char *announce = FilterHTMLTags(ga[i].Announce, MAX_PARAMETERS_STRING - 1);
+                                                char *announce_parsed = NULL;
                                                 DWORD retflg;
                                                 DWORD enabled_smiles = 0;
                                                 if((currentdsm & CONFIGURE_dsm) == 0)
                                                         enabled_smiles = MESSAGE_ENABLED_SMILES;
-                                                if(FilterBoardTags(st, &st1, 0, MAX_PARAMETERS_STRING - 1,
+                                                if (FilterBoardTags(announce, &announce_parsed, 0, MAX_PARAMETERS_STRING - 1,
                                                         enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                                         BOARDTAGS_EXPAND_ENTER, &retflg) == 0)
                                                 {
-                                                        st1 = st;
-                                                        st = NULL;
+                                                        announce_parsed = announce;
+                                                        announce = NULL;
                                                 }
 
                                                 if(((ULogin.LU.right & USERRIGHT_POST_GLOBAL_ANNOUNCE) != 0 && ga[i].UIdFrom ==
@@ -2496,11 +2457,11 @@ int main()
 
                                                 date = ConvertTime(ga[i].Date);
 
-                                                printf(DESIGN_GLOBALANN_FRAME, st1, MESSAGEMAIN_globann_postedby, uname, date, del);
+                                                printf(DESIGN_GLOBALANN_FRAME, announce_parsed, MESSAGEMAIN_globann_postedby, uname, date, del);
 
 
-                                                if(st) free(st);
-                                                if(st1) free(st1);
+                                                if (announce) free(announce);
+                                                if (announce_parsed) free(announce_parsed);
                                                 something_printed = 1;
                                         }
                                 }
@@ -2558,6 +2519,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"read=", 16, '&')) != NULL)
                 {
                         errno = 0;
@@ -2572,6 +2534,7 @@ int main()
                         else
                         {
                                 // read message
+                                SMessage mes;
                                 if(!ReadDBMessage(x, &mes)) printhtmlerror();
 
                                 /* allow read invisible message only to SUPERUSER */
@@ -2647,7 +2610,7 @@ int main()
                 char *ss;
                 DWORD num;
 
-                st = strget(deal, "xmlread=", 16, '&');
+                char *st = strget(deal, "xmlread=", 16, '&');
                 if (!st || !isdigit(st[0]))
                         goto End_URLerror;
 
@@ -2671,7 +2634,7 @@ int main()
                 char *ss;
                 DWORD num;
 
-                st = strget(deal, "xmlfpread=", 16, '&');
+                char *st = strget(deal, "xmlfpread=", 16, '&');
                 if (!st || !isdigit(st[0]))
                         goto End_URLerror;
 
@@ -2695,7 +2658,7 @@ int main()
                 char *ss;
                 DWORD num;
 
-                st = strget(deal, "xmlbody=", 16, '&');
+                char *st = strget(deal, "xmlbody=", 16, '&');
                 if (!st || !isdigit(st[0]))
                         goto End_URLerror;
 
@@ -2833,6 +2796,7 @@ int main()
                 DWORD repnum = 0;
 
                 // read form= parameter (if reply form is required)
+                char *st;
                 if((st = strget(deal,"form=", 16, '&')) != NULL)
                 {
                         errno = 0;
@@ -2861,6 +2825,7 @@ int main()
 
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_POST_JS, MAINPAGE_INDEX);
 
+                SMessage mes;
                 strcpy(mes.AuthorName, FilterHTMLTags(cookie_name, 1000, 0));
                 mes.MessageHeader[0] = 0;
                 mesb = (char*)malloc(1);
@@ -2878,13 +2843,14 @@ int main()
                 char *passw, *c_host;
                 DWORD ROOT = 0;
                 DWORD CFlags = 0, LogMeIn = 0;
+                SMessage mes;
 
                 // read method GET post params
                 if((ss = strget(deal, "xpost=", 16, '&')) != NULL ) {
                         errno = 0;
-                        char *st;
-                        ROOT = strtoul(ss, &st, 10);
-                        if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE) {
+                        char *tail;
+                        ROOT = strtoul(ss, &tail, 10);
+                        if ((!(*ss != '\0' && *tail == '\0')) || errno == ERANGE) {
                                 printnomessage(deal);
                                 goto End_part;
                         }
@@ -2904,22 +2870,23 @@ int main()
                 }
 
 
-                // make IP address
-                if ((tmp = getenv("HTTP_X_FORWARDED_FOR")) != NULL) print2log("proxy HTTP_X_FORWARDED_FOR %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_X_FORWARDED")) != NULL) print2log("proxy HTTP_X_FORWARDED %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_FORWARDED")) != NULL) print2log("proxy HTTP_FORWARDED %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_VIA")) != NULL) print2log("proxy HTTP_VIA %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_USER_AGENT_VIA")) != NULL) print2log("proxy HTTP_USER_AGENT_VIA %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_COMING_FROM")) != NULL) print2log("proxy HTTP_COMING_FROM %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_X_COMING_FROM")) != NULL) print2log("proxy HTTP_X_COMING_FROM %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_CLIENT_IP")) != NULL) print2log("proxy HTTP_CLIENT_IP %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_FROM")) != NULL) print2log("proxy HTTP_FROM %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_PROXY_CONNECTION")) != NULL) print2log("proxy HTTP_PROXY_CONNECTION %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_XROXY_CONNECTION")) != NULL) print2log("proxy HTTP_XROXY_CONNECTION %s - %s", tmp, deal);
-                if ((tmp = getenv("HTTP_PROXY_AUTHORIZATION")) != NULL) print2log("proxy HTTP_PROXY_AUTHORIZATION %s - %s", tmp, deal);
+                // check for proxy headers and log them (do we really need it nowadays?):
+                const char *proxy_header;
+                if ((proxy_header = getenv("HTTP_X_FORWARDED_FOR")) != NULL) print2log("proxy HTTP_X_FORWARDED_FOR %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_X_FORWARDED")) != NULL) print2log("proxy HTTP_X_FORWARDED %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_FORWARDED")) != NULL) print2log("proxy HTTP_FORWARDED %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_VIA")) != NULL) print2log("proxy HTTP_VIA %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_USER_AGENT_VIA")) != NULL) print2log("proxy HTTP_USER_AGENT_VIA %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_COMING_FROM")) != NULL) print2log("proxy HTTP_COMING_FROM %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_X_COMING_FROM")) != NULL) print2log("proxy HTTP_X_COMING_FROM %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_CLIENT_IP")) != NULL) print2log("proxy HTTP_CLIENT_IP %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_FROM")) != NULL) print2log("proxy HTTP_FROM %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_PROXY_CONNECTION")) != NULL) print2log("proxy HTTP_PROXY_CONNECTION %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_XROXY_CONNECTION")) != NULL) print2log("proxy HTTP_XROXY_CONNECTION %s - %s", proxy_header, deal);
+                if ((proxy_header = getenv("HTTP_PROXY_AUTHORIZATION")) != NULL) print2log("proxy HTTP_PROXY_AUTHORIZATION %s - %s", proxy_header, deal);
 
 
-                if(Nip != 1) {
+                if (Nip) {
                 /*        // resolve
                         char*tmp;
                         // Exception! if forwareder for localhost or 127.0.0.1 - ignore forwarder
@@ -3050,19 +3017,17 @@ int main()
                 mes.Topics = 0;
 #if TOPICS_SYSTEM_SUPPORT
                 {
-                        char *ss;
-                        DWORD topicID;
-                        if((ss = strget(par, "topic=", 10, '&')) != NULL) {
+                        char *topic_id_str;
+                        if ((topic_id_str = strget(par, "topic=", 10, '&')) != NULL) {
                                 errno = 0;
-                                char *st;
-                                topicID = strtoul(ss, &st, 10);
-                                if((!(*ss != '\0' && *st == '\0')) || errno == ERANGE || topicID > TOPICS_COUNT - 1)
-                                {
+                                char *tail;
+                                DWORD topicID = strtoul(topic_id_str, &tail, 10);
+                                if ((!(*topic_id_str != '\0' && *tail == '\0')) || errno == ERANGE || topicID > TOPICS_COUNT - 1) {
                                         // default topic
                                         mes.Topics = TOPICS_DEFAULT_SELECTED;
                                 }
                                 mes.Topics = Topics_List_map[topicID];
-                                free(ss);
+                                free(topic_id_str);
                         }
                 }
 #endif
@@ -3296,7 +3261,7 @@ int main()
 
 
         if(strncmp(deal, "configure", 9) == 0) {
-                st = NULL;
+                char *st;
                 if((st = strget(deal,"configure=", 16, '&')) != NULL) {
                         if(strcmp(st, "action") == 0) {
                                 free(st);
@@ -3342,27 +3307,29 @@ int main()
                                         READ_PARAM_MASK("bot=", currentdsm, CONFIGURE_bot);
 
 #define READ_PARAM_NUM(param, var, vardefault) do {                     \
-       char *st, *ss = strget(par, param, 20, '&');                     \
-       errno = 0;                                                       \
+       char *param_str = strget(par, param, 20, '&');                   \
        var = vardefault;                                                \
-       if (ss && *ss) {                                                 \
-               DWORD tmp = strtoul(ss, &st, 10);                        \
-               if (!*st || !errno)                                      \
+       if (param_str && *param_str) {                                   \
+               char *tail;                                              \
+               errno = 0;                                               \
+               DWORD tmp = strtoul(param_str, &tail, 10);               \
+               if (errno == 0 && *tail == '\0')                         \
                        var = tmp;                                       \
        }                                                                \
-       free(ss);                                                        \
+       free(param_str);                                                 \
 } while (0)
 
 #define READ_PARAM_INUM(param, var, vardefault) do {                    \
-       char *st, *ss = strget(par, param, 20, '&');                     \
-       errno = 0;                                                       \
+       char *param_str = strget(par, param, 20, '&');                   \
        var = vardefault;                                                \
-       if (ss && *ss) {                                                 \
-               int tmp = strtol(ss, &st, 10);                           \
-               if (!*st || !errno)                                      \
+       if (param_str && *param_str) {                                   \
+               char *tail;                                              \
+               errno = 0;                                               \
+               long tmp = strtol(param_str, &tail, 10);                 \
+               if (errno == 0 && *tail == '\0')                         \
                        var = tmp;                                       \
        }                                                                \
-       free(ss);                                                        \
+       free(param_str);                                                 \
 } while (0)
 
                                         // read lsel (show type selection)
@@ -3401,19 +3368,15 @@ int main()
                                         // read topics that should be displayed
                                         {
                                                 currenttopics = 0;
-                                                DWORD i;
-                                                for(i = 0; i < TOPICS_COUNT; i++)
-                                                {
-                                                        char *ss;
-                                                        char st[30];
-                                                        sprintf(st, "topic%lu=", i);
-                                                        if((ss = strget(par, st,  3, '&')) != NULL)
-                                                        {
-                                                                if(strcmp(ss, "on") == 0)
-                                                                {
+                                                for (DWORD i = 0; i < TOPICS_COUNT; i++) {
+                                                        char topic_key[30];
+                                                        sprintf(topic_key, "topic%lu=", i);
+                                                        char *topic_switch;
+                                                        if ((topic_switch = strget(par, topic_key, 3, '&')) != NULL) {
+                                                                if (strcmp(topic_switch, "on") == 0) {
                                                                         currenttopics |= 1U << i;
                                                                 }
-                                                                free(ss);
+                                                                free(topic_switch);
                                                         }
                                                 }
                                         }
@@ -3476,7 +3439,7 @@ int main()
         }
 
         if(strncmp(deal, "login", 5) == 0) {
-                st = NULL;
+                char *st;
                 if((st = strget(deal,"login=", 16, '&')) != NULL) {
 
                         if(strcmp(st, "action") == 0) {
@@ -3671,6 +3634,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"close=", 16, '&')) != NULL) {
                         char *ss;
                         DWORD midx;
@@ -3684,6 +3648,7 @@ int main()
                                 /* Security check for own message or USERRIGHT_SUPERUSER */
 
                                 /******** read message ********/
+                                SMessage mes;
                                 if(!ReadDBMessage(midx, &mes)) printhtmlerror();
                                 /* closing by author allowed in main thread only ! */
                                 if(ULogin.LU.ID[0] != 0 && ((mes.UniqUserID == ULogin.LU.UniqID && mes.Level == 0) || (ULogin.LU.right & USERRIGHT_SUPERUSER))) {
@@ -3712,6 +3677,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"hide=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
@@ -3722,6 +3688,7 @@ int main()
                         }
                         else {
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 1);
+                                SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %lu (%s (by %s)) was hided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
 
@@ -3746,6 +3713,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"unhide=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
@@ -3758,6 +3726,7 @@ int main()
                                 Tittle_cat(TITLE_HidingMessage);
 
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 0);
+                                SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %lu (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
@@ -3778,6 +3747,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"unclose=", 16, '&')) != NULL) {
                         char *ss;
                         DWORD midx;
@@ -3791,6 +3761,7 @@ int main()
                                 /* Security check for own message or USERRIGHT_SUPERUSER */
 
                                 /******** read message ********/
+                                SMessage mes;
                                 if(!ReadDBMessage(midx, &mes)) printhtmlerror();
                                 if(ULogin.LU.ID[0] != 0 && (mes.UniqUserID == ULogin.LU.UniqID || (ULogin.LU.right & USERRIGHT_SUPERUSER))) {
 
@@ -3819,6 +3790,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"roll=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
@@ -3832,6 +3804,7 @@ int main()
                                 Tittle_cat(TITLE_RollMessage);
 
                                 DB.DB_ChangeRollThreadFlag(tmp);
+                                SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %lu (%s (by %s)) was (un)rolled by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
 
@@ -3854,6 +3827,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"delmsg=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
@@ -3867,6 +3841,7 @@ int main()
 
                                 Tittle_cat(TITLE_DeletingMessage);
 
+                                SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
                                 print2log("Message %lu (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
                                 DB.DB_DeleteMessages(tmp);
@@ -3888,6 +3863,7 @@ int main()
                         goto End_part;
                 }
 
+                char *st;
                 if((st = strget(deal,"changemsg=", 16, '&')) != NULL) {
                         errno = 0;
                         char *ss;
@@ -3901,6 +3877,7 @@ int main()
                                 //
                                 //        read message
                                 //
+                                SMessage mes;
                                 if(!ReadDBMessage(midx, &mes)) printhtmlerror();
 
                                 //
@@ -3933,18 +3910,16 @@ int main()
 
                                         PrintMessageThread(&DB, tmp, mes.Flag, mes.UniqUserID);
 
-                                        char *mesb = (char*)malloc(mes.msize + 1);
-                                        mesb[0] = 0;
-
                                         //
                                         //        Read message body
                                         //
-                                        if(!ReadDBMessageBody(mesb, mes.MIndex, mes.msize))
+                                        char *msg_body = (char*)malloc(mes.msize + 1);
+                                        if(!ReadDBMessageBody(msg_body, mes.MIndex, mes.msize))
                                                 printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
 
-                                        PrintMessageForm(&mes, mesb, tmp, ACTION_BUTTON_EDIT);
+                                        PrintMessageForm(&mes, msg_body, tmp, ACTION_BUTTON_EDIT);
 
-                                        free(mesb);
+                                        free(msg_body);
 
                                         PrintBottomLines();
                                 }
@@ -3988,6 +3963,8 @@ int main()
                         printaccessdenied(deal);
                         goto End_part;
                 }
+
+                char *st;
                 if((st = strget(deal,"changeusr=", 30, '&')) != NULL) {
                         if(strcmp(st, "action") == 0) {
                                 free(st);
@@ -4017,20 +3994,16 @@ int main()
 
                                         // read the right
                                         {
-                                                DWORD i;
-                                                char *ss;
                                                 right = 0;
-                                                for(i = 0; i < USERRIGHT_COUNT; i++)
-                                                {
-                                                        char st[30];
-                                                        sprintf(st, "right%lu=", i);
-                                                        if((ss = strget(par, st,  4, '&')) != NULL)
-                                                        {
-                                                                if(strcmp(ss, "on") == 0)
-                                                                {
+                                                for (DWORD i = 0; i < USERRIGHT_COUNT; i++) {
+                                                        char perm_key[30];
+                                                        sprintf(perm_key, "right%lu=", i);
+                                                        char *perm_switch;
+                                                        if ((perm_switch = strget(par, perm_key, 4, '&')) != NULL) {
+                                                                if (strcmp(perm_switch, "on") == 0) {
                                                                         right |= 1U << i;
                                                                 }
-                                                                free(ss);
+                                                                free(perm_switch);
                                                         }
                                                 }
                                         }
@@ -4110,6 +4083,7 @@ int main()
                         goto End_part;
                 }
                 // We do not need to check security there, this action due to be done lately in DoCheckAndCreateProfile()
+                char *st;
                 if((st = strget(deal,"register=", 30, '&')) != NULL) {
                         if(strcmp(st, "action") == 0) {
                                 free(st);
@@ -4367,27 +4341,26 @@ int main()
         if(strncmp(deal, "ChangeTopic", 11) == 0) {
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
                 char *sn;
-                DWORD MsgNum = 0, Topic;
-                if((sn = strget(deal, "ChangeTopic=", 255 - 1, '&')) != NULL) {
+                if ((sn = strget(deal, "ChangeTopic=", 255 - 1, '&')) != NULL) {
                         errno = 0;
                         int errok;
-                        char *ss;
-                        MsgNum = strtoul(sn, &ss, 10);
-                        if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE || MsgNum == 0 ||
+                        char *tail;
+                        DWORD MsgNum = strtoul(sn, &tail, 10);
+                        if( (!(*sn != '\0' && *tail == '\0')) || errno == ERANGE || MsgNum == 0 ||
                                 (MsgNum = DB.TranslateMsgIndex(MsgNum)) == NO_MESSAGE_CODE) {
                                 errok = 0;
                         }
                         else errok = 1;
                         free(sn);
-                        if(errok && (st = strget(deal,"topic=", 60, '&')) != NULL) {
+                        char *topic_id_str;
+                        if (errok && (topic_id_str = strget(deal, "topic=", 60, '&')) != NULL) {
                                 errno = 0;
-                                char *ss;
-                                Topic = strtoul(st, &ss, 10);
-                                if( (!(*st != '\0' && *ss == '\0')) || errno == ERANGE || Topic > TOPICS_COUNT) {
+                                DWORD Topic = strtoul(topic_id_str, &tail, 10);
+                                if( (!(*topic_id_str != '\0' && *tail == '\0')) || errno == ERANGE || Topic > TOPICS_COUNT) {
                                         errok = 0;
                                 }
                                 else errok = 1;
-                                free(st);
+                                free(topic_id_str);
 
                                 //        Do real job (change the topic)
                                 SMessage mes;
@@ -4858,24 +4831,25 @@ int main()
         if(strncmp(deal, "globann", 7) == 0) {
                 if((ULogin.LU.right & USERRIGHT_POST_GLOBAL_ANNOUNCE) != 0) {
                         // post global announce or global announce form
-                        char *sn;
+                        char *ga_param;
                         DWORD type = 0;
-                        if((sn = strget(deal, "globann=", 255 - 1, '&')) != NULL) {
-                                if(strcmp(sn, "post") == 0) {
+                        if ((ga_param = strget(deal, "globann=", 255 - 1, '&')) != NULL) {
+                                if(strcmp(ga_param, "post") == 0) {
                                         type = 1;
-                                        free(sn);
+                                        free(ga_param);
                                 }
                         }
                         if(!type) {
                                 Tittle_cat(TITLE_PostGlobalAnnounce);
 
-                                char *ss, body[GLOBAL_ANNOUNCE_MAXSIZE];
+                                char body[GLOBAL_ANNOUNCE_MAXSIZE];
                                 DWORD cgann_num;
-                                cgann_num = strtoul(sn, &ss, 10);
-                                if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
+                                char *tail;
+                                cgann_num = strtoul(ga_param, &tail, 10);
+                                if ((!(*ga_param != '\0' && *tail == '\0')) || errno == ERANGE) {
                                         cgann_num = 0;
                                 }
-                                free(sn);
+                                free(ga_param);
 
                                 body[0] = 0;
                                 if(cgann_num != 0) {
@@ -4921,7 +4895,7 @@ int main()
                                         }
                                         free(todo);
 
-                                        char *sn = strget(par, "cgann=", 255 - 1, '&');
+                                        char *cgann_param = strget(par, "cgann=", 255 - 1, '&');
                                         char *refids = strget(par, "refid=", 100, '&');
                                         if(refids) {
                                                 if(strcmp(refids, "1") == 0) refid = 1;
@@ -4929,13 +4903,13 @@ int main()
                                         }
                                         body = strget(par, "body=", MAX_PARAMETERS_STRING - 1, '&');
                                         // translate to numeric format
-                                        char *ss;
-                                        if(sn) {
-                                                cgann_num = strtoul(sn, &ss, 10);
-                                                if( (!(*sn != '\0' && *ss == '\0')) || errno == ERANGE) {
+                                        char *tail;
+                                        if (cgann_param) {
+                                                cgann_num = strtoul(cgann_param, &tail, 10);
+                                                if( (!(*cgann_param != '\0' && *tail == '\0')) || errno == ERANGE) {
                                                         cgann_num = 0;
                                                 }
-                                                free(sn);
+                                                free(cgann_param);
                                         }
                                         free(par);
                                 }
@@ -5151,6 +5125,7 @@ int main()
                                 printaccessdenied(deal);
                                 goto End_part;
                         }
+                        char *st;
                         if((st = strget(deal, "favadd=", 255 - 1, '&')) != NULL) {
                                 errno = 0;
                                 DWORD addmsg;
@@ -5166,6 +5141,7 @@ int main()
                                         printnomessage(deal);
                                         goto End_part;
                                 }
+                                SMessage mes;
                                 if(!ReadDBMessage(msg, &mes)) printhtmlerror();
                                 /* allow read invisible message only to SUPERUSER */
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
@@ -5224,6 +5200,7 @@ int main()
                                 printaccessdenied(deal);
                                 goto End_part;
                         }
+                        char *st;
                         if((st = strget(deal, "favdel=", 255 - 1, '&')) != NULL) {
                                 errno = 0;
                                 DWORD delmsg;
@@ -5239,6 +5216,7 @@ int main()
                                         printnomessage(deal);
                                         goto End_part;
                                 }
+                                SMessage mes;
                                 if(!ReadDBMessage(msg, &mes)) printhtmlerror();
                                 /* allow read invisible message only to SUPERUSER */
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
@@ -5287,6 +5265,7 @@ int main()
                         printaccessdenied(deal);
                         goto End_part;
                 }
+                char *st;
                 if((st = strget(deal,"cluserlist=", 14, '&')) != NULL) {
                         if(strcmp(st, "yes") == 0) {
                                 free(st);
@@ -5298,7 +5277,6 @@ int main()
                 char **buf = NULL;
                 char name[1000];
                 DWORD uc = 0;
-                CUserLogin ULogin;
                 CProfiles uprof;
                 Tittle_cat(TITLE_UserList);
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
@@ -5363,6 +5341,7 @@ int main()
                         printaccessdenied(deal);
                         goto End_part;
                 }
+                char *st;
                 if((st = strget(deal,"banlist=", 30, '&')) != NULL) {
                         if(strcmp(st, "save") == 0) {
                                 // read ban list
@@ -5418,6 +5397,7 @@ int main()
         if(strncmp(deal, "clsession1", 9) == 0) {
                 if(ULogin.LU.UniqID != 0) {
                 DWORD closeseq[2];
+                char *st;
                 if((st= strget(deal, "clsession1=", 255 - 1, '&')) != NULL) {
                         errno = 0;
                         char *ss;

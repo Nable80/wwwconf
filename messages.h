@@ -440,7 +440,6 @@ extern const char *UserRight_List[USERRIGHT_COUNT];
 
 /******************* message view form ******************/
 #define MESSAGEMAIN_viewthread_sent                "Сообщение было послано:"
-#define MESSAGEMAIN_viewthread_ipview        ", IP: "
 #define MESSAGEMAIN_viewthread_date                "Дата:"
 #define MESSAGEMAIN_viewthread_mdate        "Изменен:"
 #define MESSAGEMAIN_viewthread_sigdisabled        "<U><I><SMALL>Пользователь имеет подпись, но отображение подписей запрещено в настройках.</SMALL></I></U>"
@@ -772,6 +771,7 @@ extern char DESIGN_break[10];
 #define DESIGN_VIEW_THREAD_MSG_SENT                "<BR>%s %s "
 #define DESIGN_VIEW_THREAD_MSG_SENT1        "&lt;<A HREF=\"mailto:%s\">%s</A>&gt; "
 #define DESIGN_VIEW_THREAD_MSG_SENT2        "<small>(%s)</small>"
+#define DESIGN_VIEW_THREAD_MSG_SENT2_IP     "<small>(%s, IP: %s)</small>"
 #define DESIGN_VIEW_THREAD_MSG_SENT3        "</DIV><BR>"
 // topic when reading
 #define DESIGN_VIEW_THREAD_TOPIC                "<BIG>[%s]</BIG>&nbsp;&nbsp;"

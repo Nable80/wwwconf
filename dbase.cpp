@@ -60,7 +60,7 @@ CUserLogin ULogin;
 
 int HPrinted = 0;
 
-char *Cip;
+const char *Cip;
 DWORD Nip = 0;
 #if ALLOW_MARK_NEW_MESSAGES == 2
 DWORD newhref = 0;
@@ -415,11 +415,11 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
         // BUG BUG with aname
         //////////////////////////////////
         char *header_to_bidi, *header, aname[1000], *tm;
-        DWORD tmp;
 
         tm = ConvertTime(mes->Date);
 
-        if (!FilterBoardTags(mes->MessageHeader, &header_to_bidi, 1, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_PURL_ENABLE, &tmp))
+        DWORD detected_flags;
+        if (!FilterBoardTags(mes->MessageHeader, &header_to_bidi, 1, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_PURL_ENABLE, &detected_flags))
                 header_to_bidi = mes->MessageHeader;
         if ( (header = FilterBiDi(header_to_bidi)) == NULL)
                 printhtmlerror();
@@ -428,10 +428,9 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
 
         // does this message posted by registred user ?
         if (mes->UniqUserID == 0) {
-                char *tmp = FilterBiDi(mes->AuthorName);
-                sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
-                if (tmp)
-                        free(tmp);
+                char *filtered_author = FilterBiDi(mes->AuthorName);
+                sprintf(aname, DESIGN_UNREGISTRED_NICK, filtered_author);
+                free(filtered_author);
         } else {
                 char altnick[1000];
                 char *altnick_f;
@@ -587,10 +586,9 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
                 if(newmessmark) {
                         // does this message posted by registred user ?
                         if(lastmes.UniqUserID == 0) {
-                                char *tmp = FilterBiDi(lastmes.AuthorName);
-                                sprintf(aname, DESIGN_UNREGISTRED_NICK, tmp);
-                                if (tmp)
-                                        free(tmp);
+                                char *filtered_author = FilterBiDi(lastmes.AuthorName);
+                                sprintf(aname, DESIGN_UNREGISTRED_NICK, filtered_author);
+                                free(filtered_author);
                         } else {
                                 char altnick[1000];
                                 char *altnick_f;
@@ -653,7 +651,7 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
 
 
         char *body;
-        DWORD readed, xml_body_length = 0, tmp;
+        DWORD readed, xml_body_length = 0;
 
 
         if(mes->msize < XML_BODY_MAX) xml_body_length = mes->msize;
@@ -682,7 +680,8 @@ int DB_Base::printxmlmessage_in_index(SMessage *mes)
                 //mes->Flag &= ~MESSAGE_ENABLED_TAGS;
 
                 //printf("Flag %ld", mes->Flag);
-                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_EXPAND_XMLEN , &tmp) == 0)
+                DWORD detected_flags;
+                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, mes->Flag | BOARDTAGS_EXPAND_XMLEN , &detected_flags) == 0)
                         pb = body;
 
         }
@@ -882,26 +881,25 @@ void DB_Base::printhtmlindexhron_bythreads(DWORD mode)
                 size_t i = toread / sizeof(SMessageTable);
                 while (i-- > 0) {
                         int dir = tbls[i].begin < tbls[i].end;
-                        size_t lefttoread = 1 + (dir ? tbls[i].end - tbls[i].begin : tbls[i].begin - tbls[i].end);
+                        size_t msgs_lefttoread = 1 + (dir ? tbls[i].end - tbls[i].begin : tbls[i].begin - tbls[i].end);
 
                         if (dir)  // forward direction
                                 if (wcfseek(fm, tbls[i].begin, SEEK_SET))
                                         printhtmlerror();
-                        while (lefttoread) {
-                                size_t toread;
-                                toread = lefttoread > READ_MESSAGE_HEADER*sizeof(SMessage) ?
+                        while (msgs_lefttoread) {
+                                size_t buffer_size = msgs_lefttoread > READ_MESSAGE_HEADER*sizeof(SMessage) ?
                                         READ_MESSAGE_HEADER*sizeof(SMessage) :
-                                        lefttoread;
-                                lefttoread -= toread;
+                                        msgs_lefttoread;
+                                msgs_lefttoread -= buffer_size;
 
                                 if (!dir)  // backward direction
-                                        if (wcfseek(fm, tbls[i].end + lefttoread, SEEK_SET))
+                                        if (wcfseek(fm, tbls[i].end + msgs_lefttoread, SEEK_SET))
                                                 printhtmlerror();
 
-                                if (!fCheckedRead(msgs, toread, fm))
+                                if (!fCheckedRead(msgs, buffer_size, fm))
                                         printhtmlerror();
 
-                                if (printhtmlbuffer(msgs, toread, dir, &LastLevel, &firprn, mode, shouldprint, skipped) == 0)
+                                if (printhtmlbuffer(msgs, buffer_size, dir, &LastLevel, &firprn, mode, shouldprint, skipped) == 0)
                                         goto end;
                         }
                 }
@@ -1699,7 +1697,6 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
         int i;
         DWORD RFlags;
         DWORD omsize;
-        WCFILE *fm;
         DWORD troot;
         SMessage msg;
 
@@ -1756,6 +1753,10 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
         else
                 msg.Flag &= ~MESSAGE_MAIL_NOTIFIATION;
 
+        // TODO: get rid of shared file descriptors in DB_Base class
+        if (fm) {
+                abort();
+        }
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_RW)) == NULL)
                 printhtmlerror();
 
@@ -1823,6 +1824,7 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
                 unlock_file(fb);
                 // ******* unlock fb *******
                 wcfclose(fb);
+                fb = NULL;
 
         }
         else {
@@ -1848,6 +1850,7 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
                         unlock_file(fb);
                         // ******** unlock fb ********
                         wcfclose(fb);
+                        fb = NULL;
                 }
 
                 // more or equal to sizeof(SMessageBody) will left free?
@@ -1877,6 +1880,7 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
         // unlock FM semaphore
 
         wcfclose(fm);
+        fm = NULL;
 
         mes->Flag = msg.Flag;
         mes->ParentThread = msg.ParentThread;
@@ -1889,7 +1893,6 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
 int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 {
         char *an, *pb, *ps = NULL;
-        DWORD tmp;
         DWORD esm = 0;
         CProfiles prof;
 #if SHOW_HOST_NAME
@@ -1901,11 +1904,12 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         if((currentdsm & CONFIGURE_dsm) == 0)
                 esm = MESSAGE_ENABLED_SMILES;
 
-        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, msg->Flag | BOARDTAGS_PURL_ENABLE, &tmp))
+        DWORD detected_flags;
+        if(!FilterBoardTags(msg->MessageHeader, &an, 1, MAX_PARAMETERS_STRING, msg->Flag | BOARDTAGS_PURL_ENABLE, &detected_flags))
                 an = msg->MessageHeader;
 
         if(msg->msize > 0)
-                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, msg->Flag | esm | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+                if(FilterBoardTags(body, &pb, 0, MAX_PARAMETERS_STRING, msg->Flag | esm | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &detected_flags) == 0)
                         pb = body;
 
         if(msg->Flag & MESSAGE_WAS_SIGNED) {
@@ -1919,7 +1923,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
                                 char *st = FilterHTMLTags(fui.Signature, MAX_PARAMETERS_STRING);
                                 if(st) {
                                         if(FilterBoardTags(st, &ps, 0, MAX_PARAMETERS_STRING,
-                                                esm | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp) == 0)
+                                                esm | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &detected_flags) == 0)
                                         {
                                                 ps = (char*)malloc(strlen(st) + 1);
                                                 strcpy(ps, st);
@@ -2012,17 +2016,15 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
         free(aname);
 
         // print host name if requred
-        if(showhost || (ULogin.LU.right & USERRIGHT_SUPERUSER)) {
-                char tmp[10000], tmp2[100];
-                unsigned char *aa = (unsigned char *)(&msg->IPAddr);
-                strcpy(tmp, msg->HostName);
-                //        print IP in numeric format for administrator
-                if((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) {
-                        strcat(tmp, MESSAGEMAIN_viewthread_ipview);
-                        sprintf(tmp2, "%u.%u.%u.%u", aa[0] & 0xff, aa[1] & 0xff, aa[2] & 0xff, aa[3] & 0xff);
-                        strcat(tmp, tmp2);
+        if (showhost || ULogin.LU.right & USERRIGHT_SUPERUSER) {
+                // print IP in numeric format for administrator
+                if (ULogin.LU.right & USERRIGHT_SUPERUSER) {
+                        char ipstr[INET_ADDRSTRLEN];
+                        inet_ntop(AF_INET, &msg->IPAddr, ipstr, sizeof(ipstr));
+                        printf(DESIGN_VIEW_THREAD_MSG_SENT2_IP, msg->HostName, ipstr);
+                } else {
+                        printf(DESIGN_VIEW_THREAD_MSG_SENT2, msg->HostName);
                 }
-                printf(DESIGN_VIEW_THREAD_MSG_SENT2, tmp);
         }
 
         char *dt = ConvertFullTime(msg->Date);
@@ -2072,7 +2074,7 @@ int DB_Base::PrintHtmlMessageBody(SMessage *msg, char *body)
 // in the above order.
 char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, int print_body)
 {
-        DWORD parnum = 0, index, tmp, i = 0;
+        DWORD parnum = 0, index, i = 0;
         const size_t maxpartnum = 51;
         size_t partnum, partlen[maxpartnum], len = 0;
         const char *part[maxpartnum];
@@ -2135,7 +2137,6 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
 
         if (!only_body) {
                 char *header_to_cdata, *author_dec;
-                DWORD tmp;
 
                 if ( (parnum = getparent(num)) == NO_MESSAGE_CODE) {
                         print2log("error at %s:%d: parent of %lu not found.", __FILE__, __LINE__, num);
@@ -2151,7 +2152,8 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 }
                 sprintf(parnum_s, "%lu", parnum);
 
-                if (!FilterBoardTags(mes.MessageHeader, &header_to_cdata, 1, MAX_PARAMETERS_STRING, mes.Flag, &tmp))
+                DWORD detected_flags;
+                if (!FilterBoardTags(mes.MessageHeader, &header_to_cdata, 1, MAX_PARAMETERS_STRING, mes.Flag, &detected_flags))
                         printhtmlerror();
                 header = FilterCdata(header_to_cdata);
                 free(header_to_cdata);
@@ -2186,8 +2188,9 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                         printhtmlerror();
                 if (!ReadDBMessageBody(body_to_filter, mes.MIndex, mes.msize))
                         printhtmlerror();
+                DWORD detected_flags;
                 if (!FilterBoardTags(body_to_filter, &body_to_cdata, 0, MAX_PARAMETERS_STRING,
-                                     mes.Flag | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &tmp))
+                                     mes.Flag | BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER, &detected_flags))
                         printhtmlerror();
                 free(body_to_filter);
                 body = FilterCdata(body_to_cdata);
@@ -2446,10 +2449,9 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
 {
         SMessageTable *buf;
         SMessage *msgs;
-        DWORD rr, fipos, toread;
+        DWORD rr, fipos;
         DWORD fmpos, fl, oldroot;
         int LastLevel = 0;
-        DWORD i = 0;
         // translate virtual to real index, and check it
         root = TranslateMsgIndex(root);
         if(root == NO_MESSAGE_CODE) return 0; // invalid or nonexisting index
@@ -2495,9 +2497,10 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                i = (toread + 1) / sizeof(SMessageTable);
+                DWORD i = (toread + 1) / sizeof(SMessageTable);
                 while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
+                                fl = fl + (i + 1)*sizeof(SMessageTable);
                                 goto PT_Found;
                         }
                 }
@@ -2507,7 +2510,6 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
         printhtmlerror();
 
 PT_Found:
-        fl = fl + (i + 1)*sizeof(SMessageTable);
 
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
         if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
@@ -2523,20 +2525,18 @@ PT_Found:
         printf("%s", DESIGN_open_dl_white);
 
 
-        for(;;) {
-                if(fipos == 0) break;
+        while (fipos) {
+                DWORD initial_toread;
+                if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+                        initial_toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                        fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                }
                 else {
-                        if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-                                toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                                fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                        }
-                        else {
-                                toread = fipos;
-                                fipos = 0;
-                        }
+                        initial_toread = fipos;
+                        fipos = 0;
                 }
                 if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
-                if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
+                if((rr = wcfread(buf, 1, initial_toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
 
                 DWORD i = rr / sizeof(SMessageTable);
 
@@ -2750,9 +2750,8 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
 {
         SMessageTable *buf;
         SMessage *msgs;
-        DWORD rr, fipos, toread;
+        DWORD rr, fipos;
         DWORD fmpos, fl, EndLevel, viroot;
-        DWORD i;
 
         // array for storing selecting messages
         *mescnt = 0;
@@ -2801,9 +2800,10 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) { free(buf); printhtmlerror(); }
                 if(!fCheckedRead(buf, toread, fi)) { free(buf); printhtmlerror(); }
-                i = (toread + 1) / sizeof(SMessageTable);
+                DWORD i = (toread + 1) / sizeof(SMessageTable);
                 while (i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
+                                fl = fl + (i + 1)*sizeof(SMessageTable);
                                 goto PT_Found;
                         }
                 }
@@ -2815,8 +2815,6 @@ int DB_Base::SelectMessageThreadtoBuf(DWORD root, DWORD **msgsel, DWORD *mescnt)
 
 PT_Found:
 
-        fl = fl + (i + 1)*sizeof(SMessageTable);
-
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
         if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
 
@@ -2826,20 +2824,18 @@ PT_Found:
         // flag, showing if we reach ViIndex of root msg
         int reachviroot = 0;
 
-        for(;;) {
-                if(fipos == 0) break;
+        while (fipos) {
+                DWORD initial_toread;
+                if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+                        initial_toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                        fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                }
                 else {
-                        if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-                                toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                                fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                        }
-                        else {
-                                toread = fipos;
-                                fipos = 0;
-                        }
+                        initial_toread = fipos;
+                        fipos = 0;
                 }
                 if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
-                if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
+                if((rr = wcfread(buf, 1, initial_toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
                 DWORD i = rr / sizeof(SMessageTable);
                 while (i-- > 0) {
                         if(buf[i].begin < buf[i].end ) {
@@ -3170,10 +3166,9 @@ DWORD DB_Base::getparent(DWORD root)
 {
         SMessageTable *buf;
         SMessage *msgs;
-        DWORD rr, fipos, toread;
+        DWORD rr, fipos;
         DWORD fmpos, fl, oldroot, parent = 0;
         WORD mlevel;
-        DWORD i = 0;
         int czero = 0, bp = 0;
         int success = 0;
         SMessage amsg;
@@ -3221,9 +3216,10 @@ DWORD DB_Base::getparent(DWORD root)
                 }
                 if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
                 if(!fCheckedRead(buf, toread, fi)) printhtmlerror();
-                i = (toread + 1) / sizeof(SMessageTable);
+                DWORD i = (toread + 1) / sizeof(SMessageTable);
                 while(i-- > 0) {
                         if(M_IN(root, buf[i].begin, buf[i].end) || M_IN(root, buf[i].end, buf[i].begin)) {
+                                fl = fl + (i + 1)*sizeof(SMessageTable);
                                 goto TT_Found;
                         }
                 }
@@ -3232,7 +3228,6 @@ DWORD DB_Base::getparent(DWORD root)
         // not found in indexes - fatal error
         printhtmlerror();
  TT_Found:
-        fl = fl + (i + 1)*sizeof(SMessageTable);
 
         if((fm = wcfopen(F_MSGINDEX, FILE_ACCESS_MODES_R)) == NULL) printhtmlerror();
         if(wcfseek(fi, fl, SEEK_SET) == -1) printhtmlerror();
@@ -3240,20 +3235,18 @@ DWORD DB_Base::getparent(DWORD root)
         fipos = wcftell(fi);
 
 
-        for(;;) {
-                if(fipos == 0) break;
+        while (fipos) {
+                DWORD initial_toread;
+                if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
+                        initial_toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                        fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
+                }
                 else {
-                        if(fipos >= READ_MESSAGE_TABLE*sizeof(SMessageTable)) {
-                                toread = READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                                fipos = fipos - READ_MESSAGE_TABLE*sizeof(SMessageTable);
-                        }
-                        else {
-                                toread = fipos;
-                                fipos = 0;
-                        }
+                        initial_toread = fipos;
+                        fipos = 0;
                 }
                 if(wcfseek(fi, fipos, SEEK_SET) == -1) printhtmlerror();
-                if((rr = wcfread(buf, 1, toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
+                if((rr = wcfread(buf, 1, initial_toread, fi)) % sizeof(SMessageTable) != 0) printhtmlerror();
 
                 DWORD i = rr / sizeof(SMessageTable);
                 while (i-- > 0) {

@@ -362,12 +362,8 @@ size_t ParseBoardTag(char *s, char **par1, char **par2)
         if(i == 0) {
                 return 0;
         }
-        *par1=(char*)malloc(i + 1);
-        char ts = s[i];
-        s[i] = 0;
-        strcpy(*par1, s);
+        *par1 = strndup(s, i);
         toupperstr(*par1);
-        s[i] = ts;
         s += i;
         if(*s == WC_TAG_CLOSE) {
                 return (size_t)(s - ss + 1);
@@ -380,11 +376,7 @@ size_t ParseBoardTag(char *s, char **par1, char **par2)
                         //goto ParseBoardTag_Faild;
                 }
                 if(s[j] == WC_TAG_CLOSE) {
-                        *par2=(char*)malloc(j + 1);
-                        char ts = s[j];
-                        s[j] = 0;
-                        strcpy(*par2, s);
-                        s[j] = ts;
+                        *par2 = strndup(s, j);
                         return (size_t)(s - ss + 1) + j;
                 }
         }
@@ -399,7 +391,7 @@ size_t ParseBoardTag(char *s, char **par1, char **par2)
  * return value: function return 1 if successfull, overwise 0
  * tagtype - tag type (index in TagConvTable) and taglen = 1, 2
  */
-int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, int index)
+static int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtype, int index)
 {
         int tagdirection = 0; /* open by default */
 
@@ -410,15 +402,18 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
 
         *restag = NULL;
 
-        for(int i=0; i < BoardTagCount; i++) {
-                if(strcmp(tag1, TagConvTable[i].tag) == 0) {
-                        if(index && !TagConvTable[i].index) {
+        for (int tn = 0; tn < BoardTagCount; tn++) {
+                if (strcmp(tag1, TagConvTable[tn].tag) == 0) {
+                        if (index && !TagConvTable[tn].index) {
                                 return 0;
                         }
-                        *tagnumber = i;
+                        *tagnumber = tn;
                         int tagt;
-                        if(tagdirection) tagt = TagConvTable[i].typeclose;
-                        else tagt = TagConvTable[i].typeopen;
+                        if (tagdirection) {
+                                tagt = TagConvTable[tn].typeclose;
+                        } else {
+                                tagt = TagConvTable[tn].typeopen;
+                        }
 
                         *tagtype = tagt;
 
@@ -435,19 +430,17 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                 if (tag2) {
                                         if (!tagdirection)
                                                 return 0;
-                                        else if (TagConvTable[i].typeopen != WC_TAG_TYPE_12 && TagConvTable[i].typeopen != WC_TAG_TYPE_2)
+                                        else if (TagConvTable[tn].typeopen != WC_TAG_TYPE_12 && TagConvTable[tn].typeopen != WC_TAG_TYPE_2)
                                                 return 0;
                                 }
                                 //if(tag2 != NULL && tagdirection) return 0;
                                 if(tagdirection) {
                                         /* closing */
-                                        *restag = (char*)malloc(strlen(TagConvTable[i].tclosetag) + 1);
-                                        strcpy(*restag, TagConvTable[i].tclosetag);
+                                        *restag = strdup(TagConvTable[tn].tclosetag);
                                 }
                                 else {
                                         /* opening */
-                                        *restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1);
-                                        strcpy(*restag, TagConvTable[i].topentag);
+                                        *restag = strdup(TagConvTable[tn].topentag);
                                 }
                                 return 1;
 
@@ -460,7 +453,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                         /* opening */
                                         char *parsedtag2 = NULL;
 
-                                        if (i == URL_TAG_TYPE) {
+                                        if (tn == URL_TAG_TYPE) {
                                                 if(strncmp(tag2, "http:", 5) != 0 && strncmp(tag2, "ftp:",   4) != 0 &&
                                                    strncmp(tag2, "file:", 5) != 0 && strncmp(tag2, "https:", 6) != 0 &&
                                                    strncmp(tag2, "smb:",  4) != 0) {
@@ -468,7 +461,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                                         strcpy(parsedtag2, "http://");
                                                         strcat(parsedtag2, tag2);
                                                 }
-                                        } else if (i == COLOR_TAG_TYPE) {
+                                        } else if (tn == COLOR_TAG_TYPE) {
                                                 if (tag2[0] == '#') {
                                                         for (size_t i = 1; i < 7; ++i)
                                                                 if (!((tag2[i] >= '0' && tag2[i] <= '9') ||
@@ -485,21 +478,21 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
 
                                         if (!parsedtag2)
                                                 parsedtag2 = tag2;
-                                        *restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1 + strlen(parsedtag2));
+                                        *restag = (char*)malloc(strlen(TagConvTable[tn].topentag) + 1 + strlen(parsedtag2));
 
                                         /* use sprintf() to insert tag2 into result
                                          * (format of topentag as %s instead of tag2)
                                          */
-                                        sprintf(*restag, TagConvTable[i].topentag, parsedtag2);
+                                        sprintf(*restag, TagConvTable[tn].topentag, parsedtag2);
                                         *restag = (char*)realloc(*restag, strlen(*restag) + 1);
                                         if(parsedtag2 != tag2) free(parsedtag2);
                                 } else {
                                         /* closing */
                                         const char *tclosetag;
-                                        if (TagConvTable[i].typeclose == WC_TAG_TYPE_12)
-                                                tclosetag = TagConvTable[i].tclosetag2;
+                                        if (TagConvTable[tn].typeclose == WC_TAG_TYPE_12)
+                                                tclosetag = TagConvTable[tn].tclosetag2;
                                         else
-                                                tclosetag = TagConvTable[i].tclosetag;
+                                                tclosetag = TagConvTable[tn].tclosetag;
                                         *restag = (char*)malloc(strlen(tclosetag) + 1 + strlen(tag2));
                                         sprintf(*restag, tclosetag, tag2);
                                         *restag = (char*)realloc(*restag, strlen(*restag) + 1);
@@ -518,8 +511,7 @@ int ExpandTag(char *tag1, char *tag2, char **restag, int *tagnumber, int *tagtyp
                                 if(tag2 != NULL) return 0;
                                 if(!tagdirection) {
                                         /* opening */
-                                        *restag = (char*)malloc(strlen(TagConvTable[i].topentag) + 1);
-                                        strcpy(*restag, TagConvTable[i].topentag);
+                                        *restag = strdup(TagConvTable[tn].topentag);
                                 }
                                 else {
                                         /* closing - not valid (only opening) */
@@ -811,9 +803,9 @@ parse_next:
         if(StringTooLong) {
                 /* too long string */
                 free(st);
-                for(DWORD i = 0; i<opentag; i++) {
-                        free(OldTag[i].oldexp);
-                        free(OldTag[i].tagexp);
+                for (DWORD ti = 0; ti < opentag; ti++) {
+                        free(OldTag[ti].oldexp);
+                        free(OldTag[ti].tagexp);
                 }
                 return 0;
         }

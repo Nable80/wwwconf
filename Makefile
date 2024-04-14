@@ -5,6 +5,7 @@
 CXX ?= g++
 CXXFLAGS = -m32 -pedantic $(OPT_FLAGS) -D_FILE_OFFSET_BITS=64
 CXXFLAGS += -Wall -Wextra -Werror -Wnarrowing -Wwrite-strings -Wundef -Wconversion -Wsign-conversion
+CXXFLAGS += -Wshadow
 CXXFLAGS += -fsanitize=address,undefined
 
 # TODO: enable more options and fix tons of uncovered problems

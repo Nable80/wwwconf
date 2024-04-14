@@ -26,7 +26,7 @@ struct SMessageTable
 #define PRINTMODE_XML                        0x0002
 
 // IP address of user
-extern char *Cip;
+extern const char *Cip;
 extern DWORD Nip;
 
 

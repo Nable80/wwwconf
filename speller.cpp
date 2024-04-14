@@ -381,19 +381,17 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         bool tags_in_header = false;
         bool ignore_tags = false;
 
-        char *st;
         DWORD flg = MESSAGE_ENABLED_TAGS | BOARDTAGS_TAG_PREPARSE;
         if(CFlags & MSG_CHK_DISABLE_WWWCONF_TAGS) {
                 flg = flg & (~MESSAGE_ENABLED_TAGS);
         }
 
-        if(FilterBoardTags(mes->MessageHeader, &st, 1, MESSAGE_HEADER_LENGTH, flg, RetFlags) == 0) {
+        char *clean_header;
+        if (!FilterBoardTags(mes->MessageHeader, &clean_header, 1, MESSAGE_HEADER_LENGTH, flg, RetFlags)) {
                 return MSG_CHK_ERROR_NOMSGHEADER;
         }
-        else {
-                strcpy(mes->MessageHeader, st);
-                free(st);
-        }
+        strcpy(mes->MessageHeader, clean_header);
+        free(clean_header);
 
         if (*RetFlags & MESSAGE_ENABLED_TAGS)
                 tags_in_header = true;
@@ -459,9 +457,9 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         /* filter HTML in Body */
         if((CFlags & MSG_CHK_ALLOW_HTML) == 0) {
                 if(*body != NULL) {
-                        char *st = FilterHTMLTags(*body, MAX_PARAMETERS_STRING - 1);
-                        free(*body);
-                        *body = st;
+                        char *orig_body = *body;
+                        *body = FilterHTMLTags(orig_body, MAX_PARAMETERS_STRING - 1);
+                        free(orig_body);
                 }
         }
 
@@ -487,14 +485,17 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         }
 
         /* parse body */
-        if(FilterBoardTags(*body, &st, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_TAG_PREPARSE, RetFlags) == 0) {
-                /* if to long - ignore tags */
+        char *clean_body;
+        if (!FilterBoardTags(*body, &clean_body, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_TAG_PREPARSE, RetFlags)) {
+                /* if too long - ignore tags */
                 ignore_tags = true;
         }
         else {
                 free(*body);
-                if(strcmp(st, " ") == 0) *st = 0;
-                *body = st;
+                if (strcmp(clean_body, " ") == 0) {
+                        *clean_body = 0;
+                }
+                *body = clean_body;
         }
 
         if (!ignore_tags && tags_in_header) {

@@ -288,6 +288,7 @@ int main(int argc, char *argv[])
         int errcode;
 
         SProfile_UserInfo ui;
+        SProfile_FullUserInfo fui;
         WCFILE *fw;
 
         printf("WWWConf console management tool\n");
@@ -305,9 +306,6 @@ int main(int argc, char *argv[])
         }
         if((strcmp(argv[1], "-au") == 0 || strcmp(argv[1], "-aa") == 0) && argc == 4) {
                 // create user
-                SProfile_UserInfo ui;
-                SProfile_FullUserInfo fui;
-
                 strcpy(fui.Email, "");
                 strcpy(fui.FullName, argv[2]);
                 strcpy(fui.Signature, "");
@@ -341,7 +339,6 @@ int main(int argc, char *argv[])
         }
 
         if(strcmp(argv[1], "-v") == 0 && argc == 3) {
-                SProfile_FullUserInfo fui;
                 DWORD ind;
                 if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("User Information\n");
@@ -404,7 +401,6 @@ int main(int argc, char *argv[])
 
 
         if (strcmp(argv[1], "-cp") == 0 && argc == 3) {
-                SProfile_FullUserInfo fui;
                 DWORD ind;
                 if((errcode = ul.GetUserByName(argv[2], &ui, &fui, &ind)) == PROFILE_RETURN_ALLOK) {
                         printf("Clean Privates\n");
