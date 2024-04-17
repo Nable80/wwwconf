@@ -102,6 +102,11 @@ struct SProfile_FullUserInfo {
         // do not modify following 2 lines
         DWORD size;
         char *AboutUser;
+
+        ~SProfile_FullUserInfo() {
+                free(this->AboutUser);
+                this->AboutUser = NULL;
+        }
 };
 static_assert(sizeof(SProfile_FullUserInfo) == 1032, "sizeof(SProfile_FullUserInfo) must be 1032 (0x408)");
 

@@ -52,16 +52,15 @@ class CUserLogin {
 public:
         CProfiles uprof;
         DWORD errnum;
-        SProfile_UserInfo *pui;
-        SProfile_FullUserInfo *pfui;
+        SProfile_UserInfo ui;
+        SProfile_FullUserInfo fui;
         SAuthUserSeq LU;
 
         SSavedAuthSeq SEQ;
 
         /* constructor opens default session */
         CUserLogin();
-        ~CUserLogin();
-        DWORD OpenSession(char *uname, char *passw, SProfile_FullUserInfo *Fui, DWORD lIP, DWORD IPCheckD);
+        DWORD OpenSession(const char *uname, const char *passw, SProfile_FullUserInfo *ofui, DWORD lIP, DWORD IPCheckD);
         DWORD CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid);
         DWORD GetUserInfoStruct(DWORD seq[2]);
         DWORD ForceCloseSessionForUser(DWORD UniqID);

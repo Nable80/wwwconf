@@ -485,7 +485,7 @@ int CheckSpellingBan(struct SMessage *mes, char **body, char **Reason,
         }
 
         /* parse body */
-        char *clean_body;
+        char *clean_body = NULL;
         if (!FilterBoardTags(*body, &clean_body, 0, MAX_PARAMETERS_STRING, flg | BOARDTAGS_TAG_PREPARSE, RetFlags)) {
                 /* if too long - ignore tags */
                 ignore_tags = true;

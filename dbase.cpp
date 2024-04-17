@@ -437,8 +437,10 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
 
                 if((currentdsm & CONFIGURE_nalt) == 0 && AltNames.NameToAltName(mes->UniqUserID, altnick)) {
                         char *st;
-                        if(PrepareTextForPrint(altnick, &st, 1, MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE))
+                        if (PrepareTextForPrint(altnick, &st, 1, MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE)) {
                                 strcpy(altnick, st);
+                                free(st);
+                        }
                 } else
                         strcpy(altnick, mes->AuthorName);
 
@@ -451,9 +453,9 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
                 else {
                         char *ts;
                         // maybe user has selected some nicks to be displayed as detailed nicks?
-                        if( (ULogin.LU.ID[0] != 0 && (ts = strstr(ULogin.pfui->SelectedUsers, mes->AuthorName)) != NULL) &&
+                        if( (ULogin.LU.ID[0] != 0 && (ts = strstr(ULogin.fui.SelectedUsers, mes->AuthorName)) != NULL) &&
                                 (ts[strlen(mes->AuthorName)] == '\n' || ts[strlen(mes->AuthorName)] == '\r' || ts[strlen(mes->AuthorName)] == '\0') &&
-                                (ts == ULogin.pfui->SelectedUsers || ts[-1] == '\n' || ts[-1] == '\r'  ) ){
+                                (ts == ULogin.fui.SelectedUsers || ts[-1] == '\n' || ts[-1] == '\r'  ) ){
 //                        if(ULogin.LU.ID[0] != 0 && ((ts = strstr(ULogin.pfui->SelectedUsers, mes->AuthorName)) != NULL)) {
                                 sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick_f);
                         }
@@ -609,7 +611,7 @@ int DB_Base::printhtmlmessage_in_index(SMessage *mes, DWORD style, DWORD skipped
                                 else {
                                         char *ts;
                                         // maybe user has selected some nicks to be displayed as detailed nicks?
-                                        if(ULogin.LU.ID[0] != 0 && ((ts = strstr(ULogin.pfui->SelectedUsers, lastmes.AuthorName)) != NULL)) {
+                                        if(ULogin.LU.ID[0] != 0 && ((ts = strstr(ULogin.fui.SelectedUsers, lastmes.AuthorName)) != NULL)) {
                                                 sprintf(aname, DESIGN_SELECTEDUSER_NICK, altnick_f);
                                         }
                                         else {
@@ -964,7 +966,7 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                         //
                         //        User was already logged in
                         //
-                        memcpy(&UI, ULogin.pui, sizeof(UI));
+                        UI = ULogin.ui;
                         strcpy(mes->AuthorName, UI.username);
                         Uind = ULogin.LU.SIndex;
                 }
@@ -1165,7 +1167,6 @@ int DB_Base::DB_InsertMessage(struct SMessage *mes, DWORD root, DWORD msize, cha
                                 if (aname)
                                         free(aname);
                         }
-                        if(fui.AboutUser) free(fui.AboutUser);
                 }
                 free(msg);
         }
@@ -1709,8 +1710,8 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
         if (ULogin.LU.ID[0] == 0)
                 return MSG_CHK_ERROR_INVALID_PASSW;
 
-        if((ULogin.pui->right & USERRIGHT_SUPERUSER) == 0) {
-                if((ULogin.pui->right & USERRIGHT_MODIFY_MESSAGE) == 0 || ULogin.pui->UniqID != msg.UniqUserID)
+        if((ULogin.ui.right & USERRIGHT_SUPERUSER) == 0) {
+                if((ULogin.ui.right & USERRIGHT_MODIFY_MESSAGE) == 0 || ULogin.ui.UniqID != msg.UniqUserID)
                         return MSG_CHK_ERROR_EDIT_DENIED;
                 if(msg.Flag & MESSAGE_IS_CLOSED)
                         return MSG_CHK_ERROR_CLOSED;
@@ -1723,7 +1724,7 @@ int DB_Base::DB_ChangeMessage(DWORD viroot, SMessage* mes, char **body, DWORD CF
         strcpy(msg.HostName, mes->HostName);
         msg.IPAddr = mes->IPAddr;
 
-        if ((ULogin.pui->right & USERRIGHT_SUPERUSER) && strcmp(msg.AuthorName, mes->AuthorName)) {
+        if ((ULogin.ui.right & USERRIGHT_SUPERUSER) && strcmp(msg.AuthorName, mes->AuthorName)) {
                 msg.UniqUserID = 0;
                 strcpy(msg.AuthorName, mes->AuthorName);
         }
@@ -2196,11 +2197,10 @@ char* DB_Base::PrintXmlMessageRoutine(DWORD num, int is_xmlfp, int only_body, in
                 body = FilterCdata(body_to_cdata);
                 free(body_to_cdata);
         } else if (only_body) {
-                char *r;
                 const char *tmpl = "<message id=\"%lu\"/>";
-                if ( (r = (char*) malloc(strlen(tmpl) - strlen("%lu") + num_s_len + 1)) == NULL)
+                if ( (s = (char*) malloc(strlen(tmpl) - strlen("%lu") + num_s_len + 1)) == NULL)
                         printhtmlerror();
-                sprintf(r, tmpl, num);
+                sprintf(s, tmpl, num);
                 goto end;
         }
 
@@ -2311,17 +2311,23 @@ end:
 
 void DB_Base::PrintXmlMessage(DWORD num)
 {
-        printf(XML_START "%s", PrintXmlMessageRoutine(num));
+        char *xml_body = PrintXmlMessageRoutine(num);
+        printf(XML_START "%s", xml_body);
+        free(xml_body);
 }
 
 void DB_Base::PrintXmlfpMessage(DWORD num)
 {
-        printf(XML_START "%s", PrintXmlMessageRoutine(num, 1));
+        char *xml_body = PrintXmlMessageRoutine(num, 1);
+        printf(XML_START "%s", xml_body);
+        free(xml_body);
 }
 
 void DB_Base::PrintXmlBody(DWORD num)
 {
-        printf(XML_START "%s", PrintXmlMessageRoutine(num, 0, 1));
+        char *xml_body = PrintXmlMessageRoutine(num, 0, 1);
+        printf(XML_START "%s", xml_body);
+        free(xml_body);
 }
 
 void DB_Base::PrintXmlLastNumber()
@@ -2437,6 +2443,7 @@ int DB_Base::DB_PrintMessageBody(DWORD root)
         wcfclose(fb);
 
         PrintHtmlMessageBody(&msg, body);
+        free(body);
 
         return 1;
 }
@@ -2482,8 +2489,6 @@ int DB_Base::DB_PrintMessageThread(DWORD root)
         /* temporary !!! should be added index support */
         // find index in index file
         fl = wcftell(fi);
-
-        buf = (SMessageTable *)malloc(sizeof(SMessageTable)*READ_MESSAGE_TABLE + 1);
 
         while(fl > 0) {
                 DWORD toread;

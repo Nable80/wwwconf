@@ -131,7 +131,7 @@ const char *ACTIONS[] = {
         "edit"
 };
 
-char* strget(char *par,const char *find, size_t maxl, char end, bool argparsing = true);
+char* strget(char *par, const char *find, size_t maxl, char end, bool argparsing = true);
 
 /* toupper string using CP1251
  */
@@ -151,22 +151,17 @@ char* toupperstr(char *s)
         return s;
 }
 
-int getAction(char* par)
+int getAction(char *par)
 {
         for (int i = 0; i < ACTION_COUNT; ++i) {
-                char *st, *tok;
-                size_t actlen;
-
-                actlen = strlen(ACTIONS[i]);
-
+                size_t actlen = strlen(ACTIONS[i]);
                 // +1 for '=' and +1 for '\0'
-                if ( (tok = (char*) malloc(actlen + 2)) == NULL)
-                        printhtmlerror();
-
+                char *tok = (char*) malloc(actlen + 2);
                 strcpy(tok, ACTIONS[i]);
                 strcpy(tok + actlen, "=");
-
-                if ( (st = strget(par, tok, MAX_STRING, '&'))) {
+                char *st = strget(par, tok, MAX_STRING, '&');
+                free(tok);
+                if (st) {
                         free(st);
                         return i;
                 }
@@ -577,7 +572,7 @@ static void PrintConfig()
                 MESSAGEHEAD_configure_disablebot, str5);
         printf("</TD></TR></TABLE>");
 
-        if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS) )
+        if(ULogin.LU.ID[0] && (ULogin.ui.Flags & PROFILES_FLAG_VIEW_SETTINGS) )
                         printf("<P>" MESSAGEHEAD_configure_saving_to_profile "<BR>");
         else printf("<P>" MESSAGEHEAD_configure_saving_to_browser "<BR>");
         if(ULogin.LU.ID[0]) printf(MESSAGEHEAD_configure_view_saving "<BR>");
@@ -652,9 +647,9 @@ void PrintTopString(DWORD c, DWORD ind, DWORD ret)
 #endif
 
         if(ULogin.LU.ID[0] != 0 && (c & HEADERSTRING_DISABLE_PRIVATEMSG) == 0) {
-                if(ULogin.pui->persmescnt - ULogin.pui->readpersmescnt > 0)
+                if(ULogin.ui.persmescnt - ULogin.ui.readpersmescnt > 0)
                         printf("<A HREF=\"%s?persmsg\"><FONT COLOR=RED><B>%s(%d)</B></FONT></A>",
-                                MY_CGI_URL, MESSAGEHEAD_personalmsg, ULogin.pui->persmescnt - ULogin.pui->readpersmescnt);
+                                MY_CGI_URL, MESSAGEHEAD_personalmsg, ULogin.ui.persmescnt - ULogin.ui.readpersmescnt);
                 else
                         printf("<A HREF=\"%s?persmsg\">%s</A>", MY_CGI_URL, MESSAGEHEAD_personalmsg);
         }
@@ -880,7 +875,7 @@ void PrintEditProfileForm(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, DWO
         printf("<TR><TD COLSPAN=2><HR ALIGN=CENTER WIDTH=\"80%%\" NOSHADE></TD></TR><TR><TD ALIGN=RIGHT>%s </TD>",
                         MESSAGEMAIN_register_login);
 
-        if( (ULogin.LU.ID[0] == 0) || (ULogin.LU.ID[0] != 0 && ((ULogin.pui->right & USERRIGHT_SUPERUSER) != 0)) ) {
+        if( (ULogin.LU.ID[0] == 0) || (ULogin.LU.ID[0] != 0 && ((ULogin.ui.right & USERRIGHT_SUPERUSER) != 0)) ) {
                 printf("<TD ALIGN=LEFT><INPUT TYPE=TEXT NAME=\"login\" SIZE=35 MAXLENGTH=%d VALUE=\"%s\"></TD></TR>",
                         AUTHOR_NAME_LENGTH - 1, FilterHTMLTags(ui->username, 1000, 0));
         }
@@ -1068,7 +1063,8 @@ int PrintAboutUserInfo(char *name)
         SProfile_FullUserInfo fui;
         SProfile_UserInfo ui;
 
-        nickname = FilterHTMLTags(name, 1000);
+        // TODO: this is sick, get rid of all those static small buffers
+        nickname = FilterHTMLTags(name, 1000, 0);
 
         if(mprf.GetUserByName(name, &ui, &fui, NULL) != PROFILE_RETURN_ALLOK)
         {
@@ -1092,7 +1088,9 @@ int PrintAboutUserInfo(char *name)
         }
 
         if(ULogin.LU.ID[0] && ULogin.LU.UniqID != ui.UniqID){
-                printf(" <A HREF=\"%s?persmsgform=%s\">(%s)</A>", MY_CGI_URL, CodeHttpString(name), MESSAGEMAIN_profview_postpersmsg);
+                char *encoded_name = CodeHttpString(name);
+                printf(" <A HREF=\"%s?persmsgform=%s\">(%s)</A>", MY_CGI_URL, encoded_name, MESSAGEMAIN_profview_postpersmsg);
+                free(encoded_name);
         }
 
         printf("</SMALL></TD></TR>");
@@ -1137,20 +1135,20 @@ int PrintAboutUserInfo(char *name)
                 else printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG><FONT COLOR=\"#0000F0\">%s</FONT></STRONG></TD></TR>",
                         MESSAGEMAIN_profview_email, MESSAGEMAIN_profview_privacy_inf);
 
-                /* possible error (with malloc) here */
-                char *regdate, *logdate = (char*)malloc(255), *ustatus = (char*)malloc(255);
-                /*************************************/
-                if(!ui.LoginDate) strcpy(logdate, "Never logged in");
-                else strcpy(logdate, ConvertFullTime(ui.LoginDate));
-                regdate = ConvertFullTime(fui.CreateDate);
+                char *regdate = strdup(ConvertFullTime(fui.CreateDate));
+                char *logdate;
+                if (!ui.LoginDate) {
+                        logdate = strdup("Never logged in");
+                } else {
+                        logdate = strdup(ConvertFullTime(ui.LoginDate));
+                }
 
                 // set up ustatus
-        //        if((ui.right & USERRIGHT_SUPERUSER) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) || (strcmp(name, "www") /*&& strcmp(name, "Jul'etka") */))) {
-                 if(ui.right & USERRIGHT_SUPERUSER) {
-                        strcpy(ustatus, MESSAGEMAIN_profview_u_moderator);
-                }
-                else {
-                        strcpy(ustatus, MESSAGEMAIN_profview_u_user);
+                const char *ustatus = NULL;
+                if (ui.right & USERRIGHT_SUPERUSER) {
+                        ustatus = MESSAGEMAIN_profview_u_moderator;
+                } else {
+                        ustatus = MESSAGEMAIN_profview_u_user;
                 }
 
                 //        check for too high value in status
@@ -1172,10 +1170,10 @@ int PrintAboutUserInfo(char *name)
                         if(FilterBoardTags(st, &about, 0, MAX_PARAMETERS_STRING,
                                         enabled_smiles | MESSAGE_ENABLED_TAGS | BOARDTAGS_PURL_ENABLE |
                                         BOARDTAGS_EXPAND_ENTER, &tmp) == 0) {
-                                about = (char*)malloc(strlen(st) + 1);
-                                strcpy(about, st);
+                                about = st;
+                        } else {
+                                free(st);
                         }
-                        free(st);
                 }
 
 
@@ -1192,6 +1190,8 @@ int PrintAboutUserInfo(char *name)
                            MESSAGEMAIN_profview_login_date,                logdate,
                            MESSAGEMAIN_profview_about_user,                about);
 
+                free(regdate);
+                free(logdate);
                 free(about);
 
                 if((ULogin.LU.right & USERRIGHT_SUPERUSER) || (ULogin.LU.UniqID == ui.UniqID) ) {
@@ -1214,9 +1214,6 @@ int PrintAboutUserInfo(char *name)
                         printf("<TR><TD ALIGN=RIGHT>%s</TD><TD ALIGN=LEFT><STRONG>%d(%d)</STRONG></TD></TR>",
                                 MESSAGEMAIN_profview_persmsgcnt, ui.persmescnt, ui.readpersmescnt);
                 }
-
-                free(logdate);
-        //        free(ustatus);
         }
         else {
                 printf("<TR><TD COLSPAN=2><BIG>%s</BIG></TD></TR><BR>", MESSAGEMAIN_profview_privacy_prof);
@@ -1267,8 +1264,6 @@ int PrintAboutUserInfo(char *name)
 
                 printf("</FORM></CENTER>");
         }
-
-        free(nickname);
 
         return 1;
 }
@@ -1328,6 +1323,28 @@ void PrintUserList(DB_Base *dbb, DWORD code)
         // Print header of user list
         printf("<CENTER><P><B>%s</B><BR>%s%lu<P>", MESSAGEHEAD_userlist, MESSAGEMAIN_total_user_count, uc);
 
+        // print sort link bar
+        if((ULogin.LU.right & USERRIGHT_SUPERUSER)) {
+                printf("<B>%s</B>", MESSAGEMAIN_userlist_sortby);
+                if(code != 1) printf("<A HREF=\"%s?userlist=1\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyname);
+                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyname);
+                if(code != 2) printf("<A HREF=\"%s?userlist=2\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbypcnt);
+                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbypcnt);
+                if(code != 3) printf("<A HREF=\"%s?userlist=3\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyhost);
+                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyhost);
+                if(code != 4) printf("<A HREF=\"%s?userlist=4\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbydate);
+                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbydate);
+                if(code != 5) printf("<A HREF=\"%s?userlist=5\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyrefresh);
+                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyrefresh);
+                if(code != 6) printf("<A HREF=\"%s?userlist=6\">%s</A><BR><BR>", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyright);
+                else printf("<B>%s</B><BR><BR>", MESSAGEMAIN_userlist_sortbyright);
+        }
+
+        if (!buf) {
+                printf("</CENTER>");
+                return;
+        }
+
         switch(code) {
                 case 1:
                         qsort((void *)buf, uc, sizeof(char*), cmp_name);
@@ -1347,23 +1364,6 @@ void PrintUserList(DB_Base *dbb, DWORD code)
                 case 6:
                         qsort((void *)buf, uc, sizeof(char*), cmp_right);
                         break;
-        }
-
-        // print sort link bar
-        if((ULogin.LU.right & USERRIGHT_SUPERUSER)) {
-                printf("<B>%s</B>", MESSAGEMAIN_userlist_sortby);
-                if(code != 1) printf("<A HREF=\"%s?userlist=1\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyname);
-                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyname);
-                if(code != 2) printf("<A HREF=\"%s?userlist=2\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbypcnt);
-                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbypcnt);
-                if(code != 3) printf("<A HREF=\"%s?userlist=3\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyhost);
-                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyhost);
-                if(code != 4) printf("<A HREF=\"%s?userlist=4\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbydate);
-                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbydate);
-                if(code != 5) printf("<A HREF=\"%s?userlist=5\">%s</A> | ", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyrefresh);
-                else printf("<B>%s</B> | ", MESSAGEMAIN_userlist_sortbyrefresh);
-                if(code != 6) printf("<A HREF=\"%s?userlist=6\">%s</A><BR><BR>", MY_CGI_URL, MESSAGEMAIN_userlist_sortbyright);
-                else printf("<B>%s</B><BR><BR>", MESSAGEMAIN_userlist_sortbyright);
         }
 
         DWORD oldval = 0;
@@ -1437,7 +1437,7 @@ void PrintUserList(DB_Base *dbb, DWORD code)
                printf("%s", name);
                free(buf[i]);
         }
-        if(buf) free(buf);
+        free(buf);
         printf("</CENTER>");
 }
 
@@ -1475,8 +1475,8 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
         /* password check */
         if((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0) {
                 /* old password */
-                if(op != 1 && (ULogin.LU.ID[0] == 0 || (strcmp(oldp, ULogin.pui->password) != 0) ||
-                        (strcmp(ULogin.pui->username, ui->username) != 0)))
+                if(op != 1 && (ULogin.LU.ID[0] == 0 || (strcmp(oldp, ULogin.ui.password) != 0) ||
+                        (strcmp(ULogin.ui.username, ui->username) != 0)))
                         return PROFILE_CHK_ERROR_INVALID_PASSWORD;
         }
         /* password and confirm password */
@@ -1484,18 +1484,19 @@ int CheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, cha
                 return PROFILE_CHK_ERROR_INVALID_PASSWORD_REP;
 
         if(strlen(p2) == 0) {
-                if(ULogin.LU.ID[0] != 0) strcpy(ui->password, ULogin.pui->password);
+                if(ULogin.LU.ID[0] != 0) strcpy(ui->password, ULogin.ui.password);
                 else return PROFILE_CHK_ERROR_INVALID_PASSWORD_REP;
         }
 
         // ************ delete ************
         if(op == 3) {
-                if((ULogin.LU.ID[0] == 0 || strcmp(ULogin.pui->username, ui->username) != 0 ||
+                if((ULogin.LU.ID[0] == 0 || strcmp(ULogin.ui.username, ui->username) != 0 ||
                         (ULogin.LU.right & USERRIGHT_PROFILE_MODIFY) == 0) && (!(ULogin.LU.right & USERRIGHT_SUPERUSER)))
                         return PROFILE_CHK_ERROR_CANNOT_DELETE_USR;
 
                 SProfile_UserInfo nui;
-                err = uprof.GetUserByName(ui->username, &nui, fui, NULL);
+                SProfile_FullUserInfo nfui;
+                err = uprof.GetUserByName(ui->username, &nui, &nfui, NULL);
                 if(err == PROFILE_RETURN_ALLOK) {
                         // check for special admitions
                         if(nui.altdisplayname[0] != 0 && (nui.Flags & PROFILES_FLAG_ALT_DISPLAY_NAME) ) {
@@ -1618,7 +1619,7 @@ void DoCheckAndCreateProfile(SProfile_UserInfo *ui, SProfile_FullUserInfo *fui, 
                 memmove(ui->username, f, strlen(f) + 1);
         }
 
-        print2log("DoCheckAndCreateProfile: user '%s', op=%d, (by %s)", ui->username, op, ULogin.LU.ID[0] != 0 ? ULogin.pui->username : "anonymous");
+        print2log("DoCheckAndCreateProfile: user '%s', op=%d, (by %s)", ui->username, op, ULogin.LU.ID[0] != 0 ? ULogin.ui.username : "anonymous");
         err = CheckAndCreateProfile(ui, fui, passwdconfirm, oldpasswd, op, deal);
 
         if(err != PROFILE_CHK_ERROR_ALLOK)
@@ -1812,7 +1813,7 @@ char inline parsesym(char s)
 /* find and return key [find] in string [par] between [find] and "&"
 * par is limited to maxl+1 (including '\0')
 */
-char* strget(char *par,const char *find, size_t maxl, char end, bool argparsing)
+char* strget(char *par, const char *find, size_t maxl, char end, bool argparsing)
 {
         bool bZend = false;
         char *res, *rres;
@@ -2154,7 +2155,7 @@ int main()
 {
         const char *qst;
         char *deal, *mesb;
-        char *par; // parameters string
+        char *par = NULL; // parameters string
         DB_Base DB;
 
         if(!isEnoughSpace()) {
@@ -2215,7 +2216,7 @@ int main()
                         if (session_id[0] && session_id[1]) {
                                 // try to open sequence
                                 if (ULogin.CheckSession(session_id, Nip, 0))
-                                        strcpy(cookie_name, ULogin.pui->username);
+                                        strcpy(cookie_name, ULogin.ui.username);
                         }
                 }
         }
@@ -2224,16 +2225,16 @@ int main()
         // checking settings were saved in profile or cookies and  restoring them.
         //
 
-        if(ULogin.LU.ID[0] && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS)  ) {
+        if(ULogin.LU.ID[0] && (ULogin.ui.Flags & PROFILES_FLAG_VIEW_SETTINGS)  ) {
 
-                currentdsm = ULogin.pui->vs.dsm;
-                currenttopics = ULogin.pui->vs.topics;
-                currenttv = ULogin.pui->vs.tv;
-                currenttc = ULogin.pui->vs.tc;
-                currentss = ULogin.pui->vs.ss;
-                currentlsel = ULogin.pui->vs.lsel;
-                currenttt = ULogin.pui->vs.tt;
-                currenttz = ULogin.pui->vs.tz;
+                currentdsm = ULogin.ui.vs.dsm;
+                currenttopics = ULogin.ui.vs.topics;
+                currenttv = ULogin.ui.vs.tv;
+                currenttc = ULogin.ui.vs.tc;
+                currentss = ULogin.ui.vs.ss;
+                currentlsel = ULogin.ui.vs.lsel;
+                currenttt = ULogin.ui.vs.tt;
+                currenttz = ULogin.ui.vs.tz;
         }
         else{
                 currentlsel = cookie_lsel;
@@ -2252,7 +2253,7 @@ int main()
 
         //security check
         if(ULogin.LU.ID[0] && (ULogin.LU.right & USERRIGHT_SUPERUSER) )
-                print2log("Superuser: %s from %s - %s", ULogin.pui->username, Cip, deal);
+                print2log("Superuser: %s from %s - %s", ULogin.ui.username, Cip, deal);
 
 
         //==========================
@@ -2394,9 +2395,9 @@ int main()
 #endif
 
                 // print info about personal messages
-                if(ULogin.LU.ID[0] != 0 && ULogin.pui->persmescnt - ULogin.pui->readpersmescnt > 0) {
+                if(ULogin.LU.ID[0] != 0 && ULogin.ui.persmescnt - ULogin.ui.readpersmescnt > 0) {
                         sprintf( privmesinfo, ", <A HREF=\"" MY_CGI_URL "?persmsg\" STYLE=\"text-decoration:underline;\"><FONT COLOR=RED>" MESSAGEMAIN_privatemsg_newmsgann " %d " \
-                        MESSAGEMAIN_privatemsg_newmsgann1 "</FONT></A>", (ULogin.pui->persmescnt - ULogin.pui->readpersmescnt) );
+                        MESSAGEMAIN_privatemsg_newmsgann1 "</FONT></A>", (ULogin.ui.persmescnt - ULogin.ui.readpersmescnt) );
                 }
 
 #if ACTIVITY_LOGGING_SUPPORT
@@ -2411,7 +2412,7 @@ int main()
                 }
                 else {
                         char uname[1000];
-                        DB.Profile_UserName(ULogin.pui->username, uname, 1);
+                        DB.Profile_UserName(ULogin.ui.username, uname, 1);
                         printf(MESSAGEMAIN_WELCOME_LOGGEDSTART, uname, privmesinfo, displaynewmsg,
                                 displaymode, activityloginfo, topicselect);
                 }
@@ -2656,15 +2657,9 @@ int main()
 
         if (strncmp(deal, "xmlbody=", 8) == 0) {
                 char *ss;
-                DWORD num;
-
-                char *st = strget(deal, "xmlbody=", 16, '&');
-                if (!st || !isdigit(st[0]))
-                        goto End_URLerror;
-
                 errno = 0;
-                num = strtoul(st, &ss, 10);
-                if (ss[0] || errno)
+                DWORD num = strtoul(deal + strlen("xmlbody="), &ss, 10);
+                if (errno || (*ss && *ss != '&'))
                         goto End_URLerror;
 
                 if ((ULogin.LU.right & USERRIGHT_VIEW_MESSAGE) == 0) {
@@ -2828,11 +2823,11 @@ int main()
                 SMessage mes;
                 strcpy(mes.AuthorName, FilterHTMLTags(cookie_name, 1000, 0));
                 mes.MessageHeader[0] = 0;
-                mesb = (char*)malloc(1);
-                *mesb = 0;
+                mesb = strdup("");
                 PrintMessageForm(&mes, mesb, repnum,
                         repnum ? ACTION_BUTTON_POST | ACTION_BUTTON_PREVIEW | ACTION_BUTTON_FAKEREPLY :
                         ACTION_BUTTON_POST | ACTION_BUTTON_PREVIEW);
+                free(mesb);
                 PrintBottomLines();
                 goto End_part;
         }
@@ -3034,7 +3029,6 @@ int main()
 
                 // get user action (post/edit/preview)
                 int action = getAction(par);
-                free(par);
 
                 // init current error
                 int cr;
@@ -3131,7 +3125,8 @@ int main()
 
                                         PrintBottomLines();
 
-                                        if(passw != NULL) free(passw);
+                                        free(passw);
+                                        free(mesb);
 
                                         goto End_part;
                                 }
@@ -3154,7 +3149,7 @@ int main()
                                 mes.ViIndex = 0;
 
                                 if(ULogin.LU.ID[0] != 0) {
-                                        memcpy(&UI, ULogin.pui, sizeof(UI));
+                                        UI = ULogin.ui;
                                         strcpy(mes.AuthorName, UI.username);
                                 }
                                 else {
@@ -3200,9 +3195,11 @@ int main()
                         break;
                 case ACTION_EDIT:
                         {
-                                if((ULogin.pui->right & USERRIGHT_SUPERUSER) && c_host && c_host[0] != 0) {
+                                if((ULogin.ui.right & USERRIGHT_SUPERUSER) && c_host && c_host[0] != 0) {
                                         strcpy(mes.HostName, c_host);
                                         mes.HostName[HOST_NAME_LENGTH - 1] = 0;
+                                        free(c_host);
+                                        c_host = NULL;
                                 }
                                 mes.IPAddr = Nip;
 
@@ -3386,21 +3383,21 @@ int main()
                                         // saving values - profile or cookie way
                                         //
 
-                                        if((ULogin.LU.ID[0] != 0) && (ULogin.pui->Flags & PROFILES_FLAG_VIEW_SETTINGS) ){
+                                        if((ULogin.LU.ID[0] != 0) && (ULogin.ui.Flags & PROFILES_FLAG_VIEW_SETTINGS) ){
                                                 // Bit-field usage in SViewSettings is awful but we have to keep this structure
                                                 // as-is for some time and to add hacks to silence -Wconversion warnings here,
                                                 // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=39170 for details
-                                                ULogin.pui->vs.dsm = (WORD)currentdsm;
-                                                ULogin.pui->vs.topics = currenttopics;
-                                                ULogin.pui->vs.tv = (WORD)currenttv;
-                                                ULogin.pui->vs.tc = (WORD)currenttc;
-                                                ULogin.pui->vs.ss = currentss & 7;
-                                                ULogin.pui->vs.lsel = currentlsel & 3;
-                                                ULogin.pui->vs.tt = currenttt & 0x0F;
-                                                ULogin.pui->vs.tz = currenttz & 0x0F;
+                                                ULogin.ui.vs.dsm = (WORD)currentdsm;
+                                                ULogin.ui.vs.topics = currenttopics;
+                                                ULogin.ui.vs.tv = (WORD)currenttv;
+                                                ULogin.ui.vs.tc = (WORD)currenttc;
+                                                ULogin.ui.vs.ss = currentss & 7;
+                                                ULogin.ui.vs.lsel = currentlsel & 3;
+                                                ULogin.ui.vs.tt = currenttt & 0x0F;
+                                                ULogin.ui.vs.tz = currenttz & 0x0F;
 
                                                 CProfiles uprof;
-                                                uprof.ModifyUser(ULogin.pui, NULL, NULL);
+                                                uprof.ModifyUser(&ULogin.ui, NULL, NULL);
                                         }
                                         else{
                                                 // settings are not in profile. so new values should be in cookies
@@ -3415,8 +3412,6 @@ int main()
                                          }
 
                                 }
-                                free(par);
-
 
                                 //
                                 // Redirect user to the index page
@@ -3467,7 +3462,7 @@ int main()
                                                         ULogin.CloseSession(ULogin.LU.ID);
 
                                                 if(ULogin.OpenSession(st, ss, NULL, Nip, disableipcheck) == 1) {
-                                                        print2log("User '%s' was logged in (%s)", ULogin.pui->username, getenv(REMOTE_ADDR));
+                                                        print2log("User '%s' was logged in (%s)", ULogin.ui.username, getenv(REMOTE_ADDR));
 
                                                         //        Prepare conference login greetings
                                                         char boardgreet[1000];
@@ -3483,7 +3478,7 @@ int main()
                                                         if(tt->tm_hour >= 6  && tt->tm_hour < 10) cur = 3;
                                                         if(tt->tm_hour >= 10 && tt->tm_hour < 18) cur = 0;
                                                         if(tt->tm_hour >= 18 && tt->tm_hour < 22) cur = 1;
-                                                        sprintf(boardgreet, MESSAGEMAIN_login_ok, greetnames[cur], FilterHTMLTags(ULogin.pui->username, PROFILES_MAX_USERNAME_LENGTH, 0));
+                                                        sprintf(boardgreet, MESSAGEMAIN_login_ok, greetnames[cur], FilterHTMLTags(ULogin.ui.username, PROFILES_MAX_USERNAME_LENGTH, 0));
 
 
                                                         Tittle_cat(TITLE_Login);
@@ -3600,7 +3595,7 @@ int main()
                                         goto End_part;
                                 }
 
-                                print2log("User '%s' was logged out (%s)", ULogin.pui->username, getenv(REMOTE_ADDR));
+                                print2log("User '%s' was logged out (%s)", ULogin.ui.username, getenv(REMOTE_ADDR));
 
                                 /* close sequence */
                                 ULogin.CloseSession(ULogin.LU.ID);
@@ -3656,7 +3651,7 @@ int main()
                                         Tittle_cat(TITLE_ClosingMessage);
 
                                         DB.DB_ChangeCloseThread(tmp, 1);
-                                        print2log("Message %lu (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                        print2log("Message %lu (%s (by %s)) was closed by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2, HEADERSTRING_REFRESH_TO_MAIN_PAGE);
                                         PrintBottomLines();
@@ -3690,7 +3685,7 @@ int main()
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 1);
                                 SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %lu (%s (by %s)) was hided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was hided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
 
                                 Tittle_cat(TITLE_HidingMessage);
 
@@ -3728,7 +3723,7 @@ int main()
                                 DB.DB_ChangeInvisibilityThreadFlag(tmp, 0);
                                 SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %lu (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was unhided by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                 PrintBoardError(MESSAGEMAIN_threadchangehided, MESSAGEMAIN_threadchangehided2,
                                         HEADERSTRING_REFRESH_TO_MAIN_PAGE);
@@ -3769,7 +3764,7 @@ int main()
 
                                         DB.DB_ChangeCloseThread(tmp, 0);
                                         if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                        print2log("Message %lu (%s (by %s)) was opened by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                        print2log("Message %lu (%s (by %s)) was opened by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
                                         PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
                                         PrintBoardError(MESSAGEMAIN_threadwasclosed, MESSAGEMAIN_threadwasclosed2,
                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE);
@@ -3806,7 +3801,7 @@ int main()
                                 DB.DB_ChangeRollThreadFlag(tmp);
                                 SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %lu (%s (by %s)) was (un)rolled by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was (un)rolled by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE,
                                         tmp);
@@ -3843,7 +3838,7 @@ int main()
 
                                 SMessage mes;
                                 if(!ReadDBMessage(DB.TranslateMsgIndex(tmp), &mes)) printhtmlerror();
-                                print2log("Message %lu (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.pui->username);
+                                print2log("Message %lu (%s (by %s)) was deleted by %s", tmp, mes.MessageHeader, mes.AuthorName, ULogin.ui.username);
                                 DB.DB_DeleteMessages(tmp);
 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_MAIN_PAGE, tmp);
@@ -3914,8 +3909,12 @@ int main()
                                         //        Read message body
                                         //
                                         char *msg_body = (char*)malloc(mes.msize + 1);
-                                        if(!ReadDBMessageBody(msg_body, mes.MIndex, mes.msize))
-                                                printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
+                                        if (mes.msize) {
+                                                if(!ReadDBMessageBody(msg_body, mes.MIndex, mes.msize + 1))
+                                                        printhtmlerrorat(LOG_UNABLETOLOCATEFILE, F_MSGBODY);
+                                        } else {
+                                                msg_body[0] = '\0';
+                                        }
 
                                         PrintMessageForm(&mes, msg_body, tmp, ACTION_BUTTON_EDIT);
 
@@ -4055,7 +4054,7 @@ int main()
                                                 PrintBottomLines();
 
                                                 // log this task
-                                                print2log("User %s was updated by %s", name, ULogin.pui->username);
+                                                print2log("User %s was updated by %s", name, ULogin.ui.username);
                                         }
                                         else {
                                                 Tittle_cat(TITLE_Error);
@@ -4065,7 +4064,7 @@ int main()
                                                 PrintBottomLines();
                                         }
 
-                                        free(par);
+                                        free(name);
                                         goto End_part;
                                 }
                                 else goto End_URLerror;
@@ -4102,10 +4101,9 @@ int main()
 
                                         /* what we should do: edit, delete or create */
                                         act = strget(par, "register=", 255, '&');
-                                        if(act == NULL) {
+                                        if (act == NULL) {
                                                 // default action - register
-                                                act = (char*)malloc(100);
-                                                strcpy(act, MESSAGEMAIN_register_register);
+                                                act = strdup(MESSAGEMAIN_register_register);
                                         }
 
                                         /* check bot */
@@ -4127,7 +4125,7 @@ int main()
                                         }
                                         else {
                                                 if(ULogin.LU.ID[0] != 0)
-                                                        strcpy(ui.username, ULogin.pui->username);
+                                                        strcpy(ui.username, ULogin.ui.username);
                                                 else ui.username[0] = 0;
                                         }
                                         /* if edit - load current settings */
@@ -4201,7 +4199,14 @@ int main()
                                         else fui.HomePage[0] = 0;
 
                                         /* read about */
-                                        fui.AboutUser = strget(par, "about=", MAX_PARAMETERS_STRING - 1, '&');
+                                        char *about = strget(par, "about=", MAX_PARAMETERS_STRING - 1, '&');
+                                        if (about) {
+                                                if (fui.AboutUser) {
+                                                        free(fui.AboutUser);
+                                                }
+                                                fui.AboutUser = about;
+                                                fui.size = strlen(about);
+                                        }
 
                                         /* read signature */
                                         ss = strget(par, "sign=", PROFILES_MAX_SIGNATURE_LENGTH - 1, '&');
@@ -4268,36 +4273,32 @@ int main()
                                         if(ss != NULL) free(ss);
 
 
-
-                                        if(act != NULL && strcmp(act, MESSAGEMAIN_register_register) == 0) {
-
+                                        bool unknown_action = false;
+                                        if (strcmp(act, MESSAGEMAIN_register_register) == 0) {
                                                 Tittle_cat(TITLE_Registration);
-
                                                 DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 1, deal);
-                                        }
-                                        else if(act != NULL && strcmp(act, MESSAGEMAIN_register_edit) == 0) {
-
+                                        } else if (strcmp(act, MESSAGEMAIN_register_edit) == 0) {
                                                 Tittle_cat(TITLE_Registration);
-
                                                 DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 2, deal);
+                                        } else if (strcmp(act, MESSAGEMAIN_register_delete) == 0) {
+                                                char* confirmation = strget(par, CONFIRM_DELETE_CHECKBOX_TEXT "=", 255, '&');
+                                                bool confirmed = confirmation && *confirmation;
+                                                free(confirmation);
+                                                if (confirmed) {
+                                                        Tittle_cat(TITLE_Registration);
+                                                        DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 3, deal);
+                                                } else {
+                                                        unknown_action = true;
+                                                }
+                                        } else {
+                                                unknown_action = true;
                                         }
-                                        else
-                                        if(act != NULL && strcmp(act, MESSAGEMAIN_register_delete) == 0) {
-
-                                                char* delete_confirmed = strget(par, CONFIRM_DELETE_CHECKBOX_TEXT "=", 255, '&');
-                                                if(!delete_confirmed || !strlen(delete_confirmed))
-                                                        goto End_URLerror;
-                                                Tittle_cat(TITLE_Registration);
-
-                                                DoCheckAndCreateProfile(&ui, &fui, passwdconfirm, oldpasswd, 3, deal);
-                                        }
-                                        else {
-                                                if(act != NULL) free(act);
-                                                goto End_URLerror;
-                                        }
-                                        if(act != NULL) free(act);
+                                        free(act);
                                         free(passwdconfirm);
                                         free(oldpasswd);
+                                        if (unknown_action) {
+                                                goto End_URLerror;
+                                        }
                                         goto End_part;
                                 }
                                 else goto End_URLerror;
@@ -4307,10 +4308,6 @@ int main()
 
                 SProfile_FullUserInfo fui;
                 SProfile_UserInfo ui;
-                memset(&fui, 0, sizeof(fui));
-                fui.AboutUser = (char*)malloc(1);
-                fui.AboutUser[0] = 0;
-                memset(&ui, 0, sizeof(ui));
                 ui.Flags = USER_DEFAULT_PROFILE_CREATION_FLAGS;
 
                 DWORD x = 0;
@@ -4319,10 +4316,11 @@ int main()
                 else if(ULogin.LU.ID[0] != 0) x = 6;
 
                 if(x & 0x02) {
-                        ULogin.uprof.GetUserByName(ULogin.pui->username, &ui, &fui, NULL);
+                        ULogin.uprof.GetUserByName(ULogin.ui.username, &ui, &fui, NULL);
                 }
                 else {
                         strcpy(fui.HomePage, "http://");
+                        fui.AboutUser = strdup("");
                 }
 
                 Tittle_cat(TITLE_Registration);
@@ -4330,8 +4328,6 @@ int main()
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
 
                 PrintEditProfileForm(&ui, &fui, x);
-
-                free(fui.AboutUser);
 
                 PrintBottomLines();
                 goto End_part;
@@ -4374,7 +4370,7 @@ int main()
                                                                 HEADERSTRING_REFRESH_TO_MAIN_PAGE | HEADERSTRING_REFRESH_TO_THREAD, mes.ViIndex);
                                                 PrintBottomLines();
                                                 print2log("Topic of message %lu (%s (by %s)) was changed from [%s] to [%s] by %s", MsgNum, mes.MessageHeader, mes.AuthorName,
-                                                        Topics_List[oldTopic], Topics_List[Topic], ULogin.pui->username);
+                                                        Topics_List[oldTopic], Topics_List[Topic], ULogin.ui.username);
                                                 goto End_part;
                                         }
                                 }
@@ -4399,6 +4395,7 @@ int main()
 
                         }
                         else code = retval;
+                        free(sn);
                 }
 
                 // security check
@@ -4481,7 +4478,6 @@ int main()
                                 preview = 0;
                         }
                         else {
-                                free(par);
                                 printbadurl(deal);
                                 goto End_part;
                         }
@@ -4556,7 +4552,7 @@ int main()
                                                 free(st1_f);
                                 }
                                 else {
-                                if(prof.PostPersonalMessage(name, 0, body, ULogin.pui->username, ULogin.LU.UniqID) == PROFILE_RETURN_ALLOK) {
+                                if(prof.PostPersonalMessage(name, 0, body, ULogin.ui.username, ULogin.LU.UniqID) == PROFILE_RETURN_ALLOK) {
 
                                         Tittle_cat(TITLE_PrivateMsgWasPosted);
 
@@ -4569,18 +4565,18 @@ int main()
                                                 char subj[1000];
                                                 char bdy[100000];
 
-                                                sprintf(subj, MAILACKN_PRIVATEMSG_SUBJECT, ULogin.pui->username);
+                                                sprintf(subj, MAILACKN_PRIVATEMSG_SUBJECT, ULogin.ui.username);
 
                                                 if(!PrepareTextForPrint(body, &pb2, 0, MESSAGE_ENABLED_TAGS | BOARDTAGS_EXPAND_ENTER | BOARDTAGS_PURL_ENABLE)) {
                                                         pb2 = (char*)malloc(strlen(body) + 1);
                                                         strcpy(pb2, body);
                                                 }
 
-                                                sprintf(bdy, MAILACKN_PRIVATEMSG_BODY, name, ULogin.pui->username, pb2,
-                                                        GetBoardUrl(), ULogin.pui->username, GetBoardUrl());
+                                                sprintf(bdy, MAILACKN_PRIVATEMSG_BODY, name, ULogin.ui.username, pb2,
+                                                        GetBoardUrl(), ULogin.ui.username, GetBoardUrl());
 
                                                 wcSendMail(fui.Email, subj, bdy);
-                                                print2log("Private message mailackn was sent to %s (%s->%s)", fui.Email, ULogin.pui->username, name);
+                                                print2log("Private message mailackn was sent to %s (%s->%s)", fui.Email, ULogin.ui.username, name);
 
                                                 free(pb2);
                                         }
@@ -4595,7 +4591,6 @@ int main()
 
                                 free(body);
                                 free(name);
-                                if(nameok) free(fui.AboutUser);
 
                                 PrintBottomLines();
                                 goto End_part;
@@ -4605,7 +4600,6 @@ int main()
 
                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                         }
-                        if(nameok) free(fui.AboutUser);
                         // print form and errors
                         if(!allowpmsg) {
                                 printf("<P><CENTER><LI> <FONT COLOR=RED><B>" MESSAGEMAIN_privatemsg_disable_pmsg "</B></FONT></CENTER>");
@@ -4648,30 +4642,28 @@ int main()
                 if(ULogin.LU.UniqID != 0) {
                 // personal messages
                 char *sn;
-                DWORD type = 0;
+                DWORD all_messages = 0;
                 if((sn = strget(deal, "persmsg=", 255 - 1, '&')) != NULL) {
                         if(strcmp(sn, "all") == 0) {
-                                type = 1;
+                                all_messages = 1;
                         }
                         free(sn);
                 }
 
                 CProfiles prof;
                 SPersonalMessage *msg, *frommsg;
-                DWORD *tt, *ft;
-                if(type) {
-                        tt = NULL;
-                        ft = NULL;
-                }
-                else {
-                        tt = (DWORD*)malloc(sizeof(DWORD));
-                        *tt = 10;
-                        ft = (DWORD*)malloc(sizeof(DWORD));
-                        *ft = 0;
-                }
+                DWORD tt = 10, ft = 0;
+
                 // let's read to messages (maybe from too)
-                if(prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, tt, &frommsg, ft) != PROFILE_RETURN_ALLOK)
+                int read_res;
+                if (all_messages) {
+                        read_res = prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, NULL, &frommsg, NULL);
+                } else {
+                        read_res = prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, &tt, &frommsg, &ft);
+                }
+                if (read_res != PROFILE_RETURN_ALLOK) {
                         printhtmlerror();
+                }
 
                 // let's get received message count
                 DWORD cnt = 0, postedcnt = 0;
@@ -4680,7 +4672,7 @@ int main()
                         cnt++;
                 }
 
-                if(ft) {
+                if (!all_messages) {
                         if(cnt) {
                                 SPersonalMessage *msg1;
                                 time_t ld = msg[cnt-1].Date;
@@ -4695,9 +4687,9 @@ int main()
                                 }
                         }
                         else {
-                                *ft = 10;
+                                ft = 10;
                                 // let's read to messages (maybe from too)
-                                if(prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, NULL, &frommsg, ft) != PROFILE_RETURN_ALLOK)
+                                if (prof.ReadPersonalMessages(NULL, ULogin.LU.SIndex, &msg, NULL, &frommsg, &ft) != PROFILE_RETURN_ALLOK)
                                         printhtmlerror();
                                 // let's get posted message count
                                 if(frommsg) {
@@ -4719,19 +4711,19 @@ int main()
                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE | HEADERSTRING_DISABLE_PRIVATEMSG, MAINPAGE_INDEX);
 
                 char uuname[1000];
-                DB.Profile_UserName(ULogin.pui->username, uuname, 1);
+                DB.Profile_UserName(ULogin.ui.username, uuname, 1);
 
                 printf("<BR><BR><CENTER><B>" MESSAGEMAIN_privatemsg_header " %s</B><BR>", uuname);
-                if((ULogin.pui->Flags & PROFILES_FLAG_PERSMSGDISABLED))
+                if((ULogin.ui.Flags & PROFILES_FLAG_PERSMSGDISABLED))
                         printf("<U>" MESSAGEMAIN_privatemsg_disabled "</U><BR>");
 
                 if(cnt) printf(MESSAGEMAIN_privatemsg_newmsgcnt " %d, ",
-                        ULogin.pui->persmescnt - ULogin.pui->readpersmescnt);
+                        ULogin.ui.persmescnt - ULogin.ui.readpersmescnt);
                 else printf(MESSAGEMAIN_privatemsg_nonewmsg ", ");
                 printf(MESSAGEMAIN_privatemsg_allmsgcnt " %d, " MESSAGEMAIN_privatemsg_allmsgcnt1 " %d<BR>"
                        "<A HREF=\"" MY_CGI_URL "?persmsgform\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_writenewmsg "</A><BR>"
                        "<A HREF=\"" MY_CGI_URL "?persmsg=all\" STYLE=\"text-decoration:underline;\">" MESSAGEMAIN_privatemsg_showall  "</A>"
-                       "</CENTER><P><P>", ULogin.pui->persmescnt, ULogin.pui->postedmescnt);
+                       "</CENTER><P><P>", ULogin.ui.persmescnt, ULogin.ui.postedmescnt);
 
                 char tostr[1000], newm[100];
                 char *ss;
@@ -4775,7 +4767,7 @@ int main()
 
                         ss = ConvertFullTime(pmsg->Date);
 
-                        if(received && i + ULogin.pui->persmescnt <= ULogin.pui->readpersmescnt)
+                        if(received && i + ULogin.ui.persmescnt <= ULogin.ui.readpersmescnt)
                                 strcpy(newm, MESSAGEMAIN_privatemsg_newmark);
                         else strcpy(newm, "");
 
@@ -4811,8 +4803,8 @@ int main()
                                 free(st1_f);
                 }
 
-                ULogin.pui->readpersmescnt = ULogin.pui->persmescnt;
-                prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
+                ULogin.ui.readpersmescnt = ULogin.ui.persmescnt;
+                prof.SetUInfo(ULogin.LU.SIndex, &ULogin.ui);
 
                 PrintBottomLines();
                 if(msg) free(msg);
@@ -4889,7 +4881,6 @@ int main()
                                                 preview = 0;
                                         }
                                         else {
-                                                free(par);
                                                 printbadurl(deal);
                                                 goto End_part;
                                         }
@@ -4911,7 +4902,6 @@ int main()
                                                 }
                                                 free(cgann_param);
                                         }
-                                        free(par);
                                 }
                                 if(body && strlen(body) > 5) {
                                         if(strlen(body) >= GLOBAL_ANNOUNCE_MAXSIZE - 1) {
@@ -4935,7 +4925,7 @@ int main()
                                                         if((currentdsm & CONFIGURE_dsm) == 0)
                                                                 enabled_smiles = MESSAGE_ENABLED_SMILES;
 
-                                                        DB.Profile_UserName(ULogin.pui->username, uname, 1);                                                                                                         PrepareTextForPrint(body, &st, 0, enabled_smiles | MESSAGE_ENABLED_TAGS |
+                                                        DB.Profile_UserName(ULogin.ui.username, uname, 1);                                                                                                         PrepareTextForPrint(body, &st, 0, enabled_smiles | MESSAGE_ENABLED_TAGS |
                                                                 BOARDTAGS_PURL_ENABLE | BOARDTAGS_EXPAND_ENTER);
                                                         date = ConvertTime(time(NULL));
 
@@ -4955,12 +4945,12 @@ int main()
                                                         if(st) free(st);
                                                 }
                                                 else {
-                                                        if( (cgann_num && (!refid)) ? UpdateGlobalAnnounce(cgann_num, ULogin.pui->username,
-                                                                ULogin.pui->UniqID, body, 0, 0,
+                                                        if( (cgann_num && (!refid)) ? UpdateGlobalAnnounce(cgann_num, ULogin.ui.username,
+                                                                ULogin.ui.UniqID, body, 0, 0,
                                                                 ANNOUNCES_UPDATE_OPT_USER | ANNOUNCES_UPDATE_OPT_TIME |
                                                                 ANNOUNCES_UPDATE_OPT_TTL | ANNOUNCES_UPDATE_OPT_FLAGS) !=
                                                                 ANNOUNCES_RETURN_OK
-                                                                : PostGlobalAnnounce(ULogin.pui->username, ULogin.pui->UniqID, body,
+                                                                : PostGlobalAnnounce(ULogin.ui.username, ULogin.ui.UniqID, body,
                                                                 0, 0) != ANNOUNCES_RETURN_OK )
                                                         {
                                                                 Tittle_cat(TITLE_Error);
@@ -4988,7 +4978,7 @@ int main()
                                                                         PrintBottomLines();
                                                                 }
 
-                                                                print2log("Global announce (%s) was posted by %s", body, ULogin.pui->username);
+                                                                print2log("Global announce (%s) was posted by %s", body, ULogin.ui.username);
                                                         }
                                                 }
                                         }
@@ -5037,7 +5027,7 @@ int main()
                                         if(DeleteGlobalAnnounce(MsgNum, ((ULogin.LU.right & USERRIGHT_SUPERUSER) != 0) ? 0 : ULogin.LU.UniqID) == ANNOUNCES_RETURN_OK) {
                                                 Tittle_cat(TITLE_GlobalAnnWasDeleted);
 
-                                                print2log("Global Announce %lu was deleted by user %s", MsgNum, ULogin.pui->username);
+                                                print2log("Global Announce %lu was deleted by user %s", MsgNum, ULogin.ui.username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_wasdeleted, MESSAGEMAIN_globann_wasdeleted2, 0);
                                                 PrintBottomLines();
@@ -5045,7 +5035,7 @@ int main()
                                         else {
                                                 Tittle_cat(TITLE_Error);
 
-                                                print2log("Global Announce %lu cannot be deleted by user %s", MsgNum, ULogin.pui->username);
+                                                print2log("Global Announce %lu cannot be deleted by user %s", MsgNum, ULogin.ui.username);
                                                 PrintHTMLHeader(HEADERSTRING_RETURN_TO_MAIN_PAGE, MAINPAGE_INDEX);
                                                 PrintBoardError(MESSAGEMAIN_globann_cannotdel, MESSAGEMAIN_globann_cannotdel2, 0);
                                                 PrintBottomLines();
@@ -5103,10 +5093,10 @@ int main()
                         printf("<P><CENTER><P><B>%s</B><BR></CENTER>", MESSAGEHEAD_favourites);
 
                         int updated;
-                        if (!DB.PrintandCheckMessageFavsExistandInv(ULogin.pui,
+                        if (!DB.PrintandCheckMessageFavsExistandInv(&ULogin.ui,
                                 ULogin.LU.right & USERRIGHT_SUPERUSER, &updated))
                                 printf("<P><CENTER><B>" MESSAGEMAIN_favourites_listclear "</B></CENTER><P>");
-                        if(updated) prof.SetUInfo(ULogin.LU.SIndex, ULogin.pui);
+                        if(updated) prof.SetUInfo(ULogin.LU.SIndex, &ULogin.ui);
                         PrintBottomLines();
                         goto End_part;
                 }
@@ -5355,6 +5345,8 @@ int main()
                                         PrintHTMLHeader(HEADERSTRING_DISABLE_ALL, 0);
                                         PrintBoardError(MESSAGEMAIN_ban_no_save, MESSAGEMAIN_ban_empty, 0);
                                         PrintBottomLines();
+                                        free(ban_list);
+                                        free(st);
                                         goto End_part;
 
                                 }
@@ -5377,9 +5369,10 @@ int main()
                                 PrintBoardError(MESSAGEMAIN_ban_save, MESSAGEMAIN_ban_save2, 0);
                                 PrintBottomLines();
 
-                                print2log("Banlist update by %s from %s", ULogin.pui->username, Cip);
-
+                                print2log("Banlist update by %s from %s", ULogin.ui.username, Cip);
+                                free(ban_list);
                         }
+                        free(st);
                 }
                 else{
 
@@ -5387,7 +5380,7 @@ int main()
                         PrintBanList();
                         PrintBottomLines();
 
-                        print2log("Banlist view by %s from %s", ULogin.pui->username, Cip);
+                        print2log("Banlist view by %s from %s", ULogin.ui.username, Cip);
                 }
                 goto End_part;
         }
@@ -5464,6 +5457,8 @@ End_URLerror:
         printbadurl(deal);
 
 End_part:
+        free(deal);
+        free(par);
 
 #if _DEBUG_ == 1
         //print2log("Exit success");

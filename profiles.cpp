@@ -87,9 +87,12 @@ int CProfiles::ReadFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
         // prepare "about" string length
         FI->AboutUser = (char*)malloc(FI->size + 1);
 
-        if(!fCheckedRead(FI->AboutUser, FI->size, Fp_b)) {
-                free(FI->AboutUser);
-                return 0;
+        if (FI->size) {
+                if (!fCheckedRead(FI->AboutUser, FI->size, Fp_b)) {
+                        free(FI->AboutUser);
+                        FI->AboutUser = NULL;
+                        return 0;
+                }
         }
         // set final zero at the end of string
         FI->AboutUser[FI->size] = 0;
@@ -103,23 +106,18 @@ int CProfiles::ReadFullInfo(DWORD idx, SProfile_FullUserInfo *FI)
 int CProfiles::DeleteFullInfo(DWORD idx)
 {
         /* read old Full Info */
-        SProfile_FullUserInfo *ofi = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
+        SProfile_FullUserInfo fui;
 
-        if(ReadFullInfo(idx, ofi) == 0) {
-                free(ofi);
+        if(ReadFullInfo(idx, &fui) == 0) {
                 return 0;
         }
 
         /* mark free space */
         CFreeDBFile fdf(F_PROF_FREEBODY, PROFILE_WASTED_FINFO_SIZE);
         if(fdf.errnum != FREEDBFILE_ERROR_ALLOK) {
-                free(ofi->AboutUser);
-                free(ofi);
                 return 0;
         }
-        DWORD rr = sizeof(SProfile_FullUserInfo) - sizeof(char*) + ofi->size;
-        free(ofi->AboutUser);
-        free(ofi);
+        DWORD rr = sizeof(fui) - sizeof(char*) + fui.size;
         if(fdf.MarkFreeSpace(idx, rr) != FREEDBFILE_ERROR_ALLOK)
                 return 0;
 
@@ -674,7 +672,7 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
         if(GenerateIndexList(&ii) != HASHINDEX_ER_OK)
                 return 0;
 
-        if(ii[0] != 0xffffffff) {
+        if (ii[0] != 0xffffffff) {
                 *buf = (char**)malloc(ULIST_PROFILE_READ_COUNT*sizeof(char**));
                 if(!(*buf)) return 0;
                 ac = ULIST_PROFILE_READ_COUNT;
@@ -740,13 +738,13 @@ int CProfiles::GenerateUserList(char ***buf, DWORD *cnt)
 
                 wcfclose(Fp_i);
 
-                free(ii);
                 // realloc to the real size
                 *buf = (char**)realloc(*buf, c*sizeof(char**));
 
                 *cnt = c;
         }
 
+        free(ii);
         return 1;
 }
 

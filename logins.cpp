@@ -316,8 +316,6 @@ int CheckAndUpdateAuthSequence(DWORD id[2], DWORD IP, SSavedAuthSeq *ui)
 /********************** CUserLogin **********************/
 CUserLogin::CUserLogin()
 {
-        pui = NULL;
-        pfui = NULL;
         LU.SIndex = 0xFFFFFFFF;
         LU.right = DEFAULT_NOBODY_RIGHT;
         LU.UniqID = 0;
@@ -325,27 +323,18 @@ CUserLogin::CUserLogin()
         LU.ID[1] = 0;
 }
 
-CUserLogin::~CUserLogin()
-{
-        if(pui != NULL)                free(pui);
-        if(pfui != NULL)        free(pfui);
-}
-
 /* open user session and return 1 if successfull (all information will be stored
  * to LU, otherwise return 0
  */
-DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *Fui, DWORD lIP, DWORD IPCheckD)
+DWORD CUserLogin::OpenSession(const char *uname, const char *passw, SProfile_FullUserInfo *ofui, DWORD lIP, DWORD IPCheckD)
 {
         int cr;
-        if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-        if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
-
-        if((cr = uprof.GetUserByName(uname, pui, pfui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
-                strcmp(passw, pui->password) == 0)
+        if ((cr = uprof.GetUserByName(uname, &ui, &fui, &LU.SIndex)) == PROFILE_RETURN_ALLOK &&
+                strcmp(passw, ui.password) == 0)
         {
                 /* prepare SUserInfo structure */
-                LU.right = pui->right;
-                LU.UniqID = pui->UniqID;
+                LU.right = ui.right;
+                LU.UniqID = ui.UniqID;
 
                 /* modify SUPERUSER right */
                 if(LU.right & USERRIGHT_SUPERUSER) {
@@ -359,7 +348,7 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 //SEQ.ID;                                        //        ID of session
                 //SEQ.Reserved;                                //        Reserved place
                 //SEQ.ExpireDate;                        //        Expiration date of the session
-                SEQ.UniqID = pui->UniqID;        //        UniqID of user
+                SEQ.UniqID = ui.UniqID;        //        UniqID of user
                 if(IPCheckD) SEQ.UniqID |= SEQUENCE_IP_CHECK_DISABLED;
                 SEQ.IP = lIP;                                //        IP address of session
                 SEQ.SIndex = LU.SIndex;                //        Index in profindex file
@@ -371,10 +360,6 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                         LU.UniqID = 0;
                         LU.ID[0] = 0;
                         LU.ID[1] = 0;
-                        free(pui);
-                        free(pfui);
-                        pui = NULL;
-                        pfui = NULL;
 #if ENABLE_LOG >= 1
                         print2log("Call to OpenAuthSequence failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
@@ -388,16 +373,18 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 }
 
                 // update IP and last login date
-                pui->lastIP = lIP;
-                pui->LoginDate = time(NULL);
-                if(uprof.SetUInfo(LU.SIndex, pui) != 1) {
+                ui.lastIP = lIP;
+                ui.LoginDate = time(NULL);
+                if (uprof.SetUInfo(LU.SIndex, &ui) != 1) {
 #if ENABLE_LOG >= 1
                         print2log("Call to CProfiles::SetUInfo failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
                 }
 
                 // copy Full user info if required
-                if(Fui != NULL) memcpy(Fui, pfui, sizeof(SProfile_FullUserInfo));
+                if (ofui) {
+                        *ofui = fui;
+                }
                 return 1;
         }
         else {
@@ -405,10 +392,6 @@ DWORD CUserLogin::OpenSession(char *uname, char *passw, SProfile_FullUserInfo *F
                 if(cr == PROFILE_RETURN_DB_ERROR)
                         print2log("Call to CProfiles::GetUserByName failed at CUserLogin::OpenSession(), line %d", __LINE__);
 #endif
-                free(pui);
-                free(pfui);
-                pui = NULL;
-                pfui = NULL;
                 /* invalid username/password */
                 return 0;
         }
@@ -429,10 +412,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
         if(CheckAndUpdateAuthSequence(seq, lIP, &SEQ) == 1) {
                 if(lIP){
-                        if(pui == NULL) pui = (SProfile_UserInfo*)malloc(sizeof(SProfile_UserInfo));
-                        if(pfui == NULL) pfui = (SProfile_FullUserInfo*)malloc(sizeof(SProfile_FullUserInfo));
-
-                        if(uprof.GetUInfo(SEQ.SIndex, pui) != 1) {
+                        if (uprof.GetUInfo(SEQ.SIndex, &ui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("call to CProfiles::GetUInfo failed at CUserLogin::CheckSession(), line %d" \
                                         " (maybe user has been deleted)", __LINE__);
@@ -442,7 +422,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 
 
 
-                        if(uprof.GetFullInfo(pui->FullInfo_ID, pfui) != 1) {
+                        if (uprof.GetFullInfo(ui.FullInfo_ID, &fui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("call to CProfiles::GetFullInfo() failed at CUserLogin::CheckSession(), line %d"
                                         " (maybe user have been deleted)", __LINE__);
@@ -451,17 +431,17 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         }
 
                         // security check that session was opened by this account
-                        if(pfui->CreateDate + SEQUENCE_LIVE_TIME > SEQ.ExpireDate) {
-                                print2log("warning! session is older than account \"%s\"", pui->username);
+                        if (fui.CreateDate + SEQUENCE_LIVE_TIME > SEQ.ExpireDate) {
+                                print2log("warning! session is older than account \"%s\"", ui.username);
                                 goto SessionError2;
                         }
 
                         // Update IP and last login date
-                        pui->lastIP = lIP;
-                        pui->LoginDate = time(NULL);
-                        pui->RefreshCount++;
+                        ui.lastIP = lIP;
+                        ui.LoginDate = time(NULL);
+                        ui.RefreshCount++;
 
-                        if(uprof.SetUInfo(SEQ.SIndex, pui) != 1) {
+                        if(uprof.SetUInfo(SEQ.SIndex, &ui) != 1) {
 #if ENABLE_LOG >= 1
                                 print2log("Call to CProfiles::SetUInfo failed at CUserLogin::CheckSession(), line %d", __LINE__);
 #endif
@@ -481,7 +461,7 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
                         LU.ExpireDate = SEQ.ExpireDate;
 
                         // LOAD REAL RIGHTS !!!
-                        LU.right = pui->right;
+                        LU.right = ui.right;
 
                         /* modify SUPERUSER right */
                         if(LU.right & USERRIGHT_SUPERUSER) {
@@ -504,11 +484,6 @@ DWORD CUserLogin::CheckSession(DWORD seq[2], DWORD lIP, DWORD Uid)
 SessionError2:
 
         if(CloseAuthSequence(seq, 0) == 0) {}
-
-        free(pui);
-        free(pfui);
-        pui = NULL;
-        pfui = NULL;
 
 SessionErrorEnd:
 
@@ -533,14 +508,6 @@ DWORD CUserLogin::CloseSession(DWORD seq[2])
                 LU.UniqID = 0;
                 LU.ID[0] = 0;
                 LU.ID[1] = 0;
-                if(pui != NULL) {
-                        free(pui);
-                        pui = NULL;
-                }
-                if(pfui != NULL) {
-                        free(pfui);
-                        pfui = NULL;
-                }
                 return 1;
         }
         return 0;
@@ -551,8 +518,7 @@ DWORD CUserLogin::CloseSession(DWORD seq[2])
  */
 DWORD CUserLogin::ForceCloseSessionForUser(DWORD UniqID)
 {
-        DWORD x[2];
-        memset(&x, 0, 8);
+        DWORD x[2] = {0, 0};
         if(CloseAuthSequence(x, UniqID) == 1) {
                 return 1;
         }
@@ -561,7 +527,6 @@ DWORD CUserLogin::ForceCloseSessionForUser(DWORD UniqID)
 
 DWORD CUserLogin::ForceCloseSessionBySeq(DWORD seq[2])
 {
-
         if(CloseAuthSequence(seq, 0) == 1) {
                 return 1;
         }

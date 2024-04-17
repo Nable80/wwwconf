@@ -357,9 +357,6 @@ int main(int argc, char *argv[])
                         // ctime result always includes '\n', we shouldn't print extra ones:
                         printf("Creation date: %s", ctime(&fui.CreateDate));
                         printf("Last access date: %s", ui.LoginDate ? ctime(&ui.LoginDate) : "Never logged in\n");
-
-                        // TODO: add destructor or migrate to a flexible array member to avoid this messy cleanup:
-                        free(fui.AboutUser);
                 }
                 else printerror(errcode);
                 goto go_stop;
