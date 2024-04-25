@@ -2493,8 +2493,10 @@ int main()
                 for (int i = 0; i < TOPICS_COUNT; ++i)
                         if (currenttopics & (1U << i))
                                 currenttopics_map |= (1U << Topics_List_map[i]);
-                if (currenttopics_map & 1)
+                if (currenttopics_map & 1) {
                         currenttopics_map |= blanktopics;
+//	if (ULogin.LU.ID[0] == 0 ) currenttopics_map|=(1<<15);
+		}
 #endif
 
                 DB.DB_PrintHtmlIndex(mtc);
@@ -2542,6 +2544,10 @@ int main()
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
                                         printnomessage(deal);
                                 }
+//				else if((mes.Topics==15)&&(ULogin.LU.ID[0] == 0 ))
+//				{
+//                                       printnomessage(deal);
+//				}
                                 else
                                 {
 #if STABLE_TITLE == 0
@@ -5211,8 +5217,10 @@ int main()
                                 /* allow read invisible message only to SUPERUSER */
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
                                         printnomessage(deal);
-                                        goto End_part;
+
+					goto End_part;
                                 }
+
                                 CProfiles prof;
                                 int result = prof.DelFavsList(ULogin.LU.SIndex, delmsg);
                                 switch(result) {
