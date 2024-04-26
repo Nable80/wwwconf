@@ -89,6 +89,7 @@ DWORD Topics_List_map[TOPICS_COUNT] = {
         // 16,//"Голосование",
         // 17,//"lost/found",
 };
+const DWORD news_bit=15;
 #endif
 
 const char *UserStatus_List[USER_STATUS_COUNT] = {
@@ -2489,12 +2490,13 @@ int main()
                         if(topicsoverride > TOPICS_COUNT) currenttopics = 0xffffffff;        // all
                         else currenttopics = 1U << (topicsoverride - 1);
                 }
-
                 for (int i = 0; i < TOPICS_COUNT; ++i)
                         if (currenttopics & (1U << i))
                                 currenttopics_map |= (1U << Topics_List_map[i]);
-                if (currenttopics_map & 1)
+		if (ULogin.LU.ID[0] == 0 ) currenttopics_map&= ~(1U<<news_bit);//don't show news for unreg
+                if (currenttopics_map & 1) {
                         currenttopics_map |= blanktopics;
+		}
 #endif
 
                 DB.DB_PrintHtmlIndex(mtc);
@@ -2542,6 +2544,11 @@ int main()
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
                                         printnomessage(deal);
                                 }
+				/*don't show news for unreg*/
+				else if((mes.Topics==news_bit)&&(ULogin.LU.ID[0] == 0 ))
+				{
+                                       printnomessage(deal);
+				}
                                 else
                                 {
 #if STABLE_TITLE == 0
@@ -5211,8 +5218,10 @@ int main()
                                 /* allow read invisible message only to SUPERUSER */
                                 if((mes.Flag & MESSAGE_IS_INVISIBLE) && ((ULogin.LU.right & USERRIGHT_SUPERUSER) == 0)) {
                                         printnomessage(deal);
-                                        goto End_part;
+
+					goto End_part;
                                 }
+
                                 CProfiles prof;
                                 int result = prof.DelFavsList(ULogin.LU.SIndex, delmsg);
                                 switch(result) {
